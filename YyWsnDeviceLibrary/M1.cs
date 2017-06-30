@@ -1,14 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 
 namespace YyWsnDeviceLibrary
 {
-    public class M1:Sensor
+    public class M1:Sensor, INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler PropertyChanged;
+
         public M1(byte[] SourceData)
         {
+
+
             //将收到的数据填充到属性
             Name = "M1";
             DeviceID = SourceData[3].ToString("X2");
@@ -53,8 +58,14 @@ namespace YyWsnDeviceLibrary
 
         public double Humidity { get; set; }
 
+        public void OnPropertyChanged(String strProperty)
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(strProperty));
+            }
+        }
 
-
-
+        
     }
 }

@@ -7,7 +7,11 @@
         mc:Ignorable="d"
         Title="YYWSN Sniffer GUI" Height="800" Width="1024" WindowStartupLocation="CenterScreen">
     <Grid>
-        <Border Padding="5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="9*"/>
+        </Grid.RowDefinitions>
+        <Border Padding="5" Grid.Row="0">
             <StackPanel>
                 <Grid Margin="0 0 0 10">
                     <Grid.ColumnDefinitions>
@@ -20,9 +24,9 @@
                     <TextBlock Text="文件:" Grid.Column="0" FontWeight="Bold" Margin="0 0 10 0" />
                     <TextBox x:Name="TxtOpenFileName" Grid.Column="1" Padding="2" Margin="0 0 10 0"/>
 
-                    
-                    
-                   
+
+
+
                     <Button Grid.Column="2" Content="Open..."/>
                 </Grid>
 
@@ -37,19 +41,39 @@
 
                     <TextBlock Text="串口:" Grid.Column="0" FontWeight="Bold" Margin="0 0 10 0" />
                     <ComboBox x:Name="cbComport" Grid.Column="1" Margin="0 0 10 0"/>
-                    <Button Grid.Column="2" Content="Open" Margin="0 0 10 0"/>
+                    <Button Grid.Column="2" Content="Open" Margin="0 0 10 0" x:Name="btnOpenfile" Click="btnOpenfile_Click"/>
                     <Button Grid.Column="3" Content="Refersh"/>
-                    
-
-                   
 
 
-                    
                 </Grid>
+
+
+
             </StackPanel>
 
-        </Border>
 
+        </Border>
+        <Border Padding="5" Grid.Row="1">
+            <TabControl Margin="5,-5,-5,5" >
+                <TabItem x:Name="tabM1" Header=" M1 ">
+                    <Grid>
+                       <DataGrid >
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Binding="{x:Null}" ClipboardContentBinding="{x:Null}"/>
+                                <DataGridTextColumn Binding="{x:Null}" ClipboardContentBinding="{x:Null}"/>
+                                <DataGridTextColumn Binding="{x:Null}" ClipboardContentBinding="{x:Null}"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+
+                </TabItem>
+
+                <TabItem x:Name="tabM2" Header=" M2 ">
+                </TabItem>
+
+
+            </TabControl>
+        </Border>
     </Grid>
 </Window>
 

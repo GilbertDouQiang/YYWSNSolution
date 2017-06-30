@@ -90,6 +90,12 @@
     </None>
     <AppDesigner Include="Properties\" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\YyWsnDeviceLibrary\YyWsnDeviceLibrary.csproj">
+      <Project>{4bcf8ea3-f5c3-4788-b5a4-2143ffc3e0b0}</Project>
+      <Name>YyWsnDeviceLibrary</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
