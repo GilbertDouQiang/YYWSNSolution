@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YyWsnDeviceLibrary", "YyWsn
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YyWsnDeviceLibraryTests", "YyWsnDeviceLibraryTests\YyWsnDeviceLibraryTests.csproj", "{E88B248C-6F8C-49D8-94EE-027C3C288E3C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YyWsnCommunicatonLibrary", "YyWsnCommunicatonLibrary\YyWsnCommunicatonLibrary.csproj", "{C8166677-F261-400C-AB3A-06831D858CB6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SnifferGUI", "SnifferGUI\SnifferGUI.csproj", "{7D2CB214-A515-44A6-82FF-4EDF109416B6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +25,14 @@ Global
 		{E88B248C-6F8C-49D8-94EE-027C3C288E3C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E88B248C-6F8C-49D8-94EE-027C3C288E3C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E88B248C-6F8C-49D8-94EE-027C3C288E3C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C8166677-F261-400C-AB3A-06831D858CB6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C8166677-F261-400C-AB3A-06831D858CB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C8166677-F261-400C-AB3A-06831D858CB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C8166677-F261-400C-AB3A-06831D858CB6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7D2CB214-A515-44A6-82FF-4EDF109416B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D2CB214-A515-44A6-82FF-4EDF109416B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D2CB214-A515-44A6-82FF-4EDF109416B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D2CB214-A515-44A6-82FF-4EDF109416B6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
