@@ -17,6 +17,8 @@ using System.Collections.ObjectModel;
 using Microsoft.Win32;
 using YyWsnCommunicatonLibrary;
 
+using ExcelExport;
+
 namespace SnifferGUI
 {
   
@@ -29,6 +31,7 @@ namespace SnifferGUI
     {
 
         ObservableCollection<M1> m1groups = new ObservableCollection<M1>();
+        //datagr
 
         public MainWindow()
         {
@@ -91,6 +94,22 @@ namespace SnifferGUI
         private void btnClearData_Click(object sender, RoutedEventArgs e)
         {
             m1groups.Clear();
+        }
+
+        private void btnExportExcel_Click(object sender, RoutedEventArgs e)
+        {
+
+            SaveFileDialog saveDlg = new SaveFileDialog();
+            if (saveDlg.ShowDialog() == true)
+            {
+                ExportXLS export = new ExportXLS();
+                export.ExportWPFDataGrid(dgM1, saveDlg.FileName);
+
+            }
+
+               
+            //
+
         }
     }
 }

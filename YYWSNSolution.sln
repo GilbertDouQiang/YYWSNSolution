@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SnifferGUI", "SnifferGUI\Sn
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YyWsnCommunicatonLibraryTests", "YyWsnCommunicatonLibraryTests\YyWsnCommunicatonLibraryTests.csproj", "{A2595A5C-701A-4021-8B6C-580CC2DC7717}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExcelExport", "ExcelExport\ExcelExport.csproj", "{1F1B5AA7-D99F-4F52-8E88-87B957F13CFB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{A2595A5C-701A-4021-8B6C-580CC2DC7717}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A2595A5C-701A-4021-8B6C-580CC2DC7717}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A2595A5C-701A-4021-8B6C-580CC2DC7717}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1F1B5AA7-D99F-4F52-8E88-87B957F13CFB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1F1B5AA7-D99F-4F52-8E88-87B957F13CFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1F1B5AA7-D99F-4F52-8E88-87B957F13CFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1F1B5AA7-D99F-4F52-8E88-87B957F13CFB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

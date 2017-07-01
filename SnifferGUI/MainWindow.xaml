@@ -49,14 +49,15 @@
 
                 <Grid>
                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="2*"/>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="3*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="9*"/>
+                        <ColumnDefinition Width="8*"/>
                     </Grid.ColumnDefinitions>
 
-                    <Button Grid.Column="0" Content="Clear Data" x:Name="btnClearData" Click="btnClearData_Click"/>
+                    <Button Grid.Column="0" Content="Clear Data" x:Name="btnClearData" Click="btnClearData_Click" Margin="0 0 10 0 "/>
+                    <Button Grid.Column="1" Content="Export Excel" x:Name="btnExportExcel"  Click="btnExportExcel_Click"/>
 
 
                 </Grid>
@@ -73,18 +74,26 @@
                     <Grid>
                         <DataGrid  x:Name="dgM1" AutoGenerateColumns="False">
                             <DataGrid.Columns>
+                               
                                 <DataGridTextColumn Header="SN" Binding="{Binding DisplayID}" />
+                                <DataGridTextColumn Header="工作模式" Binding="{Binding WorkFunction}" />
+                                <DataGridTextColumn Header="协议版本" Binding="{Binding ProtocolVersion}" />
+                                <DataGridTextColumn Header="客户码" Binding="{Binding ClientID}" />
+                                
                                 <DataGridTextColumn Header="MAC" Binding="{Binding DeviceMac}" />
                                 <DataGridTextColumn Header="传输序列号" Binding="{Binding SensorSN}" />
-
-                                <DataGridTextColumn Header="温度℃" Binding="{Binding Temperature}" />
                                 <DataGridTextColumn Header="IC温度℃" Binding="{Binding ICTemperature}" />
+                                <DataGridTextColumn Header="电压V" Binding="{Binding Volt}" />
+                                
+                                <DataGridTextColumn Header="温度℃" Binding="{Binding Temperature}" />
+                               
 
                                 <DataGridTextColumn Header="湿度%" Binding="{Binding Humidity}" />
-                                <DataGridTextColumn Header="电压V" Binding="{Binding Volt}" />
-                                <DataGridTextColumn Header="客户码" Binding="{Binding ClientID}" />
-                                <DataGridTextColumn Header="工作模式" Binding="{Binding WorkFunction}" />
+                                
+                             
+                                
                                 <DataGridTextColumn Header="信号强度" Binding="{Binding RSSI}" />
+                                
                                 <DataGridTextColumn Header="元数据" Binding="{Binding SourceData}" />
                                
                                 
@@ -98,6 +107,10 @@
                 </TabItem>
 
                 <TabItem x:Name="tabM2" Header=" M2 ">
+                </TabItem>
+
+                <TabItem x:Name="tabUartGateway" Header=" UartGateway ">
+                    
                 </TabItem>
 
 

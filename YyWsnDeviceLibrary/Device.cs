@@ -54,5 +54,7 @@ namespace YyWsnDeviceLibrary
         /// </summary>
         public String ClientID { get; set; }
 
+        public byte ProtocolVersion { get; set; }
+
     }
 }
