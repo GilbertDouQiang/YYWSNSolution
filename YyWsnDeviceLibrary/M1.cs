@@ -6,9 +6,9 @@ using System.Text;
 
 namespace YyWsnDeviceLibrary
 {
-    public class M1:Sensor, INotifyPropertyChanged
+    public class M1:Sensor//, INotifyPropertyChanged
     {
-        public event PropertyChangedEventHandler PropertyChanged;
+        //public event PropertyChangedEventHandler PropertyChanged;
 
         public M1(byte[] SourceData)
         {
@@ -31,10 +31,6 @@ namespace YyWsnDeviceLibrary
             int tempCalc = SourceData[20] * 256 + SourceData[21];
             if (tempCalc >= 0x8000)
                 tempCalc -= 65536;
-
-
-
-
             Temperature = Math.Round((Convert.ToDouble( tempCalc)/ 100),2);
             
 
@@ -42,9 +38,9 @@ namespace YyWsnDeviceLibrary
             //广播模式，补充采集和传输时间
             SensorCollectTime = System.DateTime.Now;
             SensorTransforTime = System.DateTime.Now;
+            RSSI = SourceData[29] / 2 - 138;
 
-            //临时测试有符号整形用
-            int i = SourceData[20];
+            this.SourceData = CommArithmetic.ToHexString(SourceData);
 
 
 
@@ -58,6 +54,7 @@ namespace YyWsnDeviceLibrary
 
         public double Humidity { get; set; }
 
+        /*
         public void OnPropertyChanged(String strProperty)
         {
             if (PropertyChanged != null)
@@ -65,7 +62,7 @@ namespace YyWsnDeviceLibrary
                 PropertyChanged(this, new PropertyChangedEventArgs(strProperty));
             }
         }
-
+        */
         
     }
 }

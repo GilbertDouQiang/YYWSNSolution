@@ -10,10 +10,13 @@ namespace YyWsnDeviceLibrary
     /// </summary>
     public abstract class Device
     {
+
+        public int DisplayID { get; set; }
         /// <summary>
         /// 如果设备包含电池，代表电池的电压
         /// </summary>
         public double Volt { get; set; }
+
 
 
         /// <summary>
