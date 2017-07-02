@@ -105,5 +105,43 @@ namespace YyWsnDeviceLibrary
             }
             return hexString;
         }
+
+
+
+        public static DateTime DecodeDateTime(byte[] source, int start)
+        {
+            DateTime dt;
+            byte[] tempDate = new byte[6];
+
+            if (source != null && source.Length > start + 5)
+            {
+                tempDate[0] = source[start];
+                tempDate[1] = source[start + 1];
+                tempDate[2] = source[start + 2];
+                tempDate[3] = source[start + 3];
+                tempDate[4] = source[start + 4];
+                tempDate[5] = source[start + 5];
+            }
+
+
+            string strDate = ToHexString(tempDate);
+
+
+
+
+            try
+            {
+                dt = DateTime.ParseExact(strDate, "yy MM dd HH mm ss ", System.Globalization.CultureInfo.CurrentCulture);
+
+            }
+            catch (Exception)
+            {
+                dt = DateTime.ParseExact("20010101", "yyyyMMdd", System.Globalization.CultureInfo.CurrentCulture);
+            }
+
+
+            return dt;
+
+        }
     }
 }

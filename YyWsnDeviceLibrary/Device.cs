@@ -56,5 +56,34 @@ namespace YyWsnDeviceLibrary
 
         public byte ProtocolVersion { get; set; }
 
+        public string HardwareVersion { get; set; }
+
+        public string SoftwareVersion { get; set; }
+
+        public byte[] Debug { get; set; }
+
+        public byte Category { get; set; }
+
+        public int Interval { get; set; }
+
+        public DateTime Calendar { get; set; }
+
+        /// <summary>
+        /// Sensor的工作模式
+        /// </summary>
+        public int WorkFunction { get; set; } //Pattern in protocol
+
+        /// <summary>
+        /// 传输速率
+        /// </summary>
+        public byte SymbolRate { get; set; }
+
+
+
+
+
+
+
+
     }
 }

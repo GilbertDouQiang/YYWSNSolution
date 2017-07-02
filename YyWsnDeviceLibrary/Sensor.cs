@@ -16,10 +16,7 @@ namespace YyWsnDeviceLibrary
         public double RSSI { get; set; }
 
 
-        /// <summary>
-        /// Sensor的工作模式
-        /// </summary>
-        public int WorkFunction { get; set; }
+       
 
         
     }

@@ -18,6 +18,7 @@ namespace YyWsnDeviceLibrary
             if (SourceData == null)
                 return null;
 
+            //1101 监控工具获得的数据
             for (int i = 0; i < SourceData.Length; i++)
             {
                 if (SourceData[i] == 0xEA)
@@ -49,8 +50,31 @@ namespace YyWsnDeviceLibrary
 
             }
 
+            // UartGateway 从Uart获得的数据
+            for (int i = 0; i < SourceData.Length; i++)
+            {
+                if (SourceData[i] == 0xAC && SourceData[i+1]==0xAC)
+                {
+                    //UAERGateway(久通)  查询本地配置信息后获得的数据
+                    //首先进行有效性验证，不通过直接返回null
+                    //01.长度校验
+                    int LengthCheck = SourceData[i + 2] + i;
+                    if (SourceData.Length < LengthCheck + 6)
+                        return null;
+                    if (SourceData[LengthCheck + 5] != 0xCA && SourceData[LengthCheck + 6]== 0xCA )
+                        return null;
+                    //创建对应的对象
+                    device = new UartGateway(SourceData);
 
-            return null;
+                    return device;
+
+
+                }
+            }
+
+
+
+                    return null;
            
            
         }

@@ -22,5 +22,20 @@ namespace YyWsnDeviceLibrary.Tests
             Assert.AreEqual(typeof(M1),device.GetType());
             
         }
+
+
+        [TestMethod()]
+        public void CreateDeviceUartGateway()
+        {
+
+            string SourceBinary = "AC AC 24 01 F1 76 D7 DB FF FF FF FF 53 03 00 00 00 00 00 00 1E 16 04 01 23 59 59 01 01 00 00 00 00 00 00 00 01 00 00 BF 79 CA CA";
+            byte[] SourceByte = CommArithmetic.HexStringToByteArray(SourceBinary, 0);
+
+            Device device = DeviceFactory.CreateDevice(SourceByte);
+            Assert.AreEqual(typeof(UartGateway), device.GetType());
+
+        }
+
+
     }
 }
