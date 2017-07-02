@@ -23,9 +23,11 @@ namespace UartGatewayGUI
     public partial class MainWindow : Window
     {
         SerialPortHelper comport;
+        UartGateway device;
         public MainWindow()
         {
             InitializeComponent();
+            DisableControl();
         }
 
         private void btnOpenComport_Click(object sender, RoutedEventArgs e)
@@ -33,9 +35,15 @@ namespace UartGatewayGUI
             if (btnOpenComport.Content.ToString() == "Open")
             {
                 comport = new SerialPortHelper();
-                comport.InitCOM("COM10");
-                comport.OpenPort();
-                btnOpenComport.Content = "Close";
+                comport.InitCOM(TxtSerialPort.Text);
+                if (comport.OpenPort())
+                {
+                    btnOpenComport.Content = "Close";
+                    EnableControls();
+                }
+
+               
+                
             }
             else
             {
@@ -43,6 +51,7 @@ namespace UartGatewayGUI
                 {
                     comport.ClosePort();
                     btnOpenComport.Content = "Open";
+                    DisableControl();
                 }
             }
             
@@ -53,7 +62,7 @@ namespace UartGatewayGUI
             UartGatewayCommand command = new UartGatewayCommand();
             byte[] resultBytes = comport.SendCommand(command.ReadInfo(), 500);
 
-            UartGateway device = (UartGateway)DeviceFactory.CreateDevice(resultBytes);
+            device = (UartGateway)DeviceFactory.CreateDevice(resultBytes);
             if (device !=null)
             {
                 txtOldMac.Text = device.DeviceMac;
@@ -75,6 +84,60 @@ namespace UartGatewayGUI
 
 
             }
+
+        }
+
+        public void EnableControls()
+        {
+            foreach (var item in btns.Children)
+            {
+                if (item.GetType() == typeof(Button))
+                {
+                    ((Button)(item)).IsEnabled = true;
+                }
+
+
+            }
+
+        }
+
+        public void DisableControl()
+        {
+            foreach (var item in btns.Children)
+            {
+                if (item.GetType() == typeof(Button))
+                {
+                   ( (Button)(item)).IsEnabled = false;
+                }
+                
+
+            }
+
+        }
+
+        private void btnUpdateInfo_Click(object sender, RoutedEventArgs e)
+        {
+            //更新UartGateway 配置
+            if (device == null)
+            {
+                return;
+            }
+
+            device.DeviceNewMAC = txtNewMac.Text;
+            device.HardwareVersion = txtHarewareVersion.Text;
+            device.ClientID = txtClientID.Text;
+            device.Category = Convert.ToByte(txtCategory.Text);
+            device.Debug = CommArithmetic.HexStringToByteArray(txtDebug.Text);
+            device.Interval = Convert.ToInt32(txtInterval.Text);
+            device.SymbolRate = Convert.ToByte(txtSymbolRate.Text);
+            device.WorkFunction = Convert.ToByte(txtWorkFunction.Text);
+
+            UartGatewayCommand command = new UartGatewayCommand();
+            byte[] resultBytes = comport.SendCommand(command.UpdateInfo(device), 500);
+
+            device = (UartGateway)DeviceFactory.CreateDevice(resultBytes);
+
+
 
         }
     }

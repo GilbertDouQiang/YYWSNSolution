@@ -143,5 +143,24 @@ namespace YyWsnDeviceLibrary
             return dt;
 
         }
+
+        public static byte[] Int16_2Bytes(int source)
+        {
+            byte[] result = new byte[2];
+            if (source < 256)
+            {
+                result[0] = 0;
+                result[1] = (byte)source;
+            }
+            else
+            {
+                result[0] = (byte)(source / 256);
+                result[1] = 1;
+
+            }
+
+
+            return result;
+        }
     }
 }

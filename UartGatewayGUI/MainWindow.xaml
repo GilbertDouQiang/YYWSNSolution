@@ -22,7 +22,7 @@
                         <ColumnDefinition Width="3*"/>
                     </Grid.ColumnDefinitions>
                     <TextBlock Text="端口号:" Grid.Column="0" FontWeight="Bold" Margin="0 0 10 0" />
-                    <TextBox x:Name="TxtOpenFileName" Grid.Column="1" Padding="2" Margin="0 0 10 0" Text="COM10"/>
+                    <TextBox x:Name="TxtSerialPort" Grid.Column="1" Padding="2" Margin="0 0 10 0" Text="COM10"/>
                     <Button x:Name="btnOpenComport" Grid.Column="2" Content="Open" Click="btnOpenComport_Click"/>
 
                 </Grid>
@@ -31,8 +31,8 @@
         <Border Padding="5" Grid.Row="1">
             <TabControl Margin="5,-5,-5,5" >
                 <TabItem x:Name="tabSetup" Header="Uart Gateway Setup">
-                    <StackPanel>
-                        <Grid Margin="0 0 0 10">
+                    <StackPanel >
+                        <Grid Margin="0 0 0 10" x:Name="btns">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="*"/>
@@ -41,8 +41,8 @@
                                 <ColumnDefinition Width="5*"/>
                                 
                             </Grid.ColumnDefinitions>
-                            <Button  Grid.Column="0" Content="读取配置" x:Name="btnReadInfo" Click="btnReadInfo_Click" Margin="0,0,10,0"/>
-                            <Button  Grid.Column="1" Content="设置" Margin="0,0,10,0"/>
+                            <Button  Grid.Column="0" Content="读取配置" x:Name="btnReadInfo" Click="btnReadInfo_Click" Margin="0,0,10,0" />
+                            <Button  Grid.Column="1" Content="更新配置" x:Name="btnUpdateInfo" Click="btnUpdateInfo_Click" Margin="0,0,10,0" />
                             <Button  Grid.Column="2" Content="删除存储数据" Margin="0,0,10,0"/>
                             <Button  Grid.Column="3" Content="授时" Margin="0,0,10,0"/>
                             

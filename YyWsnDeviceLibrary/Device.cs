@@ -38,6 +38,8 @@ namespace YyWsnDeviceLibrary
         /// </summary>
         public String DeviceMac { get; set; }
 
+        public string DeviceNewMAC { get; set; }
+
         /// <summary>
         /// 设备原始数据
         /// </summary>

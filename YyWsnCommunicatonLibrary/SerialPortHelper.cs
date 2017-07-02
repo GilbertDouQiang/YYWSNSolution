@@ -37,20 +37,23 @@ namespace YyWsnCommunicatonLibrary
             port1.DataReceived += Port1_DataReceived;//DataReceived事件委托
         }
 
-        public void OpenPort()
+        public bool OpenPort()
         {
             try
             {
                 port1.Open();
             }
-            catch { }
+            catch
+            {
+
+            }
             if (port1.IsOpen)
             {
-                Console.WriteLine("the port is opened!");
+                return true;
             }
             else
             {
-                Console.WriteLine("failure to open the port!");
+                return false;
             }
         }
 
@@ -77,6 +80,13 @@ namespace YyWsnCommunicatonLibrary
         /// <param name="CommandBytes"></param>
         public byte[] SendCommand(byte[] CommandBytes,int Timeout)
         {
+            //操作端口前，确保端口已经打开
+            if (!port1.IsOpen)
+            {
+                return null; 
+            }
+
+
             timer = new System.Timers.Timer();
             timer.Interval = Timeout;
             timer.Enabled = true;

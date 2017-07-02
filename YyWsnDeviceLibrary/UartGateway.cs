@@ -34,13 +34,7 @@ namespace YyWsnDeviceLibrary
             RAMCoutnt = SourceData[29];
             ROMCount = SourceData[34] * 256 + SourceData[35];
             //Volt = TODO
-             
-
-
-            
-
-
-
+ 
         }
 
     }
