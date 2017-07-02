@@ -53,8 +53,13 @@
   <ItemGroup>
     <Compile Include="DeviceFactoryTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UartGatewayCommandTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\YyWsnCommunicatonLibrary\YyWsnCommunicatonLibrary.csproj">
+      <Project>{c8166677-f261-400c-ab3a-06831d858cb6}</Project>
+      <Name>YyWsnCommunicatonLibrary</Name>
+    </ProjectReference>
     <ProjectReference Include="..\YyWsnDeviceLibrary\YyWsnDeviceLibrary.csproj">
       <Project>{4BCF8EA3-F5C3-4788-B5A4-2143FFC3E0B0}</Project>
       <Name>YyWsnDeviceLibrary</Name>
