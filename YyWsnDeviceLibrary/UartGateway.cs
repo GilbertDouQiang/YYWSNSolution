@@ -21,7 +21,7 @@ namespace YyWsnDeviceLibrary
             WorkFunction = SourceData[27];
 
             HardwareVersion = CommArithmetic.DecodeMAC(SourceData, 8);
-            SoftwareVersion = CommArithmetic.DecodeClientID(SourceData, 14);
+            SoftwareVersion = CommArithmetic.DecodeClientID(SourceData, 12);
             Debug = new byte[2];
             Debug[0] = SourceData[16];
             Debug[1] = SourceData[17];
