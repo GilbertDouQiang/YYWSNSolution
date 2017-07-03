@@ -162,5 +162,68 @@ namespace YyWsnDeviceLibrary
 
             return result;
         }
+
+        public static  byte[] EncodeDateTime(DateTime dateTime)
+        {
+            
+            string dateString = (dateTime.Year - 2000).ToString() ;
+            if (dateTime.Month < 10)
+            {
+                dateString += " 0" + dateTime.Month;
+
+            }
+            else
+            {
+                dateString += " " + dateTime.Month;
+            }
+
+            if (dateTime.Day < 10)
+            {
+                dateString += " 0" + dateTime.Day;
+
+            }
+            else
+            {
+                dateString += " " + dateTime.Day;
+            }
+
+
+            if (dateTime.Hour < 10)
+            {
+                dateString += " 0" + dateTime.Hour;
+
+            }
+            else
+            {
+                dateString += " " + dateTime.Hour;
+            }
+
+            if (dateTime.Minute < 10)
+            {
+                dateString += " 0" + dateTime.Minute;
+
+            }
+            else
+            {
+                dateString += " " + dateTime.Minute;
+            }
+
+            if (dateTime.Second < 10)
+            {
+                dateString += " 0" + dateTime.Second;
+
+            }
+            else
+            {
+                dateString += " " + dateTime.Second;
+            }
+
+
+
+
+            byte[] datetimeByte = CommArithmetic.HexStringToByteArray(dateString);
+            
+            return datetimeByte;
+        }
     }
 }

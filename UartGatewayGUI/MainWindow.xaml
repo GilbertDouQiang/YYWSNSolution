@@ -5,11 +5,11 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:UartGatewayGUI"
         mc:Ignorable="d"
-         Title="UART Gateway GUI" Height="800" Width="1024" WindowStartupLocation="CenterScreen">
+         Title="UART Gateway GUI" Height="660" Width="1024" WindowStartupLocation="CenterScreen">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="10*"/>
+            <RowDefinition Height="14*"/>
         </Grid.RowDefinitions>
         <Border Padding="5" Grid.Row="0">
             <StackPanel>
@@ -18,12 +18,16 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="6*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="4*"/>
                         <ColumnDefinition Width="3*"/>
                     </Grid.ColumnDefinitions>
                     <TextBlock Text="端口号:" Grid.Column="0" FontWeight="Bold" Margin="0 0 10 0" />
-                    <TextBox x:Name="TxtSerialPort" Grid.Column="1" Padding="2" Margin="0 0 10 0" Text="COM10"/>
-                    <Button x:Name="btnOpenComport" Grid.Column="2" Content="Open" Click="btnOpenComport_Click"/>
+                   
+                    <Button x:Name="btnOpenComport" Grid.Column="2" Content="Open" Click="btnOpenComport_Click"  Margin="0 0 10 0"/>
+                    <Button x:Name="btnFindComport" Grid.Column="3" Content="Refersh" Click="btnFindComport_Click"/>
+                    <ComboBox x:Name="cbSerialPort" Grid.Column="1" Margin="0 0 10 0"/>
 
                 </Grid>
             </StackPanel>
@@ -38,15 +42,17 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="5*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="4*"/>
                                 
                             </Grid.ColumnDefinitions>
                             <Button  Grid.Column="0" Content="读取配置" x:Name="btnReadInfo" Click="btnReadInfo_Click" Margin="0,0,10,0" />
                             <Button  Grid.Column="1" Content="更新配置" x:Name="btnUpdateInfo" Click="btnUpdateInfo_Click" Margin="0,0,10,0" />
-                            <Button  Grid.Column="2" Content="删除存储数据" Margin="0,0,10,0"/>
-                            <Button  Grid.Column="3" Content="授时" Margin="0,0,10,0"/>
-                            
- 
+                            <Button  Grid.Column="2" Content="删除存储数据"  Margin="0,0,10,0"/>
+                            <Button  Grid.Column="3" Content="授时" x:Name="SetupDate" Click="SetupDate_Click" Margin="0,0,10,0"/>
+                           
+
+
                         </Grid>
 
                         <Grid Margin="0 0 0 10">
@@ -146,7 +152,70 @@
                             <TextBox x:Name="txtRearPoint"  Grid.Column="5" Padding="2" Margin="0 0 10 0"/>
 
                         </Grid>
+                        
+                        <!--读取信息-->
+                        <Grid Margin="0 0 0 10" x:Name="btnReaders">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
 
+                            </Grid.ColumnDefinitions>
+                            
+                            <Button  Grid.Column="0" Content="读取数据" x:Name="ReadData" Click="ReadData_Click" Margin="0,0,10,0"/>
+                            <TextBlock  Grid.Column="1" Text="超时时间:" Margin="0,0,10,0"  HorizontalAlignment="Right" />
+                            <TextBox x:Name="txtReadTimeout"  Grid.Column="2" Padding="2" Text="1000" Margin="0 0 3 0"/>
+                            <TextBlock  Grid.Column="3" Text="ms" Margin="0,0,10,0"  />
+                            <CheckBox x:Name="chkLoop" Content="循环读取" Grid.Column="4"/>
+                            <TextBlock  Grid.Column="5" Text="间隔时间:" Margin="0,0,10,0"  HorizontalAlignment="Right" />
+                            <TextBox x:Name="txtReadInterval"  Grid.Column="6" Padding="2" Text="1000" Margin="0 0 3 0"/>
+                            <TextBlock  Grid.Column="7" Text="ms" Margin="0,0,10,0"  />
+
+                        </Grid>
+                        <DataGrid  x:Name="dgM1" AutoGenerateColumns="False">
+                            <DataGrid.Columns>
+
+                                <DataGridTextColumn Header="SN" Binding="{Binding DisplayID}" />
+                                <DataGridTextColumn Header="工作模式" Binding="{Binding WorkFunction}" />
+                                <DataGridTextColumn Header="协议版本" Binding="{Binding ProtocolVersion}" />
+                                <DataGridTextColumn Header="客户码" Binding="{Binding ClientID}" />
+
+                                <DataGridTextColumn Header="MAC" Binding="{Binding DeviceMac}" />
+                                <DataGridTextColumn Header="传输序列号" Binding="{Binding SensorSN}" />
+                                <DataGridTextColumn Header="IC温度℃" Binding="{Binding ICTemperature}" />
+                                <DataGridTextColumn Header="电压V" Binding="{Binding Volt}" />
+
+                                <DataGridTextColumn Header="温度℃" Binding="{Binding Temperature}" />
+
+
+                                <DataGridTextColumn Header="湿度%" Binding="{Binding Humidity}" />
+
+
+
+                                <DataGridTextColumn Header="信号强度" Binding="{Binding RSSI}" />
+
+                                <DataGridTextColumn Header="元数据" Binding="{Binding SourceData}" />
+
+
+
+
+
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+
+
+                    </StackPanel>
+                </TabItem>
+                <TabItem x:Name="tabConsole" Header="  Console  ">
+                    <StackPanel >
+                        <TextBox x:Name="txtConsole" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Visible" Padding="3"/>
                     </StackPanel>
                 </TabItem>
             </TabControl>

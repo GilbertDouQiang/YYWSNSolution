@@ -28,6 +28,7 @@ namespace UartGatewayGUI
         {
             InitializeComponent();
             DisableControl();
+            FindComport();
         }
 
         private void btnOpenComport_Click(object sender, RoutedEventArgs e)
@@ -35,7 +36,8 @@ namespace UartGatewayGUI
             if (btnOpenComport.Content.ToString() == "Open")
             {
                 comport = new SerialPortHelper();
-                comport.InitCOM(TxtSerialPort.Text);
+                string portname = cbSerialPort.SelectedValue.ToString();
+                comport.InitCOM(portname);
                 if (comport.OpenPort())
                 {
                     btnOpenComport.Content = "Close";
@@ -139,6 +141,57 @@ namespace UartGatewayGUI
 
 
 
+        }
+
+        /// <summary>
+        /// 执行授时
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void SetupDate_Click(object sender, RoutedEventArgs e)
+        {
+            UartGatewayCommand command = new UartGatewayCommand();
+            byte[] resultBytes = comport.SendCommand(command.DateTimeSyncchronization(device), 500);
+
+
+        }
+
+        private void ReadData_Click(object sender, RoutedEventArgs e)
+        {
+            ReadSingleDate(1000);
+        }
+
+        private void ReadSingleDate(int Timeout)
+        {
+            //TODO: Timeout 的参数化设置
+            UartGatewayCommand command = new UartGatewayCommand();
+            byte[] resultBytes = comport.SendCommand(command.ReadData(Timeout), Timeout);
+            
+            if (resultBytes !=null)
+            {
+                txtConsole.Text += "\r\n"+System.DateTime.Now.ToLongTimeString()+":" + CommArithmetic.ToHexString(resultBytes);
+            }
+
+        }
+
+        private void btnFindComport_Click(object sender, RoutedEventArgs e)
+        {
+            FindComport();
+        }
+
+        private  void FindComport()
+        {
+            cbSerialPort.Items.Clear();
+            string[] getAllSerialPort = SerialPortHelper.GetSerialPorts();
+            foreach (var portname in getAllSerialPort)
+            {
+                cbSerialPort.Items.Add(portname.ToString());
+
+            }
+            if (cbSerialPort.Items.Count > 0)
+            {
+                cbSerialPort.SelectedIndex = 0;
+            }
         }
     }
 }

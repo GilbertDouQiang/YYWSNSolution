@@ -22,7 +22,7 @@ namespace YyWsnDeviceLibrary
             command[2] = 0x16;
             command[3] = 0x02;
 
-            byte[] oldmac =CommArithmetic.HexStringToByteArray(  device.DeviceMac);
+            byte[] oldmac = CommArithmetic.HexStringToByteArray(device.DeviceMac);
             command[4] = oldmac[0];
             command[5] = oldmac[1];
             command[6] = oldmac[2];
@@ -65,5 +65,55 @@ namespace YyWsnDeviceLibrary
             return command;
 
         }
+
+        public byte[] DateTimeSyncchronization(UartGateway device)
+        {
+
+            byte[] command = new byte[21];
+            command[0] = 0xCA;
+            command[1] = 0xCA;
+            command[2] = 0x0E;
+            command[3] = 0x04;
+
+            //byte[] oldmac = CommArithmetic.HexStringToByteArray(device.DeviceMac);
+            command[4] = 0x00;
+            command[5] = 0x00;
+            command[6] = 0x00;
+            command[7] = 0x00;
+
+            command[8] = 0x08;
+            command[9] = 0x15;
+            command[10] = 0x06;
+
+
+            
+            DateTime dt = DateTime.Now;
+            byte[] decodeDate = CommArithmetic.EncodeDateTime(dt);
+            command[11] = decodeDate[0];
+            command[12] = decodeDate[1];
+            command[13] = decodeDate[2];
+            command[14] = decodeDate[3];
+            command[15] = decodeDate[4];
+            command[16] = decodeDate[5];
+
+
+
+            command[17] = 0x00;
+            command[18] = 0x00;
+            command[19] = 0xAC;
+            command[20] = 0xAC;
+
+
+
+            return command;
+        }
+
+        public byte[] ReadData(int Timeout)
+        {
+
+            return CommArithmetic.HexStringToByteArray("CA CA 08 08 00 00 00 00 00 75 30 00 00 AC AC");
+        }
+
+
     }
 }

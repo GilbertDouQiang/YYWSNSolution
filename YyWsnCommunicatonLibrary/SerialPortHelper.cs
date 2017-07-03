@@ -72,6 +72,7 @@ namespace YyWsnCommunicatonLibrary
         {
             byte[] WriteBuffer = CommArithmetic.HexStringToByteArray(CommandString);
             port1.Write(WriteBuffer, 0, WriteBuffer.Length);
+            Logger.AddLog(System.DateTime.Now.ToLocalTime() + "\tSend:\t\t" +CommArithmetic.ToHexString(WriteBuffer));
         }
 
         /// <summary>
@@ -93,6 +94,7 @@ namespace YyWsnCommunicatonLibrary
             timer.Elapsed += Timer_Elapsed;
             //byte[] WriteBuffer = CommArithmetic.HexStringToByteArray(CommandString);
             port1.Write(CommandBytes, 0, CommandBytes.Length);
+            Logger.AddLog(System.DateTime.Now.ToLocalTime() + "\tSend:\t\t" + CommArithmetic.ToHexString(CommandBytes));
             isGetResult = false;
             while(!isTimeout)
             {
@@ -132,6 +134,8 @@ namespace YyWsnCommunicatonLibrary
                 }
                 args.ReceivedBytes = CommArithmetic.HexStringToByteArray(currentline.ToString());
                 commandResult = args.ReceivedBytes;
+                Logger.AddLog(System.DateTime.Now.ToLocalTime() + "\tReceived:\t" + CommArithmetic.ToHexString(args.ReceivedBytes));
+
                 isGetResult = true;
 
             }
@@ -147,6 +151,14 @@ namespace YyWsnCommunicatonLibrary
 
 
 
+        }
+
+        public static string[] GetSerialPorts()
+        {
+            
+            String[] Portname = SerialPort.GetPortNames();
+
+            return Portname;
         }
     }
 }
