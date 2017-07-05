@@ -72,12 +72,13 @@ namespace SnifferGUI
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
             //openFileDialog.InitialDirectory = "c:\\";//注意这里写路径时要用c:\\而不是c:\
-            //openFileDialog.Filter = "文本文件|*.*|C#文件|*.cs|所有文件|*.*";
+            openFileDialog.Filter = "文本文件|*.txt|Log文件|*.log|所有文件|*.*";
             //openFileDialog.RestoreDirectory = true;
             //openFileDialog.FilterIndex = 1;
             if (openFileDialog.ShowDialog() == true)
             {
                 string filename = openFileDialog.FileName;
+                TxtOpenFileName.Text = openFileDialog.FileName;
                 ObservableCollection<Device> devices = FileHelper.ReadFile(filename);
                 int i = 1;
                 foreach (M1 item in devices)
@@ -100,6 +101,9 @@ namespace SnifferGUI
         {
 
             SaveFileDialog saveDlg = new SaveFileDialog();
+            saveDlg.Filter = "XLS文件|*.xls|所有文件|*.*";
+            saveDlg.FileName = "UART_Export_"+DateTime.Now.ToString("MMddhhmmss");
+            
             if (saveDlg.ShowDialog() == true)
             {
                 ExportXLS export = new ExportXLS();

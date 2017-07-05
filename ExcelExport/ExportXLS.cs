@@ -13,6 +13,7 @@ using System.Windows.Data;
 using System.Reflection;
 using System.Collections.ObjectModel;
 using YyWsnDeviceLibrary;
+using NPOI.SS.Util;
 
 namespace ExcelExport
 {
@@ -28,6 +29,13 @@ namespace ExcelExport
                 return -1;
 
             HSSFWorkbook hssfworkbook = new HSSFWorkbook();
+            ICellStyle cellStyle = hssfworkbook.CreateCellStyle();
+            cellStyle.BorderTop = NPOI.SS.UserModel.BorderStyle.Thin;
+            cellStyle.BorderBottom = NPOI.SS.UserModel.BorderStyle.Thin;
+            cellStyle.BorderLeft = NPOI.SS.UserModel.BorderStyle.Thin;
+            cellStyle.BorderRight = NPOI.SS.UserModel.BorderStyle.Thin;
+            
+
             ISheet sheet = hssfworkbook.CreateSheet("Sheet1");
             hssfworkbook.CreateSheet("Sheet2");
             hssfworkbook.CreateSheet("Sheet3");
@@ -41,19 +49,21 @@ namespace ExcelExport
             for (c = 0; c < SourceDataGrid.Columns.Count; c++)
             {
                 row.CreateCell(c).SetCellValue(SourceDataGrid.Columns[c].Header.ToString());
-               
+                //row.Cells[c].CellStyle todo 控制Cell的宽度
+                row.Cells[c].CellStyle = cellStyle;
+                sheet.SetColumnWidth(c,Convert.ToInt32( SourceDataGrid.Columns[c].ActualWidth*40));
+                //CellRangeAddress c = CellRangeAddress.ValueOf();
+                // TODO: 自动筛选：http://blog.csdn.net/u011981242/article/details/50516328
+
+
+
+
 
             }
 
 
             for (r = 0; r < data.Count; r++)
             {
-
-                //DataGridRow rowContainer = SourceDataGrid.GetRow(r);
-
-
-                // DataGridCellsPresenter presenter = GetVisualChild<DataGridCellsPresenter>(rowContainer);
-                //DataGridCell cell = (DataGridCell)presenter.ItemContainerGenerator.ContainerFromIndex(columnIndex
 
                 row = sheet.CreateRow(r + 2);
 
@@ -65,8 +75,25 @@ namespace ExcelExport
                     Binding binding = (Binding)dgcol.Binding;
                     string path = binding.Path.Path;  //对象属性的名称拿到了
                     PropertyInfo info1= data[r].GetType().GetProperty(path);
-                    string cellString= info1.GetValue(data[r],null).ToString();
-                    row.CreateCell(c).SetCellValue(cellString);
+                    switch (info1.PropertyType.Name)
+                    {
+                        case "Int32":
+                            Int32 intValue = (Int32)info1.GetValue(data[r], null);
+                            row.CreateCell(c).SetCellValue(intValue);
+                            break;
+                        case "Double":
+                            double doubleValue = (double)info1.GetValue(data[r], null);
+                            row.CreateCell(c).SetCellValue(doubleValue);
+                            break;
+
+                        default:
+                            string cellString = info1.GetValue(data[r], null).ToString();
+                            row.CreateCell(c).SetCellValue(cellString);
+                            break;
+                    }
+                    row.Cells[c].CellStyle = cellStyle;
+
+                    
                  
 
 
