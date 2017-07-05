@@ -103,7 +103,7 @@ namespace SnifferGUI
             if (saveDlg.ShowDialog() == true)
             {
                 ExportXLS export = new ExportXLS();
-                export.ExportWPFDataGrid(dgM1, saveDlg.FileName);
+                export.ExportWPFDataGrid(dgM1, saveDlg.FileName, m1groups );
 
             }
 
