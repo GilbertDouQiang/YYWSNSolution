@@ -72,7 +72,7 @@ namespace YyWsnCommunicatonLibrary
         {
             byte[] WriteBuffer = CommArithmetic.HexStringToByteArray(CommandString);
             port1.Write(WriteBuffer, 0, WriteBuffer.Length);
-            Logger.AddLog(System.DateTime.Now.ToLocalTime() + "\tSend:\t\t" +CommArithmetic.ToHexString(WriteBuffer));
+            Logger.AddLogAutoTime("Send:\t\t" +CommArithmetic.ToHexString(WriteBuffer));
         }
 
         /// <summary>
@@ -94,7 +94,7 @@ namespace YyWsnCommunicatonLibrary
             timer.Elapsed += Timer_Elapsed;
             //byte[] WriteBuffer = CommArithmetic.HexStringToByteArray(CommandString);
             port1.Write(CommandBytes, 0, CommandBytes.Length);
-            Logger.AddLog(System.DateTime.Now.ToLocalTime() + "\tSend:\t\t" + CommArithmetic.ToHexString(CommandBytes));
+            Logger.AddLogAutoTime("Send:\t\t" + CommArithmetic.ToHexString(CommandBytes));
             isGetResult = false;
             while(!isTimeout)
             {
@@ -125,7 +125,7 @@ namespace YyWsnCommunicatonLibrary
             try
             {
                 StringBuilder currentline = new StringBuilder();
-
+                Thread.Sleep(40); //尝试不要断开接收数据，在SurfaceBook 上，断开的时间大约为22ms
                 while (port1.BytesToRead > 0)
                 {
                     byte ch =(byte) port1.ReadByte();
@@ -134,7 +134,7 @@ namespace YyWsnCommunicatonLibrary
                 }
                 args.ReceivedBytes = CommArithmetic.HexStringToByteArray(currentline.ToString());
                 commandResult = args.ReceivedBytes;
-                Logger.AddLog(System.DateTime.Now.ToLocalTime() + "\tReceived:\t" + CommArithmetic.ToHexString(args.ReceivedBytes));
+                Logger.AddLogAutoTime("Received:\t" + CommArithmetic.ToHexString(args.ReceivedBytes));
 
                 isGetResult = true;
 

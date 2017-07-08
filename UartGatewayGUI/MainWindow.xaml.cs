@@ -15,6 +15,10 @@ using System.Windows.Shapes;
 using YyWsnDeviceLibrary;
 using YyWsnCommunicatonLibrary;
 
+using System.Windows.Threading;
+
+
+
 namespace UartGatewayGUI
 {
     /// <summary>
@@ -24,6 +28,10 @@ namespace UartGatewayGUI
     {
         SerialPortHelper comport;
         UartGateway device;
+        DispatcherTimer timer; //不用Timer
+
+
+
         public MainWindow()
         {
             InitializeComponent();
@@ -158,9 +166,37 @@ namespace UartGatewayGUI
 
         private void ReadData_Click(object sender, RoutedEventArgs e)
         {
+            if (chkLoop.IsChecked== true)
+            {
+                timer = new DispatcherTimer();
+                timer.Interval = TimeSpan.FromMilliseconds(1000);
+                timer.Tick += Timer_Tick; ;
+                timer.Start();
+
+
+
+            }
+            else
+            {
+                ReadSingleDate(1000);
+            }
+
+            
+        }
+
+        private void Timer_Tick(object sender, EventArgs e)
+        {
+            if (chkLoop.IsChecked == false)
+                timer.Stop();
+
             ReadSingleDate(1000);
         }
 
+
+        /// <summary>
+        /// 读取单条数据
+        /// </summary>
+        /// <param name="Timeout"></param>
         private void ReadSingleDate(int Timeout)
         {
             //TODO: Timeout 的参数化设置
@@ -169,7 +205,7 @@ namespace UartGatewayGUI
             
             if (resultBytes !=null)
             {
-                txtConsole.Text += "\r\n"+System.DateTime.Now.ToLongTimeString()+":" + CommArithmetic.ToHexString(resultBytes);
+                txtConsole.Text += "\r\n"+Logger.GetTimeString() +"\t"+ CommArithmetic.ToHexString(resultBytes);
             }
 
         }

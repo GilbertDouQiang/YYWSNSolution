@@ -59,5 +59,69 @@ namespace YyWsnCommunicatonLibrary
         }
 
 
+        public static void AddLogAutoTime(string LogText)
+        {
+           
+
+
+
+            AddLog(GetTimeString ()+ "\t" + LogText);
+
+
+        }
+
+        public static String GetTimeString()
+        {
+           
+
+            string timeString = "";
+            DateTime dt = DateTime.Now;
+            if (dt.Hour < 10)
+            {
+                timeString += "0" + dt.Hour;
+            }
+            else
+
+            {
+                timeString += dt.Hour;
+            }
+
+            if (dt.Minute < 10)
+            {
+                timeString += ":0" + dt.Minute;
+            }
+            else
+            {
+                timeString += ":" + dt.Minute;
+            }
+
+            if (dt.Second < 10)
+            {
+                timeString += ":0" + dt.Second;
+
+            }
+            else
+            {
+                timeString += ":" + dt.Second;
+            }
+
+            if (dt.Millisecond < 10)
+            {
+                timeString += ":00" + dt.Millisecond;
+            }
+            else if (dt.Millisecond < 100)
+            {
+                timeString += ":0" + dt.Millisecond;
+            }
+            else
+            {
+                timeString += ":" + dt.Millisecond;
+            }
+
+            return timeString;
+
+        }
+
+
     }
 }

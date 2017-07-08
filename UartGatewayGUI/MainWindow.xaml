@@ -173,7 +173,7 @@
                             <TextBlock  Grid.Column="3" Text="ms" Margin="0,0,10,0" VerticalAlignment="Center"  />
                             <CheckBox x:Name="chkLoop" Content="循环读取" Grid.Column="4" VerticalAlignment="Center"/>
                             <TextBlock  Grid.Column="5" Text="间隔时间:" Margin="0,0,10,0"  HorizontalAlignment="Right" VerticalAlignment="Center" />
-                            <TextBox x:Name="txtReadInterval"  Grid.Column="6" Padding="2" Text="1000" Margin="0 0 3 0" VerticalAlignment="Center"/>
+                            <TextBox x:Name="txtReadInterval"  Grid.Column="6" Padding="2" Text="1000" Margin="0,0,2.5,0" VerticalAlignment="Bottom"/>
                             <TextBlock  Grid.Column="7" Text="ms" Margin="0,0,10,0"  />
 
                         </Grid>
@@ -213,9 +213,26 @@
                     </StackPanel>
                 </TabItem>
                 <TabItem x:Name="tabConsole" Header="  Console  ">
-                    <StackPanel >
-                        <TextBox x:Name="txtConsole" TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Visible" Padding="3"/>
-                    </StackPanel>
+                   
+                    <Grid >
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="41*"/>
+                            <ColumnDefinition Width="748*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto" MinHeight="30" />
+                            <RowDefinition Height="*"/>
+
+                        </Grid.RowDefinitions>
+                        <WrapPanel Grid.Row="0" VerticalAlignment="Center" Grid.ColumnSpan="2" Margin="0,2,0,98">
+                            <Label Content="日志行数:" Margin="0 0 10 0"/>
+                            <TextBox x:Name="txtLogLineLimit" Width="50" Text="100" VerticalContentAlignment="Center" Margin="0 0 10 0"/>
+                            <Button x:Name="btnLogClear" Content="清空" VerticalContentAlignment="Center" Width="38"   Margin="0 0 10 0"/>
+                            <CheckBox x:Name="chkLockLog" Content="锁定" VerticalContentAlignment="Center" Margin="0 0 10 0"></CheckBox>
+                            <CheckBox x:Name="chkSaveLog2File" Content="记录到文件" VerticalContentAlignment="Center" Margin="0 0 10 0"></CheckBox>
+                        </WrapPanel>
+                        <TextBox   x:Name="txtConsole" TextWrapping="Wrap"  AcceptsReturn="True"  VerticalScrollBarVisibility="Visible" Grid.ColumnSpan="2" Margin="0,30,0,-0.5" Grid.RowSpan="2"/>
+                    </Grid>
                 </TabItem>
             </TabControl>
         </Border>
