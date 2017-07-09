@@ -36,28 +36,35 @@
                         <ColumnDefinition Width="3*"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="9*"/>
+                        <ColumnDefinition Width="6*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="2*"/>
                     </Grid.ColumnDefinitions>
 
                     <TextBlock Text="串口:" Grid.Column="0" FontWeight="Bold" Margin="0 0 10 0" />
-                    <ComboBox x:Name="cbComport" Grid.Column="1" Margin="0 0 10 0"/>
-                    <Button Grid.Column="2" Content="Open" Margin="0 0 10 0" x:Name="btnOpenComPort" Click="btnOpenfile_Click"/>
-                    <Button Grid.Column="3" Content="Refersh"/>
+                    <ComboBox x:Name="cbSerialPort" Grid.Column="1" Margin="0 0 10 0"/>
+                    <Button Grid.Column="2" Content="Open" Margin="0 0 10 0" x:Name="btnOpenComPort" Click="btnOpenComPort_Click"/>
+                    <Button Grid.Column="3" Content="Refersh" x:Name="btnResersh" Click="btnResersh_Click" Margin="0 0 10 0"/>
+                    <TextBox Grid.Column="4" x:Name="txtSendCommand" Text="EA 14 30 1E" Margin="0 0 10 0"/>
+                    <Button Grid.Column="5" Content="Send" x:Name="btnSendCommand" Click="btnSendCommand_Click" Height="21" Margin="0,0,0.5,0" VerticalAlignment="Top"/>
+
 
 
                 </Grid>
 
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="2*"/>
-                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="2*"/>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="8*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="3*"/>
                     </Grid.ColumnDefinitions>
 
-                    <Button Grid.Column="0" Content="Clear Data" x:Name="btnClearData" Click="btnClearData_Click" Margin="0 0 10 0 "/>
-                    <Button Grid.Column="1" Content="Export Excel" x:Name="btnExportExcel"  Click="btnExportExcel_Click"/>
+                    <Button Grid.Column="0" Content="Clear Data" x:Name="btnClearData" Click="btnClearData_Click" Margin="0,0,10.5,0"/>
+                    <Button Content="Export Excel" x:Name="btnExportExcel"  Click="btnExportExcel_Click" Grid.Column="1" />
 
 
                 </Grid>
@@ -72,31 +79,31 @@
             <TabControl Margin="5,-5,-5,5" >
                 <TabItem x:Name="tabM1" Header=" M1 ">
                     <Grid>
-                        <DataGrid  x:Name="dgM1" AutoGenerateColumns="False">
+                        <DataGrid  x:Name="dgM1" AutoGenerateColumns="False"  AlternatingRowBackground="#F4F4F4">
                             <DataGrid.Columns>
-                               
+
                                 <DataGridTextColumn Header="SN" Binding="{Binding DisplayID}" />
                                 <DataGridTextColumn Header="工作模式" Binding="{Binding WorkFunction}" />
                                 <DataGridTextColumn Header="协议版本" Binding="{Binding ProtocolVersion}" />
                                 <DataGridTextColumn Header="客户码" Binding="{Binding ClientID}" />
-                                
+
                                 <DataGridTextColumn Header="MAC" Binding="{Binding DeviceMac}" />
                                 <DataGridTextColumn Header="传输序列号" Binding="{Binding SensorSN}" />
                                 <DataGridTextColumn Header="IC温度℃" Binding="{Binding ICTemperature}" />
                                 <DataGridTextColumn Header="电压V" Binding="{Binding Volt}" />
-                                
+
                                 <DataGridTextColumn Header="温度℃" Binding="{Binding Temperature}" />
-                               
+
 
                                 <DataGridTextColumn Header="湿度%" Binding="{Binding Humidity}" />
-                                
-                             
-                                
+
+
+
                                 <DataGridTextColumn Header="信号强度" Binding="{Binding RSSI}" />
-                                
+
                                 <DataGridTextColumn Header="元数据" Binding="{Binding SourceData}" />
-                               
-                                
+
+
 
 
 
@@ -110,7 +117,29 @@
                 </TabItem>
 
                 <TabItem x:Name="tabUartGateway" Header=" UartGateway ">
-                    
+
+                </TabItem>
+                <TabItem x:Name="tabConsole" Header="  Console  ">
+
+                    <Grid >
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="41*"/>
+                            <ColumnDefinition Width="748*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto" MinHeight="30" />
+                            <RowDefinition Height="*"/>
+
+                        </Grid.RowDefinitions>
+                        <WrapPanel Grid.Row="0" VerticalAlignment="Center" Grid.ColumnSpan="2" Margin="0,2,0,98">
+                            <Label Content="日志行数:" Margin="0 0 10 0"/>
+                            <TextBox x:Name="txtLogLineLimit" Width="50" Text="100" VerticalContentAlignment="Center" Margin="0 0 10 0"/>
+                            <Button x:Name="btnLogClear" Content="清空" VerticalContentAlignment="Center" Width="38"   Margin="0 0 10 0"/>
+                            <CheckBox x:Name="chkLockLog" Content="锁定" VerticalContentAlignment="Center" Margin="0 0 10 0"></CheckBox>
+                            <CheckBox x:Name="chkSaveLog2File" Content="记录到文件" VerticalContentAlignment="Center" Margin="0 0 10 0"></CheckBox>
+                        </WrapPanel>
+                        <TextBox   x:Name="txtConsole" TextWrapping="Wrap"  AcceptsReturn="True"  VerticalScrollBarVisibility="Visible" Grid.ColumnSpan="2" Margin="0,30,0,-0.5" Grid.RowSpan="2"/>
+                    </Grid>
                 </TabItem>
 
 

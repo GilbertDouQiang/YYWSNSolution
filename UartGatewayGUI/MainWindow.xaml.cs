@@ -69,6 +69,25 @@ namespace UartGatewayGUI
 
         private void btnReadInfo_Click(object sender, RoutedEventArgs e)
         {
+            //清空数据
+            txtOldMac.Text = "";
+            txtNewMac.Text = "";
+            txtHarewareVersion.Text = "";
+            txtSoftwareVersion.Text = "";
+            txtClientID.Text = "";
+            txtDebug.Text = "";
+            txtCategory.Text = "";
+            txtInterval.Text = "";
+            txtWorkFunction.Text = "";
+            txtCalendar.Text = "";
+            txtSymbolRate.Text = "";
+            txtROMCount.Text = "";
+            txtFrontPoint.Text = "";
+            txtRearPoint.Text = "";
+
+            //System.Threading.Thread.Sleep(500);
+
+
             UartGatewayCommand command = new UartGatewayCommand();
             byte[] resultBytes = comport.SendCommand(command.ReadInfo(), 500);
 

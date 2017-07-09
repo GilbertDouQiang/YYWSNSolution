@@ -7,6 +7,8 @@ using YyWsnDeviceLibrary;
 using System.Timers;
 using System.Threading;
 
+
+
 namespace YyWsnCommunicatonLibrary
 {
     public class SerialPortHelper
@@ -137,6 +139,8 @@ namespace YyWsnCommunicatonLibrary
                 Logger.AddLogAutoTime("Received:\t" + CommArithmetic.ToHexString(args.ReceivedBytes));
 
                 isGetResult = true;
+
+                
 
             }
             catch (Exception)
