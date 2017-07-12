@@ -44,7 +44,11 @@ namespace UartGatewayGUI
             if (btnOpenComport.Content.ToString() == "Open")
             {
                 comport = new SerialPortHelper();
-                string portname = cbSerialPort.SelectedValue.ToString();
+                string portname = SerialPortHelper.GetSerialPortName(cbSerialPort.SelectedValue.ToString());
+                
+               
+                
+
                 comport.InitCOM(portname);
                 if (comport.OpenPort())
                 {
@@ -237,10 +241,10 @@ namespace UartGatewayGUI
         private  void FindComport()
         {
             cbSerialPort.Items.Clear();
-            string[] getAllSerialPort = SerialPortHelper.GetSerialPorts();
-            foreach (var portname in getAllSerialPort)
+            string[] spis = SerialPortHelper.GetSerialPorts();
+            foreach (var portname in spis)
             {
-                cbSerialPort.Items.Add(portname.ToString());
+                cbSerialPort.Items.Add(portname);
 
             }
             if (cbSerialPort.Items.Count > 0)

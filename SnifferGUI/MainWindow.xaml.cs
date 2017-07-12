@@ -135,7 +135,7 @@ namespace SnifferGUI
         private void FindComport()
         {
             cbSerialPort.Items.Clear();
-            string[] getAllSerialPort = SerialPortHelper.GetSerialPorts();
+            string[] getAllSerialPort = null;//TODO:SerialPortHelper.GetSerialPorts();
             foreach (var portname in getAllSerialPort)
             {
                 cbSerialPort.Items.Add(portname.ToString());
@@ -211,7 +211,7 @@ namespace SnifferGUI
             //在Log中体现
             Dispatcher.BeginInvoke(new Action(delegate
             {
-                //txtConsole.Text += "\r\n" + CommArithmetic.ToHexString(e.ReceivedBytes);
+                txtConsole.Text += "\r\n" + CommArithmetic.ToHexString(e.ReceivedBytes);
 
                 ObservableCollection<Device> devices = DeviceFactory.CreateDevices(e.ReceivedBytes);
 

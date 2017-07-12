@@ -97,7 +97,7 @@ namespace YyWsnDeviceLibrary
                 {
                     int LengthCheck = SourceData[i + 1] + i;
                     //缺少长度校验
-                    if (SourceData.Length>= LengthCheck+4 && SourceData[LengthCheck + 4] == 0xAE)
+                    if (SourceData.Length>= LengthCheck+3 && SourceData[LengthCheck + 4] == 0xAE)
                     {
                         //复制部分数字
                         //创建设备

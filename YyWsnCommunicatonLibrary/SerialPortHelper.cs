@@ -6,8 +6,7 @@ using System.IO.Ports;
 using YyWsnDeviceLibrary;
 using System.Timers;
 using System.Threading;
-
-
+using System.Management;
 
 namespace YyWsnCommunicatonLibrary
 {
@@ -157,12 +156,52 @@ namespace YyWsnCommunicatonLibrary
 
         }
 
-        public static string[] GetSerialPorts()
+        public static String[] GetSerialPorts()
+        {
+
+            //String[] Portname = SerialPort.GetPortNames();
+            String[] ss = MulGetHardwareInfo(HardwareEnum.Win32_PnPEntity, "Name");//调用方式通过WMI获取COM端口 
+            return ss;
+        }
+
+
+        public static string[] MulGetHardwareInfo(HardwareEnum hardType, string propKey)
+        {
+
+            List<string> strs = new List<string>();
+            try
+            {
+                using (ManagementObjectSearcher searcher = new ManagementObjectSearcher("select * from " + hardType))
+                {
+                    var hardInfos = searcher.Get();
+                    foreach (var hardInfo in hardInfos)
+                    {
+                        if (hardInfo.Properties[propKey].Value != null && hardInfo.Properties[propKey].Value.ToString().Contains("(COM"))
+                        {
+                            strs.Add(hardInfo.Properties[propKey].Value.ToString());
+                        }
+
+                    }
+                    searcher.Dispose();
+                }
+                return strs.ToArray();
+            }
+            catch
+            {
+                return null;
+            }
+            finally
+            { strs = null; }
+        }
+
+        public static string GetSerialPortName(string DeviceName)
         {
             
-            String[] Portname = SerialPort.GetPortNames();
-
-            return Portname;
+            //临时测试
+            int first = DeviceName.IndexOf('(');
+            int last = DeviceName.IndexOf(')');
+            return DeviceName.Substring(first + 1, last - first - 1);
         }
+
     }
 }
