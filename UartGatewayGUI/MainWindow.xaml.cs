@@ -112,10 +112,6 @@ namespace UartGatewayGUI
                 txtROMCount.Text = device.ROMCount.ToString();
                 txtFrontPoint.Text = device.FrontPoint.ToString();
                 txtRearPoint.Text = device.RearPoint.ToString();
-
-
-
-
             }
 
         }

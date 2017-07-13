@@ -126,7 +126,7 @@ namespace YyWsnCommunicatonLibrary
             try
             {
                 StringBuilder currentline = new StringBuilder();
-                Thread.Sleep(40); //尝试不要断开接收数据，在SurfaceBook 上，断开的时间大约为22ms
+                Thread.Sleep(60); //尝试不要断开接收数据，在SurfaceBook 上，断开的时间大约为22ms
                 while (port1.BytesToRead > 0)
                 {
                     byte ch =(byte) port1.ReadByte();

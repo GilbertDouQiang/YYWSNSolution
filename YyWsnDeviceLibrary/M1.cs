@@ -39,8 +39,12 @@ namespace YyWsnDeviceLibrary
             //广播模式，补充采集和传输时间
             SensorCollectTime = System.DateTime.Now;
             SensorTransforTime = System.DateTime.Now;
-            RSSI = SourceData[30] / 2 - 138;
-
+            //RSSI = SourceData[30] / 2 - 138; //1101 方案
+            //可能收到没有RSSI的数据
+            if (SourceData.Length == 31)
+            {
+                RSSI = SourceData[30] - 256;
+            }
             this.SourceData = CommArithmetic.ToHexString(SourceData);
 
 

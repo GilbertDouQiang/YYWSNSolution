@@ -135,10 +135,10 @@ namespace SnifferGUI
         private void FindComport()
         {
             cbSerialPort.Items.Clear();
-            string[] getAllSerialPort = null;//TODO:SerialPortHelper.GetSerialPorts();
-            foreach (var portname in getAllSerialPort)
+            string[] spis = SerialPortHelper.GetSerialPorts();
+            foreach (var portname in spis)
             {
-                cbSerialPort.Items.Add(portname.ToString());
+                cbSerialPort.Items.Add(portname);
 
             }
             if (cbSerialPort.Items.Count > 0)
@@ -180,7 +180,7 @@ namespace SnifferGUI
             {
                 comport = new SerialPortHelper();
                 comport.SerialPortReceived += Comport_SerialPortReceived;
-                string portname = cbSerialPort.SelectedValue.ToString();
+                string portname = SerialPortHelper.GetSerialPortName(cbSerialPort.SelectedValue.ToString());
                 comport.InitCOM(portname);
                 if (comport.OpenPort())
                 {
@@ -211,7 +211,7 @@ namespace SnifferGUI
             //在Log中体现
             Dispatcher.BeginInvoke(new Action(delegate
             {
-                txtConsole.Text += "\r\n" + CommArithmetic.ToHexString(e.ReceivedBytes);
+                txtConsole.Text += Logger.GetTimeString() +"\t"+CommArithmetic.ToHexString(e.ReceivedBytes)+"\r\n";
 
                 ObservableCollection<Device> devices = DeviceFactory.CreateDevices(e.ReceivedBytes);
 
@@ -223,10 +223,7 @@ namespace SnifferGUI
                     m1groups.Add(item);
 
                 }
-
-               
-
-                
+                      
             }));
 
 

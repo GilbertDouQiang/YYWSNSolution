@@ -95,9 +95,14 @@ namespace YyWsnDeviceLibrary
             {
                 if (SourceData[i] == 0xEA)
                 {
+                    //if(SourceData[i+1] == null)
+                    if (SourceData.Length <= i)
+                    {
+                        continue;
+                    }
                     int LengthCheck = SourceData[i + 1] + i;
                     //缺少长度校验
-                    if (SourceData.Length>= LengthCheck+3 && SourceData[LengthCheck + 4] == 0xAE)
+                    if (SourceData.Length>= LengthCheck+4 && SourceData[LengthCheck + 4] == 0xAE)
                     {
                         //复制部分数字
                         //创建设备
@@ -105,6 +110,11 @@ namespace YyWsnDeviceLibrary
 
                         for (int j = 0; j < deviceBytes.Length; j++)
                         {
+                            //TODO: 这里有错误，数组越界
+                            if (SourceData.Length <i+j)
+                            {
+                                break;
+                            }
                             deviceBytes[j] = SourceData[i+j];
                         }
 
