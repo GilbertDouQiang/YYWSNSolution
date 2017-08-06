@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExcelExport", "ExcelExport\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UartGatewayGUI", "UartGatewayGUI\UartGatewayGUI.csproj", "{1A63A6E7-5260-4B6D-A830-4001017433D0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceSetup_HyperWSN", "DeviceSetup_HyperWSN\DeviceSetup_HyperWSN.csproj", "{24364CC0-B29D-42E4-B868-20DCBAE3F955}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,10 @@ Global
 		{1A63A6E7-5260-4B6D-A830-4001017433D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1A63A6E7-5260-4B6D-A830-4001017433D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1A63A6E7-5260-4B6D-A830-4001017433D0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{24364CC0-B29D-42E4-B868-20DCBAE3F955}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24364CC0-B29D-42E4-B868-20DCBAE3F955}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24364CC0-B29D-42E4-B868-20DCBAE3F955}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24364CC0-B29D-42E4-B868-20DCBAE3F955}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

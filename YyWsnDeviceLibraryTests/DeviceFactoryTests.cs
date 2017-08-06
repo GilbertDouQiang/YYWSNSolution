@@ -15,7 +15,10 @@ namespace YyWsnDeviceLibrary.Tests
         public void CreateDeviceTest()
         {
 
-            string SourceBinary = "EA 19 01 51 01 00 06 61 23 45 67 0E 61 00 00 63 1A 64 0C 19 65 0A FA 66 1E 2E 00 D6 1B AE DD ";
+
+                                 //EA 19 01 53 01 D3 9A 11 11 11 11 0E 61 00 D9 63 18 64 0B A3 65 09 48 66 1A 9C 00 98 EE AE D9 
+                                 //
+            string SourceBinary = "EA 19 01 53 01 D3 9A 11 11 11 11 0E 61 00 D9 63 18 64 0B A3 65 09 48 66 1A 9C 00 98 EE AE D9 ";
             byte[] SourceByte = CommArithmetic.HexStringToByteArray(SourceBinary, 0);
 
             Device device = DeviceFactory.CreateDevice(SourceByte);
