@@ -21,6 +21,7 @@ namespace DeviceSetup_HyperWSN
     public partial class MainWindow : Window
     {
         SerialPortHelper comport;
+        String UartCommand;
 
         public MainWindow()
         {
@@ -114,6 +115,14 @@ namespace DeviceSetup_HyperWSN
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             FindComport();
+
+        }
+
+        private void btnStartMonitor_Click(object sender, RoutedEventArgs e)
+        {
+            UartCommand = "CE 03 01 01 02 00 00 EC";
+            
+
 
         }
     }
