@@ -163,6 +163,27 @@ namespace YyWsnDeviceLibrary
             return result;
         }
 
+        /// <summary>
+        /// 将温度16进制字节数组，转换为浮点数
+        /// </summary>
+        /// <param name="SourceData"></param>
+        /// <param name="Start"></param>
+        /// <returns></returns>
+        public static double DecodeTemperature(byte[] SourceData,int Start)
+        {
+            int tempCalc = SourceData[Start] * 256 + SourceData[Start+1];
+            if (tempCalc >= 0x8000)
+                tempCalc -= 65536;
+            return  Math.Round((Convert.ToDouble(tempCalc) / 100), 2);
+
+        }
+
+        public static double DecodeHumidity(byte[] SourceData, int Start)
+        {
+            return Math.Round(Convert.ToDouble((SourceData[Start] * 256 + SourceData[Start+1])) / 100, 2);
+
+        }
+
         public static  byte[] EncodeDateTime(DateTime dateTime)
         {
             

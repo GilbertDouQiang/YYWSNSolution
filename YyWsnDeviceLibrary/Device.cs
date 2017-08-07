@@ -37,6 +37,8 @@ namespace YyWsnDeviceLibrary
         /// 设备的8位MAC地址
         /// </summary>
         public String DeviceMac { get; set; }
+        public string PrimaryMAC { get; set; }
+
 
         public string DeviceNewMAC { get; set; }
 

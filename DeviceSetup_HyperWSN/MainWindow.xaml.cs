@@ -12,6 +12,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using YyWsnCommunicatonLibrary;
+using YyWsnDeviceLibrary;
+using System.Timers;
 
 namespace DeviceSetup_HyperWSN
 {
@@ -22,10 +24,22 @@ namespace DeviceSetup_HyperWSN
     {
         SerialPortHelper comport;
         String UartCommand;
+        Timer monitorTimer;
+
 
         public MainWindow()
         {
             InitializeComponent();
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            FindComport();
+            CBLoop.IsChecked = true;
+            DisableControl();
+
+
+
         }
 
         private void FindComport()
@@ -62,7 +76,7 @@ namespace DeviceSetup_HyperWSN
                 if (comport.OpenPort())
                 {
                     btnOpenComport.Content = "Close";
-                    //EnableControls();
+                    EnableControls();
                 }
 
 
@@ -74,13 +88,31 @@ namespace DeviceSetup_HyperWSN
                 {
                     comport.ClosePort();
                     btnOpenComport.Content = "Open";
-                    //DisableControl();
+                    DisableControl();
                 }
             }
 
         }
 
-        
+        private void DisableControl()
+        {
+            //throw new NotImplementedException();
+            btnStartMonitor.IsEnabled = false;
+            btnStopMonitor.IsEnabled = false;
+            CBLoop.IsEnabled = false;
+
+
+
+        }
+
+        private void EnableControls()
+        {
+            //throw new NotImplementedException();
+            btnStartMonitor.IsEnabled = true;
+            CBLoop.IsEnabled = true;
+
+
+        }
 
         private void Comport_SerialPortReceived(object sender, SerialPortEventArgs e)
         {
@@ -90,8 +122,13 @@ namespace DeviceSetup_HyperWSN
             //在Log中体现
             Dispatcher.BeginInvoke(new Action(delegate
             {
-                // txtConsole.Text += Logger.GetTimeString() + "\t" + CommArithmetic.ToHexString(e.ReceivedBytes) + "\r\n";
+                txtConsole.Text += Logger.GetTimeString() + "\t" + CommArithmetic.ToHexString(e.ReceivedBytes) + "\r\n";
 
+                Device device = DeviceFactory.CreateDevice(e.ReceivedBytes);
+                if (device.GetType() == typeof(M1))
+                {
+                    //发现了一个M1
+                }
                 //ObservableCollection<Device> devices = DeviceFactory.CreateDevices(e.ReceivedBytes);
 
                 /*
@@ -112,17 +149,64 @@ namespace DeviceSetup_HyperWSN
 
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            FindComport();
-
-        }
-
+        
+        /// <summary>
+        /// 启动串口监听，如果选中循环监听，则持续监听
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnStartMonitor_Click(object sender, RoutedEventArgs e)
         {
             UartCommand = "CE 03 01 01 02 00 00 EC";
+
+            byte[] command = CommArithmetic.HexStringToByteArray(UartCommand);
+            //启动第一次监听
+            if (comport!=null)
+            {
+                int result = comport.SendCommand(command);
+            }
+            if(CBLoop.IsChecked==true)
+            {
+                monitorTimer = new Timer();
+                monitorTimer.Elapsed += MonitorTimer_Elapsed;
+                monitorTimer.Interval = 2050;
+                monitorTimer.Enabled = true;
+                btnStartMonitor.IsEnabled = false;
+                btnStopMonitor.IsEnabled = true;
+
+            }
+
             
 
+
+
+
+        }
+
+        private void MonitorTimer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            // new NotImplementedException();
+            UartCommand = "CE 03 01 01 02 00 00 EC";
+
+            byte[] command = CommArithmetic.HexStringToByteArray(UartCommand);
+            //启动循环监听
+            if (comport != null)
+            {
+                int result = comport.SendCommand(command);
+            }
+
+        }
+
+        private void btnStopMonitor_Click(object sender, RoutedEventArgs e)
+        {
+            if (monitorTimer!=null)
+            {
+                monitorTimer.Enabled = false;
+                monitorTimer.Dispose();
+                btnStartMonitor.IsEnabled = true;
+                btnStopMonitor.IsEnabled = false;
+
+            }
 
         }
     }

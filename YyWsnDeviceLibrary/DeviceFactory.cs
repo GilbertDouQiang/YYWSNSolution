@@ -19,13 +19,45 @@ namespace YyWsnDeviceLibrary
             if (SourceData == null)
                 return null;
 
+            //处理从USB Gateway收到的传感器数据
+            try
+            {
+                if (SourceData[0]==0xEC && SourceData[1]==0x4D && SourceData[4]==0x51)
+                {
+                    //发现M1 上电自检包
+                    if(SourceData.Length==82)
+                    {
+                        M1 sensorM1 = new M1(SourceData);
+                        if (sensorM1 != null)
+                        {
+                            return sensorM1;
+                        }
+
+                    }
+                       
+                }
+            }
+            catch (Exception)
+            {
+
+                return null;
+            }
+
+
             try
             {
                 //1101 监控工具获得的数据
                 for (int i = 0; i < SourceData.Length; i++)
                 {
+                    
+
+
+
                     if (SourceData[i] == 0xEA)
                     {
+                        
+
+
                         //首先进行有效性验证，不通过直接返回null
                         //01.长度校验
                         int LengthCheck = SourceData[i + 1] + i;

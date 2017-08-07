@@ -114,6 +114,30 @@ namespace YyWsnCommunicatonLibrary
             return null;
         }
 
+        public int SendCommand(byte[] CommandBytes)
+        {
+            //操作端口前，确保端口已经打开
+            if (!port1.IsOpen)
+            {
+                return -1;
+            }
+
+            try
+            {
+                port1.Write(CommandBytes, 0, CommandBytes.Length);
+                Logger.AddLogAutoTime("Send:\t\t" + CommArithmetic.ToHexString(CommandBytes));
+            }
+            catch (Exception)
+            {
+
+                return -2;
+            }
+
+            
+            
+            return 0;
+        }
+
         private void Timer_Elapsed(object sender, ElapsedEventArgs e)
         {
             isTimeout = true;
