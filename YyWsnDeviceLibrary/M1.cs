@@ -68,7 +68,13 @@ namespace YyWsnDeviceLibrary
 
                 Temperature = CommArithmetic.DecodeTemperature(SourceData, 73);
                 Humidity = CommArithmetic.DecodeHumidity(SourceData, 75);
-                RSSI = SourceData[30] - 256;
+                RSSI = SourceData[78] - 256;
+
+                //Falsh
+                FlashID = CommArithmetic.DecodeClientID(SourceData, 61);
+                FlashFront = SourceData[64] * 256 * 256 + SourceData[65] * 256 + SourceData[66];
+                FlashRear = SourceData[67] * 256 * 256 + SourceData[68] * 256 + SourceData[69];
+                FlashQueueLength = SourceData[70] * 256 * 256 + SourceData[71] * 256 + SourceData[72];
 
 
 
@@ -78,7 +84,8 @@ namespace YyWsnDeviceLibrary
 
 
 
-                
+
+
 
 
 

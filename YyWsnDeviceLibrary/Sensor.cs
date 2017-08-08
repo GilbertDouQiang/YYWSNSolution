@@ -23,6 +23,12 @@ namespace YyWsnDeviceLibrary
 
         public byte Frequency { get; set; }
 
+        public string FlashID { get; set; }
+
+        public Int32 FlashFront { get; set; }
+        public Int32 FlashRear { get; set; }
+        public Int32 FlashQueueLength { get; set; }
+
 
 
        

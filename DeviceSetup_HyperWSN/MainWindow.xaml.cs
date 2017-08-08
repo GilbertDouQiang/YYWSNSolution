@@ -362,7 +362,7 @@ namespace DeviceSetup_HyperWSN
 
                 updateDevice.Interval = Convert.ToInt32(txtNewInterval.Text);
                 updateDevice.TXTimers = Convert.ToByte(txtNewTXTimers.Text);
-                txtCalendar.Text = System.DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
+                txtCalendar.Text = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
                 updateDevice.Calendar = Convert.ToDateTime(txtCalendar.Text);
 
 
@@ -403,6 +403,17 @@ namespace DeviceSetup_HyperWSN
             {
                 txtNewInterval.Text = "30";
                 txtNewTXTimers.Text = "1";
+                txtTemperatureInfoLow.Text = "-15";
+                txtTemperatureInfoHigh.Text = "55";
+                txtTemperatureWarnLow.Text = "-25";
+                txtTemperatureWarnHigh.Text = "55";
+                txtHumidityInfoLow.Text = "30";
+                txtHumidityInfoHigh.Text = "80";
+                txtHumidityWarnLow.Text = "15";
+                txtHumidityWarnHigh.Text = "90";
+
+
+
             }
         }
     }
