@@ -10,6 +10,11 @@ namespace YyWsnDeviceLibrary
     {
         //public event PropertyChangedEventHandler PropertyChanged;
 
+        public M1()
+        {
+
+        }
+
         public M1(byte[] SourceData)
         {
             //上电自检数据
@@ -26,9 +31,12 @@ namespace YyWsnDeviceLibrary
                 byte[] debugBytes = new byte[2];
                 debugBytes[0] = SourceData[22];
                 debugBytes[1] = SourceData[23];
+
+                DebugString = CommArithmetic.DecodeClientID(SourceData, 22);
+
                 Debug = debugBytes;
                 Category = SourceData[24];
-                Interval = SourceData[25] * 256 + SourceData[27];
+                Interval = SourceData[25] * 256 + SourceData[26];
                 Calendar = CommArithmetic.DecodeDateTime(SourceData, 27);
 
 
@@ -55,6 +63,8 @@ namespace YyWsnDeviceLibrary
 
                 ICTemperature = SourceData[57];
                 Volt = Math.Round(Convert.ToDouble((SourceData[59] * 256 + SourceData[60])) / 1000, 2);
+
+                MaxLength = SourceData[63];
 
                 Temperature = CommArithmetic.DecodeTemperature(SourceData, 73);
                 Humidity = CommArithmetic.DecodeHumidity(SourceData, 75);
@@ -120,7 +130,157 @@ namespace YyWsnDeviceLibrary
 
         }
 
-        
+        public byte[] UpdateFactory()
+        {
+            byte[] updateBytes = new byte[21];
+            updateBytes[0] = 0xCE;
+            updateBytes[1] = 0x10;
+            updateBytes[2] = 0xA1;
+            updateBytes[3] = 0x01;
+            updateBytes[4] = 0x51;
+            updateBytes[5] = 0x02;
+
+            byte[] deviceMacBytes = CommArithmetic.HexStringToByteArray(DeviceMac);
+            updateBytes[6] = deviceMacBytes[0];
+            updateBytes[7] = deviceMacBytes[1];
+            updateBytes[8] = deviceMacBytes[2];
+            updateBytes[9] = deviceMacBytes[3];
+
+            deviceMacBytes = CommArithmetic.HexStringToByteArray(DeviceNewMAC);
+            updateBytes[10] = deviceMacBytes[0];
+            updateBytes[11] = deviceMacBytes[1];
+            updateBytes[12] = deviceMacBytes[2];
+            updateBytes[13] = deviceMacBytes[3];
+
+            deviceMacBytes = CommArithmetic.HexStringToByteArray(HardwareVersion);
+            updateBytes[14] = deviceMacBytes[0];
+            updateBytes[15] = deviceMacBytes[1];
+            updateBytes[16] = deviceMacBytes[2];
+            updateBytes[17] = deviceMacBytes[3];
+
+
+            updateBytes[18] = 0x00;
+            updateBytes[19] = 0x00;
+            updateBytes[20] = 0xEC;
+
+            //updateBytes[0] = 0xCE;
+
+
+
+
+            return updateBytes;
+        }
+
+        public byte[] UpdateUserConfig()
+        {
+            byte[] updateBytes = new byte[27];
+            updateBytes[0] = 0xCE;
+            updateBytes[1] = 0x16;
+            updateBytes[2] = 0xA2;
+            updateBytes[3] = 0x01;
+            updateBytes[4] = 0x51;
+            updateBytes[5] = 0x02;
+            //Mac
+            byte[] deviceMacBytes = CommArithmetic.HexStringToByteArray(DeviceMac);
+            updateBytes[6] = deviceMacBytes[0];
+            updateBytes[7] = deviceMacBytes[1];
+            updateBytes[8] = deviceMacBytes[2];
+            updateBytes[9] = deviceMacBytes[3];
+            //clientID
+            deviceMacBytes = CommArithmetic.HexStringToByteArray(ClientID);
+            updateBytes[10] = deviceMacBytes[0];
+            updateBytes[11] = deviceMacBytes[1];
+
+            //Debug
+            deviceMacBytes = CommArithmetic.HexStringToByteArray(DebugString);          
+            updateBytes[12] = deviceMacBytes[0];
+            updateBytes[13] = deviceMacBytes[1];
+
+            //category
+            updateBytes[14] = Category;
+            //WorkFunction
+            updateBytes[15] = WorkFunction;
+            //SymbolRate
+            updateBytes[16] = SymbolRate;
+            //TXPower
+            updateBytes[17] = TXPower;
+            //Frequency
+            updateBytes[18] = Frequency;
+
+            //温度补偿：TODO 暂未实现
+            updateBytes[19] = 0x00;
+            updateBytes[20] = 0x00;
+
+            //湿度补偿：TODO 暂未实现
+            updateBytes[21] = 0x00;
+            updateBytes[22] = 0x00;
+
+            updateBytes[23] = MaxLength;
+
+            //CRC：TODO 暂未实现
+            updateBytes[24] = 0x00;
+            updateBytes[25] = 0x00;
+
+
+            updateBytes[26] = 0xEC;
+
+            //updateBytes[0] = 0xCE;
+
+
+
+
+            return updateBytes;
+        }
+
+
+        public byte[] UpdateApplicationConfig()
+        {
+            byte[] updateBytes = new byte[38];
+            updateBytes[0] = 0xCE;
+            updateBytes[1] = 0x21;
+            updateBytes[2] = 0xA3;
+            updateBytes[3] = 0x01;
+            updateBytes[4] = 0x51;
+            updateBytes[5] = 0x02;
+            //Mac
+            byte[] deviceMacBytes = CommArithmetic.HexStringToByteArray(DeviceMac);
+            updateBytes[6] = deviceMacBytes[0];
+            updateBytes[7] = deviceMacBytes[1];
+            updateBytes[8] = deviceMacBytes[2];
+            updateBytes[9] = deviceMacBytes[3];
+            //Interval
+            deviceMacBytes = CommArithmetic.Int16_2Bytes(Interval);
+            updateBytes[10] = deviceMacBytes[0];
+            updateBytes[11] = deviceMacBytes[1];
+
+            //Calendar
+            deviceMacBytes = CommArithmetic.EncodeDateTime(Calendar);
+            updateBytes[12] = deviceMacBytes[0];
+            updateBytes[13] = deviceMacBytes[1];
+            updateBytes[14] = deviceMacBytes[2];
+            updateBytes[15] = deviceMacBytes[3];
+            updateBytes[16] = deviceMacBytes[4];
+            updateBytes[17] = deviceMacBytes[5];
+
+            updateBytes[18] = TXTimers;
+
+
+            //CRC：TODO 暂未实现
+            updateBytes[35] = 0x00;
+            updateBytes[36] = 0x00;
+
+
+            updateBytes[37] = 0xEC;
+
+            //updateBytes[0] = 0xCE;
+
+
+
+
+            return updateBytes;
+        }
+
+
         public double ICTemperature{ get; set; }
 
         public double Temperature { get; set; }
@@ -175,7 +335,9 @@ namespace YyWsnDeviceLibrary
         /// </summary>
         public double HumidityCompensation { get; set; }
 
+        public byte MaxLength { get; set; }
 
+        public string DebugString { get; set; }
 
 
 

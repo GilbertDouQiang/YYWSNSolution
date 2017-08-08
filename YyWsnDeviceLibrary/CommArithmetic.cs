@@ -144,6 +144,12 @@ namespace YyWsnDeviceLibrary
 
         }
 
+        /// <summary>
+        /// 将2个字节的数字转换成字节数组</br>
+        /// 适用于Interval的结算
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public static byte[] Int16_2Bytes(int source)
         {
             byte[] result = new byte[2];
@@ -155,7 +161,7 @@ namespace YyWsnDeviceLibrary
             else
             {
                 result[0] = (byte)(source / 256);
-                result[1] = 1;
+                result[1] =  (byte)(source-result[0]*256);
 
             }
 

@@ -75,7 +75,7 @@ namespace YyWsnDeviceLibrary
         /// <summary>
         /// Sensor的工作模式
         /// </summary>
-        public int WorkFunction { get; set; } //Pattern in protocol
+        public byte WorkFunction { get; set; } //Pattern in protocol
 
         /// <summary>
         /// 传输速率

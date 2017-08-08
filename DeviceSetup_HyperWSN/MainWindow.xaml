@@ -28,7 +28,7 @@
                     <ComboBox x:Name="cbSerialPort" Grid.Column="1" Margin="0 0 10 0" VerticalAlignment="Center"/>
                     <Button x:Name="btnOpenComport" Grid.Column="2" Content="Open" Click="btnOpenComport_Click"  Margin="0 0 10 0" VerticalAlignment="Center"/>
                     <Button x:Name="btnFindComport" Grid.Column="3" Content="Refersh" Click="btnFindComport_Click" Margin="0 0 10 0" VerticalAlignment="Center"/>
-                    
+
 
                 </Grid>
                 <Grid Margin="0 0 0 5">
@@ -39,7 +39,7 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="3*"/>
                         <ColumnDefinition Width="1*"/>
-                        
+
                     </Grid.ColumnDefinitions>
 
                     <CheckBox x:Name="CBLoop" Content="Loop" Grid.Column="1" />
@@ -53,7 +53,7 @@
         <Border Padding="5" Grid.Row="1">
             <TabControl Margin="5,-5,-5,5" >
                 <TabItem x:Name="tabM1" Header="M1 &amp; S1+ ">
-                    <StackPanel >
+                    <StackPanel x:Name="StackM1">
                         <Grid Margin="0 0 0 10" x:Name="btns">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -64,10 +64,6 @@
                                 <ColumnDefinition Width="4*"/>
 
                             </Grid.ColumnDefinitions>
-                            <Button  Grid.Column="0" Content="读取配置" x:Name="btnReadInfo"  Margin="0,0,10,0" />
-                            <Button  Grid.Column="1" Content="更新配置" x:Name="btnUpdateInfo"  Margin="0,0,10,0" />
-                            <Button  Grid.Column="2" Content="删除存储数据"  Margin="0,0,10,0"/>
-                            <Button  Grid.Column="3" Content="授时" x:Name="SetupDate"  Margin="0,0,10,0"/>
 
 
 
@@ -76,78 +72,240 @@
                         <Grid Margin="0 0 0 10">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="2*"/>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="2*"/>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="*"/>
 
                             </Grid.ColumnDefinitions>
-                            <TextBlock  Grid.Column="0" Text="MAC地址:" Margin="0,0,10,0" HorizontalAlignment="Right" />
-                            <TextBox x:Name="txtOldMac" Grid.Column="1" Padding="2" Margin="0 0 10 0"/>
-                            <TextBlock  Grid.Column="2" Text=" 新的MAC地址:" Margin="0,0,10,0" HorizontalAlignment="Right"/>
-                            <TextBox x:Name="txtNewMac" Grid.Column="3" Padding="2" Margin="0 0 10 0"/>
+                            <TextBlock  Grid.Column="0" Text="Device Type:" Margin="0,0,10,0" HorizontalAlignment="Right" />
+                            <TextBox x:Name="txtDeviceName" Text="{Binding Name}" Grid.Column="1" Padding="2" Margin="0 0 10 0"/>
+
+                            <TextBlock  Grid.Column="2" Text="Primary MAC:" Margin="0,0,10,0" HorizontalAlignment="Right" />
+                            <TextBox x:Name="txtPrimaryMAC" Text="{Binding PrimaryMAC}" Grid.Column="3" Padding="2" Margin="0 0 10 0"/>
+                            <TextBlock  Grid.Column="4" Text=" Device MAC:" Margin="0,0,10,0" HorizontalAlignment="Right"/>
+                            <TextBox x:Name="txtDeviceMAC" Text="{Binding DeviceMac}" Grid.Column="5" Padding="2" Margin="0 0 10 0"/>
+
+                            <TextBlock  Grid.Column="7" Text=" New MAC:" Margin="0,0,10,0" HorizontalAlignment="Right"/>
+                            <TextBox x:Name="txtNewDeviceMAC"  Grid.Column="8" Padding="2" Margin="0 0 10 0"/>
+                            <Button x:Name="btnUpdateFactory" Content="Update Factory" Grid.Column="9" Click="btnUpdateFactory_Click"  Margin="0,0,10,0"/>
+
+                        </Grid>
+
+                        <Grid Margin="0 0 0 20">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+
+                            </Grid.ColumnDefinitions>
+                            <TextBlock   Grid.Column="0" Text="硬件版本号:" Margin="0,0,9.5,0" HorizontalAlignment="Right" />
+                            <TextBox x:Name="txtHarewareVersion" Text="{Binding HardwareVersion}" Padding="2" Margin="100,0,9,0" Grid.ColumnSpan="2"/>
+                            <TextBlock  Grid.Column="2" Text=" 软件版本号:"  Margin="0,0,9,0" HorizontalAlignment="Right"/>
+                            <TextBox x:Name="txtSoftwareVersion" Text="{Binding SoftwareVersion}" Grid.Column="3" Padding="2" Margin="0,0,9.5,0"/>
+
+
+                            <TextBlock  Grid.Column="7" Text=" New Hareware:" Margin="0,0,10,0" HorizontalAlignment="Right"/>
+                            <TextBox x:Name="txtNewHardwareVersion"  Grid.Column="8" Padding="2" Margin="0,0,10,0"/>
+
+
+
+
+                        </Grid>
+                        <Grid Margin="0 0 0 10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+
+                            </Grid.ColumnDefinitions>
+                            <TextBlock  Grid.Column="0" Text=" 客户码:" Margin="0,0,9.5,0" HorizontalAlignment="Right"/>
+                            <TextBox x:Name="txtClientID" Text="{Binding ClientID}"  Grid.Column="1" Padding="2" Margin="0.5,0,10,0"/>
+                            <TextBox x:Name="txtNewClientID"   Grid.Column="2" Padding="2" Margin="0.5,0,10,0"/>
+                            <TextBlock   Grid.Column="3" Text="Debug状态:" Margin="0,0,9.5,0" HorizontalAlignment="Right" />
+                            <TextBox x:Name="txtDebug" Text="{Binding DebugString}" Padding="2" Margin="0,0,9.5,0" Grid.Column="4" />
+                            <TextBox x:Name="txtNewDebug"  Padding="2" Margin="0,0,9.5,0" Grid.Column="5" />
+                            <TextBlock  Grid.Column="6" Text=" 分类码:" Margin="0,0,9.5,0" HorizontalAlignment="Right"/>
+                            <TextBox x:Name="txtCategory" Text="{Binding Category}"  Grid.Column="7" Padding="2" Margin="0.5,0,10,0"   />
+                            <TextBox x:Name="txtNewCategory"   Grid.Column="8" Padding="2" Margin="0.5,0,10,0"   />
+                            <ComboBox x:Name="cbUserParameter" Grid.Column="10" Grid.ColumnSpan="2" SelectionChanged="cbUserParameter_SelectionChanged" />
+
 
                         </Grid>
 
                         <Grid Margin="0 0 0 10">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="2*"/>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="2*"/>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="2*"/>
                                 <ColumnDefinition Width="*"/>
-
-                            </Grid.ColumnDefinitions>
-                            <TextBlock   Grid.Column="0" Text="硬件版本号:" Margin="0,0,10,0" HorizontalAlignment="Right" />
-                            <TextBox x:Name="txtHarewareVersion" Grid.Column="1" Padding="2" Margin="0 0 10 0"/>
-                            <TextBlock  Grid.Column="2" Text=" 软件版本号:" Margin="0,0,10,0" HorizontalAlignment="Right"/>
-                            <TextBox x:Name="txtSoftwareVersion"  Grid.Column="3" Padding="2" Margin="0 0 10 0"/>
-                            <TextBlock  Grid.Column="4" Text=" 客户码:" Margin="0,0,10,0" HorizontalAlignment="Right"/>
-                            <TextBox x:Name="txtClientID"  Grid.Column="5" Padding="2" Margin="0 0 10 0"/>
-
-                        </Grid>
-
-                        <Grid Margin="0 0 0 10">
-                            <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="2*"/>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="2*"/>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="*"/>
 
                             </Grid.ColumnDefinitions>
-                            <TextBlock   Grid.Column="0" Text="Debug状态:" Margin="0,0,10,0" HorizontalAlignment="Right" />
-                            <TextBox x:Name="txtDebug" Grid.Column="1" Padding="2" Margin="0 0 10 0"/>
-                            <TextBlock  Grid.Column="2" Text=" 分类码:" Margin="0,0,10,0" HorizontalAlignment="Right"/>
-                            <TextBox x:Name="txtCategory"  Grid.Column="3" Padding="2" Margin="0 0 10 0"/>
-                            <TextBlock  Grid.Column="4" Text=" 时间间隔:" Margin="0,0,10,0" HorizontalAlignment="Right"/>
-                            <TextBox x:Name="txtInterval"  Grid.Column="5" Padding="2" Margin="0 0 10 0"/>
 
-                        </Grid>
-
-                        <Grid Margin="0 0 0 10">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="2*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="2*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="2*"/>
-                                <ColumnDefinition Width="*"/>
-
-                            </Grid.ColumnDefinitions>
                             <TextBlock   Grid.Column="0" Text="工作模式:" Margin="0,0,10,0" HorizontalAlignment="Right" />
-                            <TextBox x:Name="txtWorkFunction" Grid.Column="1" Padding="2" Margin="0 0 10 0"/>
-                            <TextBlock  Grid.Column="2" Text=" 设备时间:" Margin="0,0,10,0" HorizontalAlignment="Right"/>
-                            <TextBox x:Name="txtCalendar"  Grid.Column="3" Padding="2" Margin="0 0 10 0"/>
-                            <TextBlock  Grid.Column="4" Text="传输速率:" Margin="0,0,10,0" HorizontalAlignment="Right"/>
-                            <TextBox x:Name="txtSymbolRate"  Grid.Column="5" Padding="2" Margin="0 0 10 0"/>
+                            <TextBox x:Name="txtWorkFunction" Text="{Binding WorkFunction}"  Grid.Column="1" Padding="2" Margin="0 0 10 0"/>
+                            <TextBox x:Name="txtNewWorkFunction"   Grid.Column="2" Padding="2" Margin="0 0 10 0"/>
+                            <TextBlock   Grid.Column="3" Text="传输速率:" Margin="0,0,10,0" HorizontalAlignment="Right" />
+                            <TextBox x:Name="txtBPS" Text="{Binding SymbolRate}"  Grid.Column="4" Padding="2" Margin="0 0 10 0"/>
+                            <TextBox x:Name="txtNewBPS"   Grid.Column="5" Padding="2" Margin="0 0 10 0"/>
+                            <TextBlock   Grid.Column="6" Text="发射功率:" Margin="0,0,10,0" HorizontalAlignment="Right" />
+                            <TextBox x:Name="txtTXPower" Text="{Binding TXPower}"  Grid.Column="7" Padding="2" Margin="0 0 10 0"/>
+                            <TextBox x:Name="txtNewTXPower"  Grid.Column="8" Padding="2" Margin="0 0 10 0"/>
+                            <Button x:Name="btnUpdateUser" Content="Update User Config" Grid.Column="10" Grid.ColumnSpan="2" Click="btnUpdateUser_Click"  Margin="0.5,0,10,0" Height="21" VerticalAlignment="Top"/>
+
+
+                        </Grid>
+
+                        <Grid Margin="0 0 0 10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock   Grid.Column="0" Text="频段:" Margin="0,0,10,0" HorizontalAlignment="Right" />
+                            <TextBox x:Name="txtFrequency" Text="{Binding Frequency}" Grid.Column="1" Padding="2" Margin="0 0 10 0"/>
+                            <TextBox x:Name="txtNewFrequency"  Grid.Column="2" Padding="2" Margin="0 0 10 0"/>
+                            <TextBlock   Grid.Column="3" Text="温度补偿:" Margin="0,0,10,0" HorizontalAlignment="Right" />
+                            <TextBox x:Name="txtTemperatureCompensation" Text="{Binding TemperatureCompensation}" Grid.Column="4" Padding="2" Margin="0 0 10 0"/>
+                            <TextBox x:Name="txtNewTemperatureCompensation"  Grid.Column="5" Padding="2" Margin="0 0 10 0"/>
+                            <TextBlock   Grid.Column="6" Text="湿度补偿:" Margin="0,0,10,0" HorizontalAlignment="Right" />
+                            <TextBox x:Name="txtHumidityCompensation" Text="{Binding HumidityCompensation}" Grid.Column="7" Padding="2" Margin="0 0 10 0"/>
+                            <TextBox x:Name="txtNewHumidityCompensation"  Grid.Column="8" Padding="2" Margin="0,0,10,0"  Height="21" VerticalAlignment="Bottom"/>
+
+
+                        </Grid>
+
+                        <Grid Margin="0 0 0 20">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock   Grid.Column="0" Text="存储容量:" Margin="0,0,10,0" HorizontalAlignment="Right" />
+                            <TextBox x:Name="txtMaxLength" Text="{Binding MaxLength}" Grid.Column="1" Padding="2" Margin="0 0 10 0"/>
+                            <TextBox x:Name="txtNewMaxLength"  Grid.Column="2" Padding="2" Margin="0 0 10 0"/>
+
+
+                        </Grid>
+
+                        <Grid Margin="0 0 0 10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+
+                            </Grid.ColumnDefinitions>
+                            <TextBlock  Grid.Column="0" Text=" 采集间隔:" Margin="0,0,9.5,0" HorizontalAlignment="Right"/>
+                            <TextBox x:Name="txtInterval" Text="{Binding Interval}"  Grid.Column="1" Padding="2" Margin="0.5,0,10,0"/>
+                            <TextBox x:Name="txtNewInterval"  Grid.Column="2" Padding="2" Margin="0.5,0,10,0"/>
+                            <TextBlock   Grid.Column="3" Text="采/发倍数:" Margin="0,0,9.5,0" HorizontalAlignment="Right" />
+                            <TextBox x:Name="txtTXTimers" Text="{Binding TXTimers}" Padding="2" Margin="0,0,9.5,0" Grid.Column="4" />
+                            <TextBox x:Name="txtNewTXTimers"  Padding="2" Margin="0,0,9.5,0" Grid.Column="5" />
+                            <TextBlock  Grid.Column="6" Text=" 内部时钟:" Margin="0,0,9.5,0" HorizontalAlignment="Right"/>
+                            <TextBox x:Name="txtCalendar"   Grid.Column="7" Padding="2" Margin="0.5,0,10,0"   Grid.ColumnSpan="2">
+                                <TextBox.Text>
+                                    <Binding Path="Calendar" StringFormat="{}{0:yyyy-MM-dd HH:mm:ss}"/>
+                                </TextBox.Text>
+                            </TextBox>
+                            <ComboBox x:Name="cbUserApplication" Grid.Column="10" Grid.ColumnSpan="2" SelectionChanged="cbUserApplication_SelectionChanged" />
+
+
+                        </Grid>
+
+                        <Grid Margin="0 0 0 10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition Width="83.5"/>
+
+                            </Grid.ColumnDefinitions>
+
+                            <Button x:Name="btnUpdateApplication" Content="Update App Config" Grid.Column="10" Grid.ColumnSpan="2" Click="btnUpdateApplication_Click" Margin="0.5,0,10,0" Height="21" VerticalAlignment="Top"/>
+
+                        </Grid>
+
+                        <Grid Margin="0 0 0 10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="*"/>
+
+                            </Grid.ColumnDefinitions>
+
+
 
                         </Grid>
 
@@ -171,61 +329,7 @@
 
                         </Grid>
 
-                        <!--读取信息-->
-                        <Grid Margin="0 0 0 10" x:Name="btnReaders">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
 
-                            </Grid.ColumnDefinitions>
-
-                            <Button  Grid.Column="0" Content="读取数据" x:Name="ReadData"  Margin="0,0,10,0" VerticalAlignment="Center"/>
-                            <TextBlock  Grid.Column="1" Text="超时时间:" Margin="0,0,10,0"  HorizontalAlignment="Right" VerticalAlignment="Center" />
-                            <TextBox x:Name="txtReadTimeout"  Grid.Column="2" Padding="2" Text="1000" Margin="0 0 3 0" VerticalAlignment="Center"/>
-                            <TextBlock  Grid.Column="3" Text="ms" Margin="0,0,10,0" VerticalAlignment="Center"  />
-                            <CheckBox x:Name="chkLoop" Content="循环读取" Grid.Column="4" VerticalAlignment="Center"/>
-                            <TextBlock  Grid.Column="5" Text="间隔时间:" Margin="0,0,10,0"  HorizontalAlignment="Right" VerticalAlignment="Center" />
-                            <TextBox x:Name="txtReadInterval"  Grid.Column="6" Padding="2" Text="1000" Margin="0,0,2.5,0" VerticalAlignment="Bottom"/>
-                            <TextBlock  Grid.Column="7" Text="ms" Margin="0,0,10,0"  />
-
-                        </Grid>
-                        <DataGrid  x:Name="dgM1" AutoGenerateColumns="False">
-                            <DataGrid.Columns>
-
-                                <DataGridTextColumn Header="SN" Binding="{Binding DisplayID}" />
-                                <DataGridTextColumn Header="工作模式" Binding="{Binding WorkFunction}" />
-                                <DataGridTextColumn Header="协议版本" Binding="{Binding ProtocolVersion}" />
-                                <DataGridTextColumn Header="客户码" Binding="{Binding ClientID}" />
-
-                                <DataGridTextColumn Header="MAC" Binding="{Binding DeviceMac}" />
-                                <DataGridTextColumn Header="传输序列号" Binding="{Binding SensorSN}" />
-                                <DataGridTextColumn Header="IC温度℃" Binding="{Binding ICTemperature}" />
-                                <DataGridTextColumn Header="电压V" Binding="{Binding Volt}" />
-
-                                <DataGridTextColumn Header="温度℃" Binding="{Binding Temperature}" />
-
-
-                                <DataGridTextColumn Header="湿度%" Binding="{Binding Humidity}" />
-
-
-
-                                <DataGridTextColumn Header="信号强度" Binding="{Binding RSSI}" />
-
-                                <DataGridTextColumn Header="元数据" Binding="{Binding SourceData}" />
-
-
-
-
-
-                            </DataGrid.Columns>
-                        </DataGrid>
 
 
 
