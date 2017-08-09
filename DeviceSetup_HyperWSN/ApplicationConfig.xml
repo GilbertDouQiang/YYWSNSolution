@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ApplicationConfig>
+  <Loop>0</Loop>
+  <DeviceMac>10000000</DeviceMac>
+  <HardwareVersion>A1 10 10 01</HardwareVersion>
+  <LicenseKey></LicenseKey>
+</ApplicationConfig>

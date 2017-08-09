@@ -40,6 +40,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ApplicationConfig.cs" />
     <Compile Include="FileHelper.cs" />
     <Compile Include="HardwareEnum.cs" />
     <Compile Include="Logger.cs" />

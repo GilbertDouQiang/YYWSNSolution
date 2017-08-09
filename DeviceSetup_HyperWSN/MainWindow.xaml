@@ -111,13 +111,13 @@
                                 <ColumnDefinition Width="*"/>
 
                             </Grid.ColumnDefinitions>
-                            <TextBlock   Grid.Column="0" Text="硬件版本号:" Margin="0,0,9.5,0" HorizontalAlignment="Right" />
-                            <TextBox x:Name="txtHarewareVersion" Text="{Binding HardwareVersion}" Padding="2" Margin="100,0,9,0" Grid.ColumnSpan="2"/>
+                            <TextBlock   Grid.Column="4" Text="硬件版本号:" Margin="0,0,9.5,0" HorizontalAlignment="Right" />
+                            <TextBox x:Name="txtHarewareVersion" Text="{Binding HardwareVersion}" Padding="2" Margin="0,0,10,0" Grid.Column="5"/>
                             <TextBlock  Grid.Column="2" Text=" 软件版本号:"  Margin="0,0,9,0" HorizontalAlignment="Right"/>
                             <TextBox x:Name="txtSoftwareVersion" Text="{Binding SoftwareVersion}" Grid.Column="3" Padding="2" Margin="0,0,9.5,0"/>
 
 
-                            <TextBlock  Grid.Column="7" Text=" New Hareware:" Margin="0,0,10,0" HorizontalAlignment="Right"/>
+                            <TextBlock  Grid.Column="7" Text="新硬件版本号:" Margin="0,0,10,0" HorizontalAlignment="Right"/>
                             <TextBox x:Name="txtNewHardwareVersion"  Grid.Column="8" Padding="2" Margin="0,0,10,0"/>
 
 
@@ -294,7 +294,7 @@
                             <TextBlock   Grid.Column="3" Text="预警温度(高):" Margin="0,0,9.5,0" HorizontalAlignment="Right" />
                             <TextBox  Text="{Binding TemperatureInfoHigh}" Padding="2" Margin="0,0,9.5,0" Grid.Column="4" />
                             <TextBox x:Name="txtTemperatureInfoHigh"  Padding="2" Margin="0,0,9.5,0" Grid.Column="5" />
-                            <Button x:Name="btnUpdateApplication" Content="Update App Config" Grid.Column="10" Grid.ColumnSpan="2" Click="btnUpdateApplication_Click" Margin="0.5,0,10,0" Height="21" VerticalAlignment="Top"/>
+                            <Button x:Name="btnUpdateApplication" Content="Update App Config" Grid.Column="10" Grid.ColumnSpan="2" Click="btnUpdateApplication_Click" Margin="0.5,0,10,0"/>
 
                         </Grid>
 
@@ -437,8 +437,8 @@
 
                             <TextBlock   Grid.Column="6" Text="Queue Len:" Margin="0,0,10,0" HorizontalAlignment="Right" />
                             <TextBox  Text="{Binding FlashQueueLength}" Grid.Column="7" Padding="2" Margin="0 0 10 0"/>
-                            
 
+                            <Button x:Name="btnDeleteData" Content="Delete Data" Grid.Column="10" Grid.ColumnSpan="2" Click="btnDeleteData_Click"    Margin="0.5,0,10,0"/>
 
 
 

@@ -365,6 +365,17 @@ namespace DeviceSetup_HyperWSN
                 txtCalendar.Text = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
                 updateDevice.Calendar = Convert.ToDateTime(txtCalendar.Text);
 
+                updateDevice.TemperatureInfoLow = Convert.ToDouble(txtTemperatureInfoLow.Text);
+                updateDevice.TemperatureInfoHigh = Convert.ToDouble(txtTemperatureInfoHigh.Text);
+                updateDevice.TemperatureWarnLow = Convert.ToDouble(txtTemperatureWarnLow.Text);
+                updateDevice.TemperatureWarnHigh = Convert.ToDouble(txtTemperatureWarnHigh.Text);
+
+                updateDevice.HumidityInfoLow = Convert.ToDouble(txtHumidityInfoLow.Text);
+                updateDevice.HumidityInfoHigh = Convert.ToDouble(txtHumidityInfoHigh.Text);
+                updateDevice.HumidityWarnLow = Convert.ToDouble(txtHumidityWarnLow.Text);
+                updateDevice.HumidityWarnHigh = Convert.ToDouble(txtHumidityWarnHigh.Text);
+
+
 
 
                 byte[] updateCommand = updateDevice.UpdateApplicationConfig();
@@ -415,6 +426,43 @@ namespace DeviceSetup_HyperWSN
 
 
             }
+        }
+
+        private void btnDeleteData_Click(object sender, RoutedEventArgs e)
+        {
+            M1 updateDevice = new M1();
+
+            try
+            {
+                updateDevice.DeviceMac = txtDeviceMAC.Text;
+
+                byte[] updateCommand = updateDevice.DeleteData();
+                string updateString = CommArithmetic.ToHexString(updateCommand);
+                if (monitorTimer.Enabled == true)
+                {
+                    monitorTimer.Enabled = false;
+
+                    System.Threading.Thread.Sleep(2000); //界面会卡
+
+                    comport.SendCommand(updateCommand);
+
+                    System.Threading.Thread.Sleep(200); //界面会卡
+
+                    StartMonitor();
+                    monitorTimer.Enabled = true;
+
+
+
+
+                }
+
+            }
+            catch (Exception ex)
+            {
+
+                MessageBox.Show("参数错误：" + ex.Message);
+            }
+
         }
     }
 }

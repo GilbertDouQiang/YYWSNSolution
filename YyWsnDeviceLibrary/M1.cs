@@ -61,7 +61,7 @@ namespace YyWsnDeviceLibrary
                 TemperatureCompensation = CommArithmetic.DecodeTemperature(SourceData, 54);
                 HumidityCompensation = CommArithmetic.DecodeHumidity(SourceData, 56);
 
-                ICTemperature = SourceData[57];
+                ICTemperature = SourceData[58];
                 Volt = Math.Round(Convert.ToDouble((SourceData[59] * 256 + SourceData[60])) / 1000, 2);
 
                 MaxLength = SourceData[63];
@@ -271,6 +271,40 @@ namespace YyWsnDeviceLibrary
 
             updateBytes[18] = TXTimers;
 
+            deviceMacBytes = CommArithmetic.Double_2Bytes(TemperatureInfoHigh);
+            updateBytes[19] = deviceMacBytes[0];
+            updateBytes[20] = deviceMacBytes[1];
+
+            deviceMacBytes = CommArithmetic.Double_2Bytes(TemperatureInfoLow);
+            updateBytes[21] = deviceMacBytes[0];
+            updateBytes[22] = deviceMacBytes[1];
+
+            deviceMacBytes = CommArithmetic.Double_2Bytes(HumidityInfoHigh);
+            updateBytes[23] = deviceMacBytes[0];
+            updateBytes[24] = deviceMacBytes[1];
+
+            deviceMacBytes = CommArithmetic.Double_2Bytes(HumidityInfoLow);
+            updateBytes[25] = deviceMacBytes[0];
+            updateBytes[26] = deviceMacBytes[1];
+
+            deviceMacBytes = CommArithmetic.Double_2Bytes(TemperatureWarnHigh);
+            updateBytes[27] = deviceMacBytes[0];
+            updateBytes[28] = deviceMacBytes[1];
+
+
+            deviceMacBytes = CommArithmetic.Double_2Bytes(TemperatureWarnLow);
+            updateBytes[29] = deviceMacBytes[0];
+            updateBytes[30] = deviceMacBytes[1];
+
+            deviceMacBytes = CommArithmetic.Double_2Bytes(HumidityWarnHigh);
+            updateBytes[31] = deviceMacBytes[0];
+            updateBytes[32] = deviceMacBytes[1];
+
+            deviceMacBytes = CommArithmetic.Double_2Bytes(HumidityWarnLow);
+            updateBytes[33] = deviceMacBytes[0];
+            updateBytes[34] = deviceMacBytes[1];
+
+
 
             //CRC：TODO 暂未实现
             updateBytes[35] = 0x00;
@@ -280,6 +314,33 @@ namespace YyWsnDeviceLibrary
             updateBytes[37] = 0xEC;
 
             //updateBytes[0] = 0xCE;
+
+
+
+
+            return updateBytes;
+        }
+
+        public byte[] DeleteData()
+        {
+            byte[] updateBytes = new byte[19];
+            updateBytes[0] = 0xCE;
+            updateBytes[1] = 0x0E;
+            updateBytes[2] = 0xA4;
+            updateBytes[3] = 0x01;
+            updateBytes[4] = 0x51;
+            updateBytes[5] = 0x02;
+
+            byte[] deviceMacBytes = CommArithmetic.HexStringToByteArray(DeviceMac);
+            updateBytes[6] = deviceMacBytes[0];
+            updateBytes[7] = deviceMacBytes[1];
+            updateBytes[8] = deviceMacBytes[2];
+            updateBytes[9] = deviceMacBytes[3];
+
+           
+            updateBytes[18] = 0xEC;
+
+           
 
 
 

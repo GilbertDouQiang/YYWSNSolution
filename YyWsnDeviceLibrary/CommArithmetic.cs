@@ -170,6 +170,37 @@ namespace YyWsnDeviceLibrary
         }
 
         /// <summary>
+        /// 将2个字节的浮点数转换成字节数组</br>
+        /// 适用于温湿度各种阈值的反相的解算
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public static byte[] Double_2Bytes(double source)
+        {
+            source = source * 100;
+            if (source<0)
+            {
+                source += 65536;
+            }
+
+            byte[] result = new byte[2];
+            if (source < 256)
+            {
+                result[0] = 0;
+                result[1] = (byte)source;
+            }
+            else
+            {
+                result[0] = (byte)(source / 256);
+                result[1] = (byte)(source - result[0] * 256);
+
+            }
+
+
+            return result;
+        }
+
+        /// <summary>
         /// 将温度16进制字节数组，转换为浮点数
         /// </summary>
         /// <param name="SourceData"></param>
