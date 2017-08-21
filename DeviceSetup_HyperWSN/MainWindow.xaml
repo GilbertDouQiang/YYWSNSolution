@@ -43,7 +43,7 @@
                     </Grid.ColumnDefinitions>
 
                     <CheckBox x:Name="CBLoop" Content="Loop" Grid.Column="1" />
-                    <Button x:Name="btnStartMonitor" Grid.Column="2" Click="btnStartMonitor_Click" Content="Start Monitor"   Margin="0 0 10 0" VerticalAlignment="Center"/>
+                    <Button x:Name="btnStartMonitor" Grid.Column="2" Click="btnStartMonitor_Click" Content="Start Monitor"   Margin="0 0 10 0" VerticalAlignment="Top"/>
                     <Button x:Name="btnStopMonitor" Grid.Column="3" Content="Stop Monitor"  Click="btnStopMonitor_Click"   Margin="0 0 10 0" VerticalAlignment="Center"/>
 
 
@@ -347,7 +347,7 @@
                             <TextBlock   Grid.Column="3" Text="预警湿度(高):" Margin="0,0,9.5,0" HorizontalAlignment="Right" />
                             <TextBox  Text="{Binding HumidityInfoHigh}" Padding="2" Margin="0,0,9.5,0" Grid.Column="4" />
                             <TextBox x:Name="txtHumidityInfoHigh"  Padding="2" Margin="0,0,9.5,0" Grid.Column="5" />
-                            
+
                         </Grid>
 
                         <Grid Margin="0 0 0 30">
@@ -460,7 +460,422 @@
 
                         </Grid>
 
-                       
+
+
+
+
+
+                    </StackPanel>
+                </TabItem>
+                <TabItem x:Name="tabSocket1" Header="Socket1 " Height="21" Margin="-2.5,-2,-2.5,0" VerticalAlignment="Bottom">
+                    <StackPanel x:Name="StackSocket1">
+                        <Grid Margin="0 0 0 10" >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="4*"/>
+
+                            </Grid.ColumnDefinitions>
+
+
+
+                        </Grid>
+
+                        <Grid Margin="0 0 0 10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+
+                            </Grid.ColumnDefinitions>
+                            <TextBlock  Grid.Column="0" Text="Device Type:" Margin="0,0,10,0" HorizontalAlignment="Right" />
+                            <TextBox x:Name="txtDeviceNameSocket1" Text="{Binding Name}" Grid.Column="1" Padding="2" Margin="0 0 10 0"/>
+
+                            <TextBlock  Grid.Column="2" Text="Primary MAC:" Margin="0,0,10,0" HorizontalAlignment="Right" />
+                            <TextBox x:Name="txtPrimaryMACSocket1" Text="{Binding PrimaryMAC}" Grid.Column="3" Padding="2" Margin="0 0 10 0"/>
+                            <TextBlock  Grid.Column="4" Text=" Device MAC:" Margin="0,0,10,0" HorizontalAlignment="Right"/>
+                            <TextBox x:Name="txtDeviceMACSocket1" Text="{Binding DeviceMac}" Grid.Column="5" Padding="2" Margin="0 0 10 0"/>
+
+                            <TextBlock  Grid.Column="7" Text=" New MAC:" Margin="0,0,10,0" HorizontalAlignment="Right"/>
+                            <TextBox x:Name="txtNewDeviceMACSocket1"  Grid.Column="8" Padding="2" Margin="0 0 10 0"/>
+                            <Button x:Name="btnUpdateFactorySocket1" Content="Update Factory" Grid.Column="8"     Margin="99.5,0,10,0" Grid.ColumnSpan="2" Click="btnUpdateFactorySocket1_Click"/>
+
+                        </Grid>
+
+                        <Grid Margin="0 0 0 30">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+
+                            </Grid.ColumnDefinitions>
+                            <TextBlock   Grid.Column="4" Text="硬件版本号:" Margin="0,0,9.5,0" HorizontalAlignment="Right" />
+                            <TextBox x:Name="txtHarewareVersionSocket1" Text="{Binding HardwareVersion}" Padding="2" Margin="0,0,10,0" Grid.Column="5"/>
+                            <TextBlock  Grid.Column="2" Text=" 软件版本号:"  Margin="0,0,9,0" HorizontalAlignment="Right"/>
+                            <TextBox x:Name="txtSoftwareVersionSocket1" Text="{Binding SoftwareVersion}" Grid.Column="3" Padding="2" Margin="0,0,9.5,0"/>
+
+
+                            <TextBlock  Grid.Column="7" Text="新硬件版本号:" Margin="0,0,10,0" HorizontalAlignment="Right"/>
+                            <TextBox x:Name="txtNewHardwareVersionSocket1"  Grid.Column="8" Padding="2" Margin="0,0,10,0"/>
+
+
+
+
+                        </Grid>
+                        <Grid Margin="0 0 0 10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+
+                            </Grid.ColumnDefinitions>
+                            <TextBlock  Grid.Column="0" Text=" 客户码:" Margin="0,0,9.5,0" HorizontalAlignment="Right"/>
+                            <TextBox Text="{Binding ClientID}"  Grid.Column="1" Padding="2" Margin="0.5,0,10,0"/>
+                            <TextBox x:Name="txtNewClientIDSocket1"   Grid.Column="2" Padding="2" Margin="0.5,0,10,0"/>
+                            <TextBlock   Grid.Column="3" Text="Debug状态:" Margin="0,0,9.5,0" HorizontalAlignment="Right" />
+                            <TextBox  Text="{Binding DebugString}" Padding="2" Margin="0,0,9.5,0" Grid.Column="4" />
+                            <TextBox x:Name="txtNewDebugSocket1"  Padding="2" Margin="0,0,9.5,0" Grid.Column="5" />
+                            <TextBlock  Grid.Column="6" Text=" 分类码:" Margin="0,0,9.5,0" HorizontalAlignment="Right"/>
+                            <TextBox  Text="{Binding Category}"  Grid.Column="7" Padding="2" Margin="0.5,0,10,0"   />
+                            <TextBox x:Name="txtNewCategorySocket1"   Grid.Column="8" Padding="2" Margin="0.5,0,10,0"   />
+                            <ComboBox x:Name="cbUserParameterSocket1" Grid.Column="10" Grid.ColumnSpan="2" SelectionChanged="cbUserParameter_SelectionChanged" />
+
+
+                        </Grid>
+
+                        <Grid Margin="0 0 0 10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock   Grid.Column="0" Text="工作模式:" Margin="0,0,10,0" HorizontalAlignment="Right" />
+                            <TextBox  Text="{Binding WorkFunction}"  Grid.Column="1" Padding="2" Margin="0 0 10 0"/>
+                            <TextBox x:Name="txtNewWorkFunctionSocket1"   Grid.Column="2" Padding="2" Margin="0 0 10 0"/>
+                            <TextBlock   Grid.Column="3" Text="传输速率:" Margin="0,0,10,0" HorizontalAlignment="Right" />
+                            <TextBox  Text="{Binding SymbolRate}"  Grid.Column="4" Padding="2" Margin="0 0 10 0"/>
+                            <TextBox x:Name="txtNewBPSSocket1"   Grid.Column="5" Padding="2" Margin="0 0 10 0"/>
+                            <TextBlock   Grid.Column="6" Text="发射功率:" Margin="0,0,10,0" HorizontalAlignment="Right" />
+                            <TextBox  Text="{Binding TXPower}"  Grid.Column="7" Padding="2" Margin="0 0 10 0"/>
+                            <TextBox x:Name="txtNewTXPowerSocket1"  Grid.Column="8" Padding="2" Margin="0 0 10 0"/>
+                            <Button x:Name="btnUpdateUserSocket1" Content="Update User Config" Grid.Column="10" Grid.ColumnSpan="2" Click="btnUpdateUser_Click"  Margin="0.5,0,10,0" Height="21" VerticalAlignment="Top"/>
+
+
+                        </Grid>
+
+                        <Grid Margin="0 0 0 10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock   Grid.Column="0" Text="频段:" Margin="0,0,10,0" HorizontalAlignment="Right" />
+                            <TextBox  Text="{Binding Frequency}" Grid.Column="1" Padding="2" Margin="0 0 10 0"/>
+                            <TextBox x:Name="txtNewFrequencySocket1"  Grid.Column="2" Padding="2" Margin="0 0 10 0"/>
+                            <TextBlock   Grid.Column="3" Text="温度补偿:" Margin="0,0,10,0" HorizontalAlignment="Right" />
+                            <TextBox  Text="{Binding TemperatureCompensation}" Grid.Column="4" Padding="2" Margin="0 0 10 0"/>
+                            <TextBox   Grid.Column="5" Padding="2" Margin="0 0 10 0"/>
+                            <TextBlock   Grid.Column="6" Text="湿度补偿:" Margin="0,0,10,0" HorizontalAlignment="Right" />
+                            <TextBox  Text="{Binding HumidityCompensation}" Grid.Column="7" Padding="2" Margin="0 0 10 0"/>
+                            <TextBox   Grid.Column="8" Padding="2" Margin="0,0,10,0"  Height="21" VerticalAlignment="Bottom"/>
+
+
+                        </Grid>
+
+                        <Grid Margin="0 0 0 20">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock   Grid.Column="0" Text="存储容量:" Margin="0,0,10,0" HorizontalAlignment="Right" />
+                            <TextBox x:Name="txtMaxLengthSocket1" Text="{Binding MaxLength}" Grid.Column="1" Padding="2" Margin="0 0 10 0"/>
+                            <TextBox x:Name="txtNewMaxLengthSocket1"  Grid.Column="2" Padding="2" Margin="0 0 10 0"/>
+
+
+                        </Grid>
+
+                        <Grid Margin="0 0 0 10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+
+                            </Grid.ColumnDefinitions>
+                            <TextBlock  Grid.Column="0" Text=" 采集间隔:" Margin="0,0,9.5,0" HorizontalAlignment="Right"/>
+                            <TextBox Text="{Binding Interval}"  Grid.Column="1" Padding="2" Margin="0.5,0,10,0"/>
+                            <TextBox x:Name="txtNewIntervalSocket1"  Grid.Column="2" Padding="2" Margin="0.5,0,10,0"/>
+                            <TextBlock   Grid.Column="3" Text="采/发倍数:" Margin="0,0,9.5,0" HorizontalAlignment="Right" />
+                            <TextBox  Text="{Binding TXTimers}" Padding="2" Margin="0,0,9.5,0" Grid.Column="4" />
+                            <TextBox x:Name="txtNewTXTimersSocket1"  Padding="2" Margin="0,0,9.5,0" Grid.Column="5" />
+                            <TextBlock  Grid.Column="6" Text=" 内部时钟:" Margin="0,0,9.5,0" HorizontalAlignment="Right"/>
+                            <TextBox x:Name="txtCalendarSocket1"   Grid.Column="7" Padding="2" Margin="0.5,0,10,0"   Grid.ColumnSpan="2">
+                                <TextBox.Text>
+                                    <Binding Path="Calendar" StringFormat="{}{0:yyyy-MM-dd HH:mm:ss}"/>
+                                </TextBox.Text>
+                            </TextBox>
+                            <ComboBox x:Name="cbUserApplicationSocket1" Grid.Column="10" Grid.ColumnSpan="2" SelectionChanged="cbUserApplication_SelectionChanged" />
+
+
+                        </Grid>
+
+                        <Grid Margin="0 0 0 10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+
+                            </Grid.ColumnDefinitions>
+                            <TextBlock  Grid.Column="0" Text=" 预警温度(低):" Margin="0,0,9.5,0" HorizontalAlignment="Right"/>
+                            <TextBox Text="{Binding TemperatureInfoLow}"  Grid.Column="1" Padding="2" Margin="0.5,0,10,0"/>
+                            <TextBox  Grid.Column="2" Padding="2" Margin="0.5,0,10,0"/>
+                            <TextBlock   Grid.Column="3" Text="预警温度(高):" Margin="0,0,9.5,0" HorizontalAlignment="Right" />
+                            <TextBox  Text="{Binding TemperatureInfoHigh}" Padding="2" Margin="0,0,9.5,0" Grid.Column="4" />
+                            <TextBox   Padding="2" Margin="0,0,9.5,0" Grid.Column="5" />
+                            <Button  Content="Update App Config" Grid.Column="10" Grid.ColumnSpan="2" Click="btnUpdateApplication_Click" Margin="0.5,0,10,0"/>
+
+                        </Grid>
+
+                        <Grid Margin="0 0 0 10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition Width="83.5"/>
+
+                            </Grid.ColumnDefinitions>
+                            <TextBlock  Grid.Column="0" Text=" 报警温度(低):" Margin="0,0,9.5,0" HorizontalAlignment="Right"/>
+                            <TextBox Text="{Binding TemperatureWarnLow}"  Grid.Column="1" Padding="2" Margin="0.5,0,10,0"/>
+                            <TextBox   Grid.Column="2" Padding="2" Margin="0.5,0,10,0"/>
+                            <TextBlock   Grid.Column="3" Text="报警温度(高):" Margin="0,0,9.5,0" HorizontalAlignment="Right" />
+                            <TextBox  Text="{Binding TemperatureWarnHigh}" Padding="2" Margin="0,0,9.5,0" Grid.Column="4" />
+                            <TextBox   Padding="2" Margin="0,0,9.5,0" Grid.Column="5" />
+
+
+
+                        </Grid>
+
+                        <Grid Margin="0 0 0 10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+
+                            </Grid.ColumnDefinitions>
+                            <TextBlock  Grid.Column="0" Text=" 预警湿度(低):" Margin="0,0,9.5,0" HorizontalAlignment="Right"/>
+                            <TextBox Text="{Binding HumidityInfoLow}"  Grid.Column="1" Padding="2" Margin="0.5,0,10,0"/>
+                            <TextBox  Grid.Column="2" Padding="2" Margin="0.5,0,10,0"/>
+                            <TextBlock   Grid.Column="3" Text="预警湿度(高):" Margin="0,0,9.5,0" HorizontalAlignment="Right" />
+                            <TextBox  Text="{Binding HumidityInfoHigh}" Padding="2" Margin="0,0,9.5,0" Grid.Column="4" />
+                            <TextBox  Padding="2" Margin="0,0,9.5,0" Grid.Column="5" />
+
+                        </Grid>
+
+                        <Grid Margin="0 0 0 30">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition Width="83.5"/>
+
+                            </Grid.ColumnDefinitions>
+                            <TextBlock  Grid.Column="0" Text=" 报警湿度(低):" Margin="0,0,9.5,0" HorizontalAlignment="Right"/>
+                            <TextBox Text="{Binding HumidityWarnLow}"  Grid.Column="1" Padding="2" Margin="0.5,0,10,0"/>
+                            <TextBox  Grid.Column="2" Padding="2" Margin="0.5,0,10,0"/>
+                            <TextBlock   Grid.Column="3" Text="报警湿度(高):" Margin="0,0,9.5,0" HorizontalAlignment="Right" />
+                            <TextBox  Text="{Binding HumidityWarnHigh}" Padding="2" Margin="0,0,9.5,0" Grid.Column="4" />
+                            <TextBox  Padding="2" Margin="0,0,9.5,0" Grid.Column="5" />
+
+
+
+                        </Grid>
+
+
+
+                        <Grid Margin="0 0 0 10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition Width="83.5"/>
+
+                            </Grid.ColumnDefinitions>
+                            <TextBlock   Grid.Column="0" Text="IC温度:" Margin="0,0,10,0" HorizontalAlignment="Right" />
+                            <TextBox  Text="{Binding ICTemperature}" Grid.Column="1" Padding="2" Margin="0 0 10 0"/>
+                            <TextBlock   Grid.Column="2" Text="温度:" Margin="0,0,10,0" HorizontalAlignment="Right" />
+                            <TextBox  Text="{Binding Temperature}" Grid.Column="3" Padding="2" Margin="0 0 10 0"/>
+                            <TextBlock   Grid.Column="4" Text="湿度:" Margin="0,0,10,0" HorizontalAlignment="Right" />
+                            <TextBox  Text="{Binding Humidity}" Grid.Column="5" Padding="2" Margin="0 0 10 0"/>
+
+                            <TextBlock   Grid.Column="6" Text="电压:" Margin="0,0,10,0" HorizontalAlignment="Right" />
+                            <TextBox  Text="{Binding Volt}" Grid.Column="7" Padding="2" Margin="0 0 10 0"/>
+                            <TextBlock   Grid.Column="8" Text="RSSI:" Margin="0,0,10,0" HorizontalAlignment="Right" />
+                            <TextBox  Text="{Binding RSSI}" Grid.Column="9" Padding="2" Margin="0 0 10 0"/>
+
+
+
+
+                        </Grid>
+
+                        <Grid Margin="0 0 0 10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition Width="83.5"/>
+
+                            </Grid.ColumnDefinitions>
+                            <TextBlock   Grid.Column="0" Text="Flash ID:" Margin="0,0,10,0" HorizontalAlignment="Right" />
+                            <TextBox  Text="{Binding FlashID}" Grid.Column="1" Padding="2" Margin="0 0 10 0"/>
+                            <TextBlock   Grid.Column="2" Text="Front:" Margin="0,0,10,0" HorizontalAlignment="Right" />
+                            <TextBox  Text="{Binding FlashFront}" Grid.Column="3" Padding="2" Margin="0 0 10 0"/>
+                            <TextBlock   Grid.Column="4" Text="Rear:" Margin="0,0,10,0" HorizontalAlignment="Right" />
+                            <TextBox  Text="{Binding FlashRear}" Grid.Column="5" Padding="2" Margin="0 0 10 0"/>
+
+                            <TextBlock   Grid.Column="6" Text="Queue Len:" Margin="0,0,10,0" HorizontalAlignment="Right" />
+                            <TextBox  Text="{Binding FlashQueueLength}" Grid.Column="7" Padding="2" Margin="0 0 10 0"/>
+
+                            <Button x:Name="btnDeleteDataSocket1" Content="Delete Data" Grid.Column="10" Grid.ColumnSpan="2" Click="btnDeleteData_Click"    Margin="0.5,0,10,0"/>
+
+
+
+                        </Grid>
+
+                        <Grid Margin="0 0 0 10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="*"/>
+
+                            </Grid.ColumnDefinitions>
+
+
+
+                        </Grid>
+
+
 
 
 

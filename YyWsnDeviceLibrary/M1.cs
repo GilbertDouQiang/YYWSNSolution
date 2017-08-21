@@ -349,7 +349,7 @@ namespace YyWsnDeviceLibrary
         }
 
 
-        public double ICTemperature{ get; set; }
+        
 
         public double Temperature { get; set; }
 
@@ -403,9 +403,9 @@ namespace YyWsnDeviceLibrary
         /// </summary>
         public double HumidityCompensation { get; set; }
 
-        public byte MaxLength { get; set; }
+      
 
-        public string DebugString { get; set; }
+       
 
 
 

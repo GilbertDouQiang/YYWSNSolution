@@ -14,6 +14,7 @@ using System.Windows.Shapes;
 using YyWsnCommunicatonLibrary;
 using YyWsnDeviceLibrary;
 using System.Timers;
+using System.Windows.Threading;
 
 namespace DeviceSetup_HyperWSN
 {
@@ -26,6 +27,7 @@ namespace DeviceSetup_HyperWSN
         String UartCommand;
         Timer monitorTimer;
         M1 m1Device;
+        bool continueFlag = false; //是否需要继续监听的控制位
 
 
         public MainWindow()
@@ -122,36 +124,70 @@ namespace DeviceSetup_HyperWSN
 
         private void Comport_SerialPortReceived(object sender, SerialPortEventArgs e)
         {
-            //收到数据后的处理,临时用这个方法处理多线程问题,后续严格参考绑定
-
-
-            //在Log中体现
             Dispatcher.BeginInvoke(new Action(delegate
             {
-                txtConsole.Text += Logger.GetTimeString() + "\t" + CommArithmetic.ToHexString(e.ReceivedBytes) + "\r\n";
-                //需要过滤掉不符合长度
-                Device device = DeviceFactory.CreateDevice(e.ReceivedBytes);
-                if (device!=null && device.GetType() == typeof(M1))
-                {
-                    m1Device = (M1)device;
-                    StackM1.DataContext = m1Device;
-                }
-                //ObservableCollection<Device> devices = DeviceFactory.CreateDevices(e.ReceivedBytes);
 
-                /*
-                foreach (M1 item in devices)
+                //收到数据后的处理,临时用这个方法处理多线程问题,后续严格参考绑定
+                //收到数据后的几种情况
+                // 未收到任何反馈
+                if (e.ReceivedBytes == null)
                 {
-                    item.DisplayID = SerialNo;
-                    SerialNo++;
-                    m1groups.Add(item);
+                    if (CBLoop.IsChecked == true)
+                    {
+                        continueFlag = true;
 
+                    }
+                    return;
                 }
 
-    */
+                //
+                if (e.ReceivedBytes.Length == 8)
+                {
+                    //收到更新反馈报
+                    if (e.ReceivedBytes[2]==0xA1 || e.ReceivedBytes[2] == 0xA2 
+                    || e.ReceivedBytes[2] == 0xA3 || e.ReceivedBytes[2] == 0xA4)
+                    {
+                        //立即进入读取状态
+                        btnStartMonitor_Click(this,null);
+                        
+                    }
 
+                    if (CBLoop.IsChecked == true)
+                    {
+                        continueFlag = true;
+
+                    }
+                    return;
+                }
             }));
 
+            //
+            if (e.ReceivedBytes.Length == 0x52)
+            {
+                continueFlag = false;
+                Dispatcher.BeginInvoke(new Action(delegate
+                {
+                    txtConsole.Text += Logger.GetTimeString() + "\t" + CommArithmetic.ToHexString(e.ReceivedBytes) + "\r\n";
+                    //需要过滤掉不符合长度
+                    Device device = DeviceFactory.CreateDevice(e.ReceivedBytes);
+                    if (device != null && device.GetType() == typeof(M1))
+                    {
+                        m1Device = (M1)device;
+                        StackM1.DataContext = m1Device;
+                    }
 
+
+
+
+
+
+                    //enable monitor
+                    btnStopMonitor_Click(this, null);
+
+                   
+                }));
+
+            }
 
 
         }
@@ -164,7 +200,18 @@ namespace DeviceSetup_HyperWSN
         /// <param name="e"></param>
         private void btnStartMonitor_Click(object sender, RoutedEventArgs e)
         {
-            UartCommand = "CE 03 01 01 02 00 00 EC";
+
+            //clear contorl 
+            txtPrimaryMAC.Text = "";
+            txtDeviceMAC.Text = "";
+            txtDeviceName.Text = "";
+            txtSoftwareVersion.Text = "";
+            txtHarewareVersion.Text = "";
+
+            DoEvents();
+
+
+            UartCommand = "CE 03 01 01 03 00 00 EC";
 
             byte[] command = CommArithmetic.HexStringToByteArray(UartCommand);
             //启动第一次监听
@@ -176,7 +223,7 @@ namespace DeviceSetup_HyperWSN
             {
                 monitorTimer = new Timer();
                 monitorTimer.Elapsed += MonitorTimer_Elapsed;
-                monitorTimer.Interval = 2050;
+                monitorTimer.Interval = 3050;
                 monitorTimer.Enabled = true;
                 btnStartMonitor.IsEnabled = false;
                 btnStopMonitor.IsEnabled = true;
@@ -192,14 +239,18 @@ namespace DeviceSetup_HyperWSN
 
         private void MonitorTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            StartMonitor();
+            //只有必要的时候才启动
+            if (continueFlag)
+                StartMonitor();
+            else
+                monitorTimer.Enabled = false;
 
         }
 
         private void StartMonitor()
         {
             // new NotImplementedException();
-            UartCommand = "CE 03 01 01 02 00 00 EC";
+            UartCommand = "CE 03 01 01 03 00 00 EC";
 
             byte[] command = CommArithmetic.HexStringToByteArray(UartCommand);
             //启动循环监听
@@ -237,30 +288,15 @@ namespace DeviceSetup_HyperWSN
                 updateDevice.HardwareVersion = txtNewHardwareVersion.Text;
 
                 byte[] updateCommand = updateDevice.UpdateFactory();
-                //string updateString = CommArithmetic.ToHexString(updateCommand);
-                if (monitorTimer.Enabled == true)
-                {
-                    monitorTimer.Enabled = false;
-
-                    System.Threading.Thread.Sleep(2000); //界面会卡
-
-                    comport.SendCommand(updateCommand);
-
-                    System.Threading.Thread.Sleep(200); //界面会卡
-
-                    StartMonitor();
-                    monitorTimer.Enabled = true;
-
-
-
-
-                }
-
+                string updateString = CommArithmetic.ToHexString(updateCommand);
+                comport.SendCommand(updateCommand);
+                System.Threading.Thread.Sleep(200); //界面会卡
+ 
             }
             catch (Exception ex)
             {
 
-                MessageBox.Show("参数错误"+ex.Message);
+                MessageBox.Show("参数错误" + ex.Message);
             }
            
 
@@ -323,23 +359,22 @@ namespace DeviceSetup_HyperWSN
 
                 byte[] updateCommand = updateDevice.UpdateUserConfig();
                 string updateString = CommArithmetic.ToHexString(updateCommand);
-                if (monitorTimer.Enabled == true)
-                {
-                    monitorTimer.Enabled = false;
 
-                    System.Threading.Thread.Sleep(2000); //界面会卡
+                //monitorTimer.Enabled = false;
 
-                    comport.SendCommand(updateCommand);
+                //System.Threading.Thread.Sleep(2000); //界面会卡
 
-                    System.Threading.Thread.Sleep(200); //界面会卡
+                comport.SendCommand(updateCommand);
 
-                    StartMonitor();
-                    monitorTimer.Enabled = true;
+                System.Threading.Thread.Sleep(200); //界面会卡
 
+                StartMonitor();
+                //monitorTimer.Enabled = true;
 
 
 
-                }
+
+
 
             }
             catch (Exception ex)
@@ -380,23 +415,19 @@ namespace DeviceSetup_HyperWSN
 
                 byte[] updateCommand = updateDevice.UpdateApplicationConfig();
                 string updateString = CommArithmetic.ToHexString(updateCommand);
-                if (monitorTimer.Enabled == true)
-                {
-                    monitorTimer.Enabled = false;
 
-                    System.Threading.Thread.Sleep(2000); //界面会卡
+                // monitorTimer.Enabled = false;
 
-                    comport.SendCommand(updateCommand);
+                //System.Threading.Thread.Sleep(2000); //界面会卡
 
-                    System.Threading.Thread.Sleep(250); //界面会卡
+                comport.SendCommand(updateCommand);
 
-                    StartMonitor();
-                    monitorTimer.Enabled = true;
+                System.Threading.Thread.Sleep(250); //界面会卡
+
+                btnStartMonitor_Click(this, null);
 
 
 
-
-                }
 
             }
             catch (Exception ex)
@@ -438,23 +469,22 @@ namespace DeviceSetup_HyperWSN
 
                 byte[] updateCommand = updateDevice.DeleteData();
                 string updateString = CommArithmetic.ToHexString(updateCommand);
-                if (monitorTimer.Enabled == true)
-                {
-                    monitorTimer.Enabled = false;
+               
+                    
 
-                    System.Threading.Thread.Sleep(2000); //界面会卡
+                   
 
                     comport.SendCommand(updateCommand);
 
                     System.Threading.Thread.Sleep(200); //界面会卡
 
-                    StartMonitor();
-                    monitorTimer.Enabled = true;
+                    btnStartMonitor_Click(this,null);
+                   
 
 
 
 
-                }
+                
 
             }
             catch (Exception ex)
@@ -462,6 +492,25 @@ namespace DeviceSetup_HyperWSN
 
                 MessageBox.Show("参数错误：" + ex.Message);
             }
+
+        }
+
+        public void DoEvents()
+        {
+            DispatcherFrame frame = new DispatcherFrame();
+            Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Background,
+                new DispatcherOperationCallback(delegate (object f)
+                {
+                    ((DispatcherFrame)f).Continue = false;
+
+                    return null;
+                }
+                    ), frame);
+            Dispatcher.PushFrame(frame);
+        }
+
+        private void btnUpdateFactorySocket1_Click(object sender, RoutedEventArgs e)
+        {
 
         }
     }

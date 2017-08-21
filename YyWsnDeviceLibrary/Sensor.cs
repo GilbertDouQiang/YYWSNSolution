@@ -29,10 +29,14 @@ namespace YyWsnDeviceLibrary
         public Int32 FlashRear { get; set; }
         public Int32 FlashQueueLength { get; set; }
 
+        public string DebugString { get; set; }
+
+        public byte MaxLength { get; set; }
+
+        public double ICTemperature { get; set; }
 
 
-       
 
-        
+
     }
 }
