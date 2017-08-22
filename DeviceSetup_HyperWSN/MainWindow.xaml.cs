@@ -27,6 +27,7 @@ namespace DeviceSetup_HyperWSN
         String UartCommand;
         Timer monitorTimer;
         M1 m1Device;
+        Socket1 socket1Device;
         bool continueFlag = false; //是否需要继续监听的控制位
 
 
@@ -44,6 +45,9 @@ namespace DeviceSetup_HyperWSN
             //临时
             cbUserParameter.Items.Add("标准配置");
             cbUserApplication.Items.Add("标准配置");
+
+            cbUserParameterSocket1.Items.Add("标准配置");
+            cbUserApplicationSocket1.Items.Add("标准配置");
 
 
 
@@ -176,9 +180,11 @@ namespace DeviceSetup_HyperWSN
                         StackM1.DataContext = m1Device;
                     }
 
-
-
-
+                    if (device != null && device.GetType() == typeof(Socket1))
+                    {
+                        socket1Device = (Socket1)device;
+                        StackSocket1.DataContext = socket1Device;
+                    }
 
 
                     //enable monitor
@@ -207,6 +213,14 @@ namespace DeviceSetup_HyperWSN
             txtDeviceName.Text = "";
             txtSoftwareVersion.Text = "";
             txtHarewareVersion.Text = "";
+
+            //clear contorl 
+
+            txtPrimaryMACSocket1.Text = "";
+            txtDeviceMACSocket1.Text = "";
+            txtDeviceNameSocket1.Text = "";
+            txtSoftwareVersionSocket1.Text = "";
+            txtHarewareVersionSocket1.Text = "";
 
             DoEvents();
 
@@ -368,7 +382,7 @@ namespace DeviceSetup_HyperWSN
 
                 System.Threading.Thread.Sleep(200); //界面会卡
 
-                StartMonitor();
+                
                 //monitorTimer.Enabled = true;
 
 
@@ -479,12 +493,7 @@ namespace DeviceSetup_HyperWSN
                     System.Threading.Thread.Sleep(200); //界面会卡
 
                     btnStartMonitor_Click(this,null);
-                   
-
-
-
-
-                
+       
 
             }
             catch (Exception ex)
@@ -510,6 +519,99 @@ namespace DeviceSetup_HyperWSN
         }
 
         private void btnUpdateFactorySocket1_Click(object sender, RoutedEventArgs e)
+        {
+            Socket1 updateDevice = new Socket1();
+            try
+            {
+                updateDevice.DeviceMac = txtDeviceMACSocket1.Text;
+                updateDevice.DeviceNewMAC = txtNewDeviceMACSocket1.Text;
+                updateDevice.HardwareVersion = txtNewHardwareVersionSocket1.Text;
+
+                byte[] updateCommand = updateDevice.UpdateFactory();
+                string updateString = CommArithmetic.ToHexString(updateCommand);
+                comport.SendCommand(updateCommand);
+                System.Threading.Thread.Sleep(200); //界面会卡
+
+            }
+            catch (Exception ex)
+            {
+
+                MessageBox.Show("参数错误" + ex.Message);
+            }
+
+
+
+        }
+
+        private void cbUserParameterSocket1_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (cbUserParameterSocket1.SelectedIndex == 0)
+            {
+                txtNewClientIDSocket1.Text = "D3 9A";
+                txtNewDebugSocket1.Text = "00 02";
+                txtNewCategorySocket1.Text = "0";
+                txtNewWorkFunctionSocket1.Text = "1";
+                txtNewBPSSocket1.Text = "0";
+                txtNewTXPowerSocket1.Text = "13";
+                txtNewMaxLengthSocket1.Text = "4";
+                //.Text = "0";
+                //txtNewHumidityCompensationSocket1.Text = "0";
+                txtNewFrequencySocket1.Text = "0";
+
+
+            }
+
+
+        }
+
+        private void btnUpdateUserSocket1_Click(object sender, RoutedEventArgs e)
+        {
+            Socket1 updateDevice = new Socket1();
+            try
+            {
+                updateDevice.DeviceMac = txtDeviceMACSocket1.Text;
+
+                updateDevice.ClientID = txtNewClientIDSocket1.Text;
+                updateDevice.DebugString = txtNewDebugSocket1.Text;
+                updateDevice.Category = Convert.ToByte(txtNewCategorySocket1.Text);
+                updateDevice.WorkFunction = Convert.ToByte(txtNewWorkFunctionSocket1.Text);
+                updateDevice.SymbolRate = Convert.ToByte(txtNewBPSSocket1.Text);
+                updateDevice.TXPower = Convert.ToByte(txtNewTXPowerSocket1.Text);
+                updateDevice.Frequency = Convert.ToByte(txtNewFrequencySocket1.Text);
+                //updateDevice.TemperatureCompensation = Convert.ToDouble(txtNewTemperatureCompensation.Text);
+                //updateDevice.HumidityCompensation = Convert.ToDouble(txtNewHumidityCompensation.Text);
+                updateDevice.MaxLength = Convert.ToByte(txtNewMaxLengthSocket1.Text);
+
+
+                byte[] updateCommand = updateDevice.UpdateUserConfig();
+                string updateString = CommArithmetic.ToHexString(updateCommand);
+
+                //monitorTimer.Enabled = false;
+
+                System.Threading.Thread.Sleep(500); //界面会卡
+
+                comport.SendCommand(updateCommand);
+
+                System.Threading.Thread.Sleep(200); //界面会卡
+
+
+                //monitorTimer.Enabled = true;
+
+
+
+
+
+
+            }
+            catch (Exception ex)
+            {
+
+                MessageBox.Show("参数错误：" + ex.Message);
+            }
+
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
         {
 
         }

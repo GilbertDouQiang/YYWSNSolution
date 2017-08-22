@@ -49,12 +49,30 @@ namespace YyWsnDeviceLibrary
 
 
 
+                PowerMeasureInfoHigh = SourceData[38] * 256 + SourceData[39];
+                PowerMeasureInfoLow = SourceData[40] * 256 + SourceData[41];
+
+                VoltageMeasureInfoHigh = SourceData[42] * 256 + SourceData[43];
+                VoltageMeasureInfoLow = SourceData[44] * 256 + SourceData[45];
+
+                PowerMeasureWarnHigh = SourceData[46] * 256 + SourceData[47];
+                PowerMeasureWarnLow = SourceData[48] * 256 + SourceData[49];
+
+                VoltageMeasureWarnHigh = SourceData[50] * 256 + SourceData[51];
+                VoltageMeasureWarnLow = SourceData[52] * 256 + SourceData[53];
+
+                PowerMeasureCompensation = SourceData[54] * 256 + SourceData[55];
+                VoltageMeasureCompensation = SourceData[56] * 256 + SourceData[57];
+
                 ICTemperature = SourceData[58];
                 Volt = Math.Round(Convert.ToDouble((SourceData[59] * 256 + SourceData[60])) / 1000, 2);
 
                 MaxLength = SourceData[63];
 
-              
+                PowerMeasure = SourceData[73]*256+SourceData[74];
+                VoltageMeasure = SourceData[75] * 256 + SourceData[76];
+
+
                 RSSI = SourceData[78] - 256;
 
                 //Falsh
@@ -120,7 +138,7 @@ namespace YyWsnDeviceLibrary
             updateBytes[2] = 0xA1;
             updateBytes[3] = 0x01;
             updateBytes[4] = 0x58;
-            updateBytes[5] = 0x01;
+            updateBytes[5] = 0x02;
 
             byte[] deviceMacBytes = CommArithmetic.HexStringToByteArray(DeviceMac);
             updateBytes[6] = deviceMacBytes[0];
@@ -152,6 +170,231 @@ namespace YyWsnDeviceLibrary
 
             return updateBytes;
         }
+
+        public byte[] UpdateUserConfig()
+        {
+            byte[] updateBytes = new byte[27];
+            updateBytes[0] = 0xCE;
+            updateBytes[1] = 0x16;
+            updateBytes[2] = 0xA2;
+            updateBytes[3] = 0x01;
+            updateBytes[4] = 0x58;
+            updateBytes[5] = 0x02;
+            //Mac
+            byte[] deviceMacBytes = CommArithmetic.HexStringToByteArray(DeviceMac);
+            updateBytes[6] = deviceMacBytes[0];
+            updateBytes[7] = deviceMacBytes[1];
+            updateBytes[8] = deviceMacBytes[2];
+            updateBytes[9] = deviceMacBytes[3];
+            //clientID
+            deviceMacBytes = CommArithmetic.HexStringToByteArray(ClientID);
+            updateBytes[10] = deviceMacBytes[0];
+            updateBytes[11] = deviceMacBytes[1];
+
+            //Debug
+            deviceMacBytes = CommArithmetic.HexStringToByteArray(DebugString);
+            updateBytes[12] = deviceMacBytes[0];
+            updateBytes[13] = deviceMacBytes[1];
+
+            //category
+            updateBytes[14] = Category;
+            //WorkFunction
+            updateBytes[15] = WorkFunction;
+            //SymbolRate
+            updateBytes[16] = SymbolRate;
+            //TXPower
+            updateBytes[17] = TXPower;
+            //Frequency
+            updateBytes[18] = Frequency;
+
+            //温度补偿：TODO 暂未实现
+            updateBytes[19] = 0x00;
+            updateBytes[20] = 0x00;
+
+            //湿度补偿：TODO 暂未实现
+            updateBytes[21] = 0x00;
+            updateBytes[22] = 0x00;
+
+            updateBytes[23] = MaxLength;
+
+            //CRC：TODO 暂未实现
+            updateBytes[24] = 0x00;
+            updateBytes[25] = 0x00;
+
+
+            updateBytes[26] = 0xEC;
+
+            //updateBytes[0] = 0xCE;
+
+
+
+
+            return updateBytes;
+        }
+
+
+        public byte[] UpdateApplicationConfig()
+        {
+            byte[] updateBytes = new byte[38];
+            updateBytes[0] = 0xCE;
+            updateBytes[1] = 0x21;
+            updateBytes[2] = 0xA3;
+            updateBytes[3] = 0x01;
+            updateBytes[4] = 0x51;
+            updateBytes[5] = 0x02;
+            //Mac
+            byte[] deviceMacBytes = CommArithmetic.HexStringToByteArray(DeviceMac);
+            updateBytes[6] = deviceMacBytes[0];
+            updateBytes[7] = deviceMacBytes[1];
+            updateBytes[8] = deviceMacBytes[2];
+            updateBytes[9] = deviceMacBytes[3];
+            //Interval
+            deviceMacBytes = CommArithmetic.Int16_2Bytes(Interval);
+            updateBytes[10] = deviceMacBytes[0];
+            updateBytes[11] = deviceMacBytes[1];
+
+            //Calendar
+            deviceMacBytes = CommArithmetic.EncodeDateTime(Calendar);
+            updateBytes[12] = deviceMacBytes[0];
+            updateBytes[13] = deviceMacBytes[1];
+            updateBytes[14] = deviceMacBytes[2];
+            updateBytes[15] = deviceMacBytes[3];
+            updateBytes[16] = deviceMacBytes[4];
+            updateBytes[17] = deviceMacBytes[5];
+
+            updateBytes[18] = TXTimers;
+
+            deviceMacBytes = CommArithmetic.Int16_2Bytes(PowerMeasureInfoHigh);
+            updateBytes[19] = deviceMacBytes[0];
+            updateBytes[20] = deviceMacBytes[1];
+
+            deviceMacBytes = CommArithmetic.Int16_2Bytes(PowerMeasureInfoLow);
+            updateBytes[21] = deviceMacBytes[0];
+            updateBytes[22] = deviceMacBytes[1];
+
+            deviceMacBytes = CommArithmetic.Int16_2Bytes(VoltageMeasureInfoHigh);
+            updateBytes[23] = deviceMacBytes[0];
+            updateBytes[24] = deviceMacBytes[1];
+
+            deviceMacBytes = CommArithmetic.Int16_2Bytes(VoltageMeasureInfoLow);
+            updateBytes[25] = deviceMacBytes[0];
+            updateBytes[26] = deviceMacBytes[1];
+
+            deviceMacBytes = CommArithmetic.Int16_2Bytes(PowerMeasureWarnHigh);
+            updateBytes[27] = deviceMacBytes[0];
+            updateBytes[28] = deviceMacBytes[1];
+
+
+            deviceMacBytes = CommArithmetic.Int16_2Bytes(PowerMeasureWarnLow);
+            updateBytes[29] = deviceMacBytes[0];
+            updateBytes[30] = deviceMacBytes[1];
+
+            deviceMacBytes = CommArithmetic.Int16_2Bytes(VoltageMeasureWarnHigh);
+            updateBytes[31] = deviceMacBytes[0];
+            updateBytes[32] = deviceMacBytes[1];
+
+            deviceMacBytes = CommArithmetic.Int16_2Bytes(VoltageMeasureWarnLow);
+            updateBytes[33] = deviceMacBytes[0];
+            updateBytes[34] = deviceMacBytes[1];
+
+
+
+            //CRC：TODO 暂未实现
+            updateBytes[35] = 0x00;
+            updateBytes[36] = 0x00;
+
+
+            updateBytes[37] = 0xEC;
+
+            //updateBytes[0] = 0xCE;
+
+
+
+
+            return updateBytes;
+        }
+
+        public byte[] DeleteData()
+        {
+            byte[] updateBytes = new byte[19];
+            updateBytes[0] = 0xCE;
+            updateBytes[1] = 0x0E;
+            updateBytes[2] = 0xA4;
+            updateBytes[3] = 0x01;
+            updateBytes[4] = 0x51;
+            updateBytes[5] = 0x02;
+
+            byte[] deviceMacBytes = CommArithmetic.HexStringToByteArray(DeviceMac);
+            updateBytes[6] = deviceMacBytes[0];
+            updateBytes[7] = deviceMacBytes[1];
+            updateBytes[8] = deviceMacBytes[2];
+            updateBytes[9] = deviceMacBytes[3];
+
+
+            updateBytes[18] = 0xEC;
+
+
+
+
+
+
+            return updateBytes;
+        }
+
+
+
+
+        public double PowerMeasure { get; set; }
+
+        public double VoltageMeasure { get; set; }
+
+        /// <summary>
+        /// 温度预警上限
+        /// </summary>
+        public int PowerMeasureInfoHigh { get; set; }
+        /// <summary>
+        /// 温度预警下限
+        /// </summary>
+        public int PowerMeasureInfoLow { get; set; }
+
+        /// <summary>
+        /// 温度报警上限
+        /// </summary>
+        public int PowerMeasureWarnHigh { get; set; }
+
+        /// <summary>
+        /// 温度报警下限
+        /// </summary>
+        public int PowerMeasureWarnLow { get; set; }
+
+        /// <summary>
+        /// 湿度预警上限
+        /// </summary>
+        public int VoltageMeasureInfoHigh { get; set; }
+        /// <summary>
+        /// 湿度预警下限
+        /// </summary>
+        public int VoltageMeasureInfoLow { get; set; }
+
+        /// <summary>
+        /// 湿度报警上限
+        /// </summary>
+        public int VoltageMeasureWarnHigh { get; set; }
+
+        /// <summary>
+        /// 湿度报警下限
+        /// </summary>
+        public int VoltageMeasureWarnLow { get; set; }
+
+        /// <summary>
+        /// 温度补偿
+        /// </summary>
+        public double PowerMeasureCompensation { get; set; }
+
+        /// <summary>
+        /// 湿度补偿
+        /// </summary>
+        public double VoltageMeasureCompensation { get; set; }
 
     }
 }

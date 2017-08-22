@@ -77,18 +77,6 @@ namespace YyWsnDeviceLibrary
                 FlashQueueLength = SourceData[70] * 256 * 256 + SourceData[71] * 256 + SourceData[72];
 
 
-
-
-
-
-
-
-
-
-
-
-
-
             }
 
 

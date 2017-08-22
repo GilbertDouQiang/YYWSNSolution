@@ -564,7 +564,7 @@
                             <TextBlock  Grid.Column="6" Text=" 分类码:" Margin="0,0,9.5,0" HorizontalAlignment="Right"/>
                             <TextBox  Text="{Binding Category}"  Grid.Column="7" Padding="2" Margin="0.5,0,10,0"   />
                             <TextBox x:Name="txtNewCategorySocket1"   Grid.Column="8" Padding="2" Margin="0.5,0,10,0"   />
-                            <ComboBox x:Name="cbUserParameterSocket1" Grid.Column="10" Grid.ColumnSpan="2" SelectionChanged="cbUserParameter_SelectionChanged" />
+                            <ComboBox x:Name="cbUserParameterSocket1" Grid.Column="10" Grid.ColumnSpan="2" SelectionChanged="cbUserParameterSocket1_SelectionChanged"    />
 
 
                         </Grid>
@@ -595,7 +595,7 @@
                             <TextBlock   Grid.Column="6" Text="发射功率:" Margin="0,0,10,0" HorizontalAlignment="Right" />
                             <TextBox  Text="{Binding TXPower}"  Grid.Column="7" Padding="2" Margin="0 0 10 0"/>
                             <TextBox x:Name="txtNewTXPowerSocket1"  Grid.Column="8" Padding="2" Margin="0 0 10 0"/>
-                            <Button x:Name="btnUpdateUserSocket1" Content="Update User Config" Grid.Column="10" Grid.ColumnSpan="2" Click="btnUpdateUser_Click"  Margin="0.5,0,10,0" Height="21" VerticalAlignment="Top"/>
+                            <Button x:Name="btnUpdateUserSocket1" Content="Update User Config" Grid.Column="10" Grid.ColumnSpan="2" Click="btnUpdateUserSocket1_Click"  Margin="0.5,0,10,0" Height="21" VerticalAlignment="Top"/>
 
 
                         </Grid>
@@ -620,11 +620,11 @@
                             <TextBlock   Grid.Column="0" Text="频段:" Margin="0,0,10,0" HorizontalAlignment="Right" />
                             <TextBox  Text="{Binding Frequency}" Grid.Column="1" Padding="2" Margin="0 0 10 0"/>
                             <TextBox x:Name="txtNewFrequencySocket1"  Grid.Column="2" Padding="2" Margin="0 0 10 0"/>
-                            <TextBlock   Grid.Column="3" Text="温度补偿:" Margin="0,0,10,0" HorizontalAlignment="Right" />
-                            <TextBox  Text="{Binding TemperatureCompensation}" Grid.Column="4" Padding="2" Margin="0 0 10 0"/>
+                            <TextBlock   Grid.Column="3" Text="功率补偿:" Margin="0,0,10,0" HorizontalAlignment="Right" />
+                            <TextBox  Text="{Binding PowerMeasureCompensation}" Grid.Column="4" Padding="2" Margin="0 0 10 0"/>
                             <TextBox   Grid.Column="5" Padding="2" Margin="0 0 10 0"/>
-                            <TextBlock   Grid.Column="6" Text="湿度补偿:" Margin="0,0,10,0" HorizontalAlignment="Right" />
-                            <TextBox  Text="{Binding HumidityCompensation}" Grid.Column="7" Padding="2" Margin="0 0 10 0"/>
+                            <TextBlock   Grid.Column="6" Text="电压补偿:" Margin="0,0,10,0" HorizontalAlignment="Right" />
+                            <TextBox  Text="{Binding VoltageMeasureCompensation}" Grid.Column="7" Padding="2" Margin="0 0 10 0"/>
                             <TextBox   Grid.Column="8" Padding="2" Margin="0,0,10,0"  Height="21" VerticalAlignment="Bottom"/>
 
 
@@ -703,13 +703,13 @@
                                 <ColumnDefinition Width="*"/>
 
                             </Grid.ColumnDefinitions>
-                            <TextBlock  Grid.Column="0" Text=" 预警温度(低):" Margin="0,0,9.5,0" HorizontalAlignment="Right"/>
-                            <TextBox Text="{Binding TemperatureInfoLow}"  Grid.Column="1" Padding="2" Margin="0.5,0,10,0"/>
+                            <TextBlock  Grid.Column="0" Text=" 预警功率(低):" Margin="0,0,9.5,0" HorizontalAlignment="Right"/>
+                            <TextBox Text="{Binding PowerMeasureInfoLow}"  Grid.Column="1" Padding="2" Margin="0.5,0,10,0"/>
                             <TextBox  Grid.Column="2" Padding="2" Margin="0.5,0,10,0"/>
-                            <TextBlock   Grid.Column="3" Text="预警温度(高):" Margin="0,0,9.5,0" HorizontalAlignment="Right" />
-                            <TextBox  Text="{Binding TemperatureInfoHigh}" Padding="2" Margin="0,0,9.5,0" Grid.Column="4" />
+                            <TextBlock   Grid.Column="3" Text="预警功率(高):" Margin="0,0,9.5,0" HorizontalAlignment="Right" />
+                            <TextBox  Text="{Binding PowerMeasureInfoHigh}" Padding="2" Margin="0,0,9.5,0" Grid.Column="4" />
                             <TextBox   Padding="2" Margin="0,0,9.5,0" Grid.Column="5" />
-                            <Button  Content="Update App Config" Grid.Column="10" Grid.ColumnSpan="2" Click="btnUpdateApplication_Click" Margin="0.5,0,10,0"/>
+                            <Button  Content="Update App Config" Grid.Column="10" Grid.ColumnSpan="2"   Margin="0.5,0,10,0"/>
 
                         </Grid>
 
@@ -729,11 +729,11 @@
                                 <ColumnDefinition Width="83.5"/>
 
                             </Grid.ColumnDefinitions>
-                            <TextBlock  Grid.Column="0" Text=" 报警温度(低):" Margin="0,0,9.5,0" HorizontalAlignment="Right"/>
-                            <TextBox Text="{Binding TemperatureWarnLow}"  Grid.Column="1" Padding="2" Margin="0.5,0,10,0"/>
+                            <TextBlock  Grid.Column="0" Text=" 报警功率(低):" Margin="0,0,9.5,0" HorizontalAlignment="Right"/>
+                            <TextBox Text="{Binding PowerMeasureWarnLow}"  Grid.Column="1" Padding="2" Margin="0.5,0,10,0"/>
                             <TextBox   Grid.Column="2" Padding="2" Margin="0.5,0,10,0"/>
-                            <TextBlock   Grid.Column="3" Text="报警温度(高):" Margin="0,0,9.5,0" HorizontalAlignment="Right" />
-                            <TextBox  Text="{Binding TemperatureWarnHigh}" Padding="2" Margin="0,0,9.5,0" Grid.Column="4" />
+                            <TextBlock   Grid.Column="3" Text="报警功率(高):" Margin="0,0,9.5,0" HorizontalAlignment="Right" />
+                            <TextBox  Text="{Binding PowerMeasureWarnHigh}" Padding="2" Margin="0,0,9.5,0" Grid.Column="4" />
                             <TextBox   Padding="2" Margin="0,0,9.5,0" Grid.Column="5" />
 
 
@@ -756,11 +756,11 @@
                                 <ColumnDefinition Width="*"/>
 
                             </Grid.ColumnDefinitions>
-                            <TextBlock  Grid.Column="0" Text=" 预警湿度(低):" Margin="0,0,9.5,0" HorizontalAlignment="Right"/>
-                            <TextBox Text="{Binding HumidityInfoLow}"  Grid.Column="1" Padding="2" Margin="0.5,0,10,0"/>
+                            <TextBlock  Grid.Column="0" Text=" 预警电压(低):" Margin="0,0,9.5,0" HorizontalAlignment="Right"/>
+                            <TextBox Text="{Binding VoltageMeasureInfoLow}"  Grid.Column="1" Padding="2" Margin="0.5,0,10,0"/>
                             <TextBox  Grid.Column="2" Padding="2" Margin="0.5,0,10,0"/>
-                            <TextBlock   Grid.Column="3" Text="预警湿度(高):" Margin="0,0,9.5,0" HorizontalAlignment="Right" />
-                            <TextBox  Text="{Binding HumidityInfoHigh}" Padding="2" Margin="0,0,9.5,0" Grid.Column="4" />
+                            <TextBlock   Grid.Column="3" Text="预警电压(高):" Margin="0,0,9.5,0" HorizontalAlignment="Right" />
+                            <TextBox  Text="{Binding VoltageMeasureInfoHigh}" Padding="2" Margin="0,0,9.5,0" Grid.Column="4" />
                             <TextBox  Padding="2" Margin="0,0,9.5,0" Grid.Column="5" />
 
                         </Grid>
@@ -781,11 +781,11 @@
                                 <ColumnDefinition Width="83.5"/>
 
                             </Grid.ColumnDefinitions>
-                            <TextBlock  Grid.Column="0" Text=" 报警湿度(低):" Margin="0,0,9.5,0" HorizontalAlignment="Right"/>
-                            <TextBox Text="{Binding HumidityWarnLow}"  Grid.Column="1" Padding="2" Margin="0.5,0,10,0"/>
+                            <TextBlock  Grid.Column="0" Text=" 报警电压(低):" Margin="0,0,9.5,0" HorizontalAlignment="Right"/>
+                            <TextBox Text="{Binding VoltageMeasureWarnLow}"  Grid.Column="1" Padding="2" Margin="0.5,0,10,0"/>
                             <TextBox  Grid.Column="2" Padding="2" Margin="0.5,0,10,0"/>
-                            <TextBlock   Grid.Column="3" Text="报警湿度(高):" Margin="0,0,9.5,0" HorizontalAlignment="Right" />
-                            <TextBox  Text="{Binding HumidityWarnHigh}" Padding="2" Margin="0,0,9.5,0" Grid.Column="4" />
+                            <TextBlock   Grid.Column="3" Text="报警电压(高):" Margin="0,0,9.5,0" HorizontalAlignment="Right" />
+                            <TextBox  Text="{Binding VoltageMeasureWarnHigh}" Padding="2" Margin="0,0,9.5,0" Grid.Column="4" />
                             <TextBox  Padding="2" Margin="0,0,9.5,0" Grid.Column="5" />
 
 
@@ -812,12 +812,12 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock   Grid.Column="0" Text="IC温度:" Margin="0,0,10,0" HorizontalAlignment="Right" />
                             <TextBox  Text="{Binding ICTemperature}" Grid.Column="1" Padding="2" Margin="0 0 10 0"/>
-                            <TextBlock   Grid.Column="2" Text="温度:" Margin="0,0,10,0" HorizontalAlignment="Right" />
-                            <TextBox  Text="{Binding Temperature}" Grid.Column="3" Padding="2" Margin="0 0 10 0"/>
-                            <TextBlock   Grid.Column="4" Text="湿度:" Margin="0,0,10,0" HorizontalAlignment="Right" />
-                            <TextBox  Text="{Binding Humidity}" Grid.Column="5" Padding="2" Margin="0 0 10 0"/>
+                            <TextBlock   Grid.Column="2" Text="功率:" Margin="0,0,10,0" HorizontalAlignment="Right" />
+                            <TextBox  Text="{Binding PowerMeasure}" Grid.Column="3" Padding="2" Margin="0 0 10 0"/>
+                            <TextBlock   Grid.Column="4" Text="电压:" Margin="0,0,10,0" HorizontalAlignment="Right" />
+                            <TextBox  Text="{Binding VoltageMeasure}" Grid.Column="5" Padding="2" Margin="0 0 10 0"/>
 
-                            <TextBlock   Grid.Column="6" Text="电压:" Margin="0,0,10,0" HorizontalAlignment="Right" />
+                            <TextBlock   Grid.Column="6" Text="电池电压:" Margin="0,0,10,0" HorizontalAlignment="Right" />
                             <TextBox  Text="{Binding Volt}" Grid.Column="7" Padding="2" Margin="0 0 10 0"/>
                             <TextBlock   Grid.Column="8" Text="RSSI:" Margin="0,0,10,0" HorizontalAlignment="Right" />
                             <TextBox  Text="{Binding RSSI}" Grid.Column="9" Padding="2" Margin="0 0 10 0"/>
