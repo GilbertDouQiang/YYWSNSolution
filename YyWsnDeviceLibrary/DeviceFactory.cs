@@ -37,6 +37,21 @@ namespace YyWsnDeviceLibrary
                        
                 }
 
+                if (SourceData[0] == 0xEC && SourceData[1] == 0x4D && SourceData[4] == 0x53)
+                {
+                    //发现M1 上电自检包
+                    if (SourceData.Length == 82)
+                    {
+                        M1 sensorM1 = new M1(SourceData);
+                        if (sensorM1 != null)
+                        {
+                            return sensorM1;
+                        }
+
+                    }
+
+                }
+
                 //Socket1 M4
                 if (SourceData[0] == 0xEC && SourceData[1] == 0x4D && SourceData[4] == 0x58)
                 {

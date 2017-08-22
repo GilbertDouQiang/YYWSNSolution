@@ -300,6 +300,18 @@ namespace DeviceSetup_HyperWSN
                 updateDevice.DeviceMac = txtDeviceMAC.Text;
                 updateDevice.DeviceNewMAC = txtNewDeviceMAC.Text;
                 updateDevice.HardwareVersion = txtNewHardwareVersion.Text;
+                //兼容M1 and M1P
+                if (txtDeviceName.Text== "M1")
+                {
+                    updateDevice.DeviceID = "51";
+
+                }
+                else if (txtDeviceName.Text == "M1P")
+                {
+                    updateDevice.DeviceID = "53";
+                }
+
+                //
 
                 byte[] updateCommand = updateDevice.UpdateFactory();
                 string updateString = CommArithmetic.ToHexString(updateCommand);
@@ -358,7 +370,16 @@ namespace DeviceSetup_HyperWSN
             try
             {
                 updateDevice.DeviceMac = txtDeviceMAC.Text;
+                //兼容M1 and M1P
+                if (txtDeviceName.Text == "M1")
+                {
+                    updateDevice.DeviceID = "51";
 
+                }
+                else if (txtDeviceName.Text == "M1P")
+                {
+                    updateDevice.DeviceID = "53";
+                }
                 updateDevice.ClientID = txtNewClientID.Text;
                 updateDevice.DebugString = txtNewDebug.Text;
                 updateDevice.Category = Convert.ToByte(txtNewCategory.Text);
@@ -408,7 +429,16 @@ namespace DeviceSetup_HyperWSN
             try
             {
                 updateDevice.DeviceMac = txtDeviceMAC.Text;
+                //兼容M1 and M1P
+                if (txtDeviceName.Text == "M1")
+                {
+                    updateDevice.DeviceID = "51";
 
+                }
+                else if (txtDeviceName.Text == "M1P")
+                {
+                    updateDevice.DeviceID = "53";
+                }
                 updateDevice.Interval = Convert.ToInt32(txtNewInterval.Text);
                 updateDevice.TXTimers = Convert.ToByte(txtNewTXTimers.Text);
                 txtCalendar.Text = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
@@ -480,20 +510,31 @@ namespace DeviceSetup_HyperWSN
             try
             {
                 updateDevice.DeviceMac = txtDeviceMAC.Text;
+                //兼容M1 and M1P
+                if (txtDeviceName.Text == "M1")
+                {
+                    updateDevice.DeviceID = "51";
+
+                }
+                else if (txtDeviceName.Text == "M1P")
+                {
+                    updateDevice.DeviceID = "53";
+                }
 
                 byte[] updateCommand = updateDevice.DeleteData();
                 string updateString = CommArithmetic.ToHexString(updateCommand);
+
                
-                    
 
-                   
 
-                    comport.SendCommand(updateCommand);
 
-                    System.Threading.Thread.Sleep(200); //界面会卡
 
-                    btnStartMonitor_Click(this,null);
-       
+                comport.SendCommand(updateCommand);
+
+                System.Threading.Thread.Sleep(300); //界面会卡
+
+                btnStartMonitor_Click(this, null);
+
 
             }
             catch (Exception ex)

@@ -20,7 +20,15 @@ namespace YyWsnDeviceLibrary
             //上电自检数据
             if (SourceData.Length==82)
             {
-                Name = "M1";
+                if (SourceData[4]==0x51)
+                {
+                    Name = "M1";
+                }
+                if (SourceData[4] == 0x53)
+                {
+                    Name = "M1P";
+                }
+
                 DeviceID = SourceData[4].ToString("X2");
                 ProtocolVersion = SourceData[5];
                 PrimaryMAC = CommArithmetic.DecodeMAC(SourceData, 6);
@@ -132,7 +140,13 @@ namespace YyWsnDeviceLibrary
             updateBytes[1] = 0x10;
             updateBytes[2] = 0xA1;
             updateBytes[3] = 0x01;
-            updateBytes[4] = 0x51;
+
+            //兼容M1 和 M1P
+            if (DeviceID == "51")
+                updateBytes[4] = 0x51;
+            else
+                updateBytes[4] = 0x53;
+
             updateBytes[5] = 0x02;
 
             byte[] deviceMacBytes = CommArithmetic.HexStringToByteArray(DeviceMac);
@@ -173,7 +187,12 @@ namespace YyWsnDeviceLibrary
             updateBytes[1] = 0x16;
             updateBytes[2] = 0xA2;
             updateBytes[3] = 0x01;
-            updateBytes[4] = 0x51;
+            //兼容M1 和 M1P
+            if (DeviceID == "51")
+                updateBytes[4] = 0x51;
+            else
+                updateBytes[4] = 0x53;
+
             updateBytes[5] = 0x02;
             //Mac
             byte[] deviceMacBytes = CommArithmetic.HexStringToByteArray(DeviceMac);
@@ -235,7 +254,12 @@ namespace YyWsnDeviceLibrary
             updateBytes[1] = 0x21;
             updateBytes[2] = 0xA3;
             updateBytes[3] = 0x01;
-            updateBytes[4] = 0x51;
+            //兼容M1 和 M1P
+            if (DeviceID == "51")
+                updateBytes[4] = 0x51;
+            else
+                updateBytes[4] = 0x53;
+
             updateBytes[5] = 0x02;
             //Mac
             byte[] deviceMacBytes = CommArithmetic.HexStringToByteArray(DeviceMac);
@@ -316,7 +340,11 @@ namespace YyWsnDeviceLibrary
             updateBytes[1] = 0x0E;
             updateBytes[2] = 0xA4;
             updateBytes[3] = 0x01;
-            updateBytes[4] = 0x51;
+            //兼容M1 和 M1P
+            if (DeviceID == "51")
+                updateBytes[4] = 0x51;
+            else
+                updateBytes[4] = 0x53;
             updateBytes[5] = 0x02;
 
             byte[] deviceMacBytes = CommArithmetic.HexStringToByteArray(DeviceMac);
