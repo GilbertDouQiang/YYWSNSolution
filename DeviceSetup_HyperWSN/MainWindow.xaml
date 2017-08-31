@@ -682,7 +682,7 @@
                                     <Binding Path="Calendar" StringFormat="{}{0:yyyy-MM-dd HH:mm:ss}"/>
                                 </TextBox.Text>
                             </TextBox>
-                            <ComboBox x:Name="cbUserApplicationSocket1" Grid.Column="10" Grid.ColumnSpan="2" SelectionChanged="cbUserApplication_SelectionChanged" />
+                            <ComboBox x:Name="cbUserApplicationSocket1" Grid.Column="10" Grid.ColumnSpan="2" SelectionChanged="cbUserApplicationSocket1_SelectionChanged" />
 
 
                         </Grid>
@@ -705,11 +705,11 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock  Grid.Column="0" Text=" 预警功率(低):" Margin="0,0,9.5,0" HorizontalAlignment="Right"/>
                             <TextBox Text="{Binding PowerMeasureInfoLow}"  Grid.Column="1" Padding="2" Margin="0.5,0,10,0"/>
-                            <TextBox  Grid.Column="2" Padding="2" Margin="0.5,0,10,0"/>
+                            <TextBox x:Name="txtPowerMeasureInfoLow" Grid.Column="2" Padding="2" Margin="0.5,0,10,0"/>
                             <TextBlock   Grid.Column="3" Text="预警功率(高):" Margin="0,0,9.5,0" HorizontalAlignment="Right" />
                             <TextBox  Text="{Binding PowerMeasureInfoHigh}" Padding="2" Margin="0,0,9.5,0" Grid.Column="4" />
-                            <TextBox   Padding="2" Margin="0,0,9.5,0" Grid.Column="5" />
-                            <Button  Content="Update App Config" Grid.Column="10" Grid.ColumnSpan="2"   Margin="0.5,0,10,0"/>
+                            <TextBox x:Name="txtPowerMeasureInfoHigh"   Padding="2" Margin="0,0,9.5,0" Grid.Column="5" />
+                            <Button x:Name="btnUpdateApplicationSocket1" Click="btnUpdateApplicationSocket1_Click" Content="Update App Config" Grid.Column="10" Grid.ColumnSpan="2"   Margin="0.5,0,10,0"/>
 
                         </Grid>
 
@@ -731,10 +731,10 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock  Grid.Column="0" Text=" 报警功率(低):" Margin="0,0,9.5,0" HorizontalAlignment="Right"/>
                             <TextBox Text="{Binding PowerMeasureWarnLow}"  Grid.Column="1" Padding="2" Margin="0.5,0,10,0"/>
-                            <TextBox   Grid.Column="2" Padding="2" Margin="0.5,0,10,0"/>
+                            <TextBox  x:Name="txtPowerMeasureWarnLow" Grid.Column="2" Padding="2" Margin="0.5,0,10,0"/>
                             <TextBlock   Grid.Column="3" Text="报警功率(高):" Margin="0,0,9.5,0" HorizontalAlignment="Right" />
                             <TextBox  Text="{Binding PowerMeasureWarnHigh}" Padding="2" Margin="0,0,9.5,0" Grid.Column="4" />
-                            <TextBox   Padding="2" Margin="0,0,9.5,0" Grid.Column="5" />
+                            <TextBox x:Name="txtPowerMeasureWarnHigh"  Padding="2" Margin="0,0,9.5,0" Grid.Column="5" />
 
 
 
@@ -758,10 +758,10 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock  Grid.Column="0" Text=" 预警电压(低):" Margin="0,0,9.5,0" HorizontalAlignment="Right"/>
                             <TextBox Text="{Binding VoltageMeasureInfoLow}"  Grid.Column="1" Padding="2" Margin="0.5,0,10,0"/>
-                            <TextBox  Grid.Column="2" Padding="2" Margin="0.5,0,10,0"/>
+                            <TextBox x:Name="txtVoltageMeasureInfoLow" Grid.Column="2" Padding="2" Margin="0.5,0,10,0"/>
                             <TextBlock   Grid.Column="3" Text="预警电压(高):" Margin="0,0,9.5,0" HorizontalAlignment="Right" />
                             <TextBox  Text="{Binding VoltageMeasureInfoHigh}" Padding="2" Margin="0,0,9.5,0" Grid.Column="4" />
-                            <TextBox  Padding="2" Margin="0,0,9.5,0" Grid.Column="5" />
+                            <TextBox x:Name="txtVoltageMeasureInfoHigh"  Padding="2" Margin="0,0,9.5,0" Grid.Column="5" />
 
                         </Grid>
 
@@ -783,10 +783,10 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock  Grid.Column="0" Text=" 报警电压(低):" Margin="0,0,9.5,0" HorizontalAlignment="Right"/>
                             <TextBox Text="{Binding VoltageMeasureWarnLow}"  Grid.Column="1" Padding="2" Margin="0.5,0,10,0"/>
-                            <TextBox  Grid.Column="2" Padding="2" Margin="0.5,0,10,0"/>
+                            <TextBox x:Name="txtVoltageMeasureWarnLow" Grid.Column="2" Padding="2" Margin="0.5,0,10,0"/>
                             <TextBlock   Grid.Column="3" Text="报警电压(高):" Margin="0,0,9.5,0" HorizontalAlignment="Right" />
                             <TextBox  Text="{Binding VoltageMeasureWarnHigh}" Padding="2" Margin="0,0,9.5,0" Grid.Column="4" />
-                            <TextBox  Padding="2" Margin="0,0,9.5,0" Grid.Column="5" />
+                            <TextBox  x:Name="txtVoltageMeasureWarnHigh" Padding="2" Margin="0,0,9.5,0" Grid.Column="5" />
 
 
 

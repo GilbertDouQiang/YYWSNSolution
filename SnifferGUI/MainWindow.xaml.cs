@@ -97,10 +97,27 @@ namespace SnifferGUI
                 int i = 1;
                 foreach (M1 item in devices)
                 {
-                    item.DisplayID = i;
-                    i++;
-                    m1groups.Add(item);
-
+                    //增加ClientID的过滤
+                   
+                    if (txtFilterClientID.Text.Length > 0)
+                    {
+                        //符合过滤调价的才加入
+                        byte[] checkClientID= CommArithmetic.HexStringToByteArray(item.ClientID);
+                        byte[] byteFilterClientID = CommArithmetic.HexStringToByteArray(txtFilterClientID.Text);
+                        if(checkClientID[0] == byteFilterClientID[0] && checkClientID[1]==byteFilterClientID[1])
+                        {
+                            item.DisplayID = i;
+                            i++;
+                            m1groups.Add(item);
+                        }
+                        //if (item.ClientID)
+                    }
+                    else
+                    {
+                        item.DisplayID = i;
+                        i++;
+                        m1groups.Add(item);
+                    }
                 }
             }
             
@@ -218,9 +235,37 @@ namespace SnifferGUI
                
                 foreach (M1 item in devices)
                 {
-                    item.DisplayID = SerialNo;
-                    SerialNo++;
-                    m1groups.Add(item);
+                    
+                    
+                    //m1groups.Add(item);
+
+
+
+                    if (txtFilterClientID.Text.Length > 0)
+                    {
+
+                      
+
+                        //符合过滤调价的才加入
+                        byte[] checkClientID = CommArithmetic.HexStringToByteArray(item.ClientID);
+                        byte[] byteFilterClientID = CommArithmetic.HexStringToByteArray(txtFilterClientID.Text);
+                        if (checkClientID[0] == byteFilterClientID[0] && checkClientID[1] == byteFilterClientID[1])
+                        {
+                            item.DisplayID = SerialNo;
+                            SerialNo++;
+
+                            m1groups.Add(item);
+                        }
+                        //if (item.ClientID)
+                    }
+                    else
+                    {
+
+                        item.DisplayID = SerialNo;
+                        SerialNo++;
+                       
+                        m1groups.Add(item);
+                    }
 
                 }
                       

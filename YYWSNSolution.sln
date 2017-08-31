@@ -19,6 +19,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UartGatewayGUI", "UartGatew
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceSetup_HyperWSN", "DeviceSetup_HyperWSN\DeviceSetup_HyperWSN.csproj", "{24364CC0-B29D-42E4-B868-20DCBAE3F955}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RussianAnalyse", "RussianAnalyse\RussianAnalyse.csproj", "{14F4286A-5E77-405D-B6F2-6C92E313B8F2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocketMonitorUI", "SocketMonitorUI\SocketMonitorUI.csproj", "{4D688CAC-49A3-47BF-83AA-CE45D0C0C190}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -57,6 +61,14 @@ Global
 		{24364CC0-B29D-42E4-B868-20DCBAE3F955}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{24364CC0-B29D-42E4-B868-20DCBAE3F955}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{24364CC0-B29D-42E4-B868-20DCBAE3F955}.Release|Any CPU.Build.0 = Release|Any CPU
+		{14F4286A-5E77-405D-B6F2-6C92E313B8F2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{14F4286A-5E77-405D-B6F2-6C92E313B8F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{14F4286A-5E77-405D-B6F2-6C92E313B8F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{14F4286A-5E77-405D-B6F2-6C92E313B8F2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4D688CAC-49A3-47BF-83AA-CE45D0C0C190}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4D688CAC-49A3-47BF-83AA-CE45D0C0C190}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4D688CAC-49A3-47BF-83AA-CE45D0C0C190}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4D688CAC-49A3-47BF-83AA-CE45D0C0C190}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

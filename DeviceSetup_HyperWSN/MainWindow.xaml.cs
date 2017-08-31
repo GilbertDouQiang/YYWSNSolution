@@ -635,6 +635,8 @@ namespace DeviceSetup_HyperWSN
 
                 System.Threading.Thread.Sleep(200); //界面会卡
 
+                btnStartMonitor_Click(this, null);
+
 
                 //monitorTimer.Enabled = true;
 
@@ -654,6 +656,85 @@ namespace DeviceSetup_HyperWSN
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
+
+        }
+
+        private void cbUserApplicationSocket1_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
+            if (cbUserApplicationSocket1.SelectedIndex == 0)
+            {
+                txtNewIntervalSocket1.Text = "4";
+                txtNewTXTimersSocket1.Text = "5";
+                txtPowerMeasureInfoLow.Text = "0";
+                txtPowerMeasureInfoHigh.Text = "2200";
+                txtPowerMeasureWarnLow.Text = "0";
+                txtPowerMeasureWarnHigh.Text = "3000";
+                txtVoltageMeasureInfoLow.Text = "200";
+                txtVoltageMeasureInfoHigh.Text = "240";
+                txtVoltageMeasureWarnLow.Text = "180";
+                txtVoltageMeasureWarnHigh.Text = "245";
+
+
+
+            }
+
+        }
+
+
+        /// <summary>
+        /// 更新报警器用户配置信息
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btnUpdateApplicationSocket1_Click(object sender, RoutedEventArgs e)
+        {
+            Socket1 updateDevice = new Socket1();
+
+            try
+            {
+                updateDevice.DeviceMac = txtDeviceMACSocket1.Text;
+                
+                updateDevice.Interval = Convert.ToInt32(txtNewIntervalSocket1.Text);
+                updateDevice.TXTimers = Convert.ToByte(txtNewTXTimersSocket1.Text);
+                txtCalendarSocket1.Text = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                updateDevice.Calendar = Convert.ToDateTime(txtCalendarSocket1.Text);
+
+                updateDevice.PowerMeasureInfoLow = Convert.ToInt16(txtPowerMeasureInfoLow.Text);
+                updateDevice.PowerMeasureInfoHigh = Convert.ToInt16(txtPowerMeasureInfoHigh.Text);
+                updateDevice.PowerMeasureWarnLow = Convert.ToInt16(txtPowerMeasureWarnLow.Text);
+                updateDevice.PowerMeasureWarnHigh = Convert.ToInt16(txtPowerMeasureWarnHigh.Text);
+
+                updateDevice.VoltageMeasureInfoLow = Convert.ToInt16(txtVoltageMeasureInfoLow.Text);
+                updateDevice.VoltageMeasureInfoHigh = Convert.ToInt16(txtVoltageMeasureInfoHigh.Text);
+                updateDevice.VoltageMeasureWarnLow = Convert.ToInt16(txtVoltageMeasureWarnLow.Text);
+                updateDevice.VoltageMeasureWarnHigh = Convert.ToInt16(txtVoltageMeasureWarnHigh.Text);
+
+
+
+
+                byte[] updateCommand = updateDevice.UpdateApplicationConfig();
+                string updateString = CommArithmetic.ToHexString(updateCommand);
+
+                // monitorTimer.Enabled = false;
+
+                //System.Threading.Thread.Sleep(2000); //界面会卡
+
+                comport.SendCommand(updateCommand);
+
+                System.Threading.Thread.Sleep(250); //界面会卡
+
+                btnStartMonitor_Click(this, null);
+
+
+
+
+            }
+            catch (Exception ex)
+            {
+
+                MessageBox.Show("参数错误：" + ex.Message);
+            }
 
         }
     }

@@ -240,7 +240,7 @@ namespace YyWsnDeviceLibrary
             updateBytes[1] = 0x21;
             updateBytes[2] = 0xA3;
             updateBytes[3] = 0x01;
-            updateBytes[4] = 0x51;
+            updateBytes[4] = 0x58;
             updateBytes[5] = 0x02;
             //Mac
             byte[] deviceMacBytes = CommArithmetic.HexStringToByteArray(DeviceMac);
@@ -321,7 +321,7 @@ namespace YyWsnDeviceLibrary
             updateBytes[1] = 0x0E;
             updateBytes[2] = 0xA4;
             updateBytes[3] = 0x01;
-            updateBytes[4] = 0x51;
+            updateBytes[4] = 0x58;
             updateBytes[5] = 0x02;
 
             byte[] deviceMacBytes = CommArithmetic.HexStringToByteArray(DeviceMac);
