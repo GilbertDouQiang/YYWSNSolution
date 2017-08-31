@@ -22,7 +22,7 @@ namespace HyperWSN.Socket
 
         protected override BinaryRequestInfo ProcessMatchedRequest(byte[] readBuffer, int offset, int length)
         {
-            return new BinaryRequestInfo(BitConverter.ToString(readBuffer, offset + 15, 1), readBuffer.CloneRange(offset, length));
+            return new BinaryRequestInfo(BitConverter.ToString(readBuffer, offset + 3, 1), readBuffer.CloneRange(offset, length));
         }
     }
 }

@@ -138,6 +138,7 @@ namespace SocketMonitorUI
             //客户端连接成功
             Dispatcher.BeginInvoke(new Action(delegate
             {
+                session.Send(requestInfo.Body, 0, requestInfo.Body.Length);
                 txtConsole.Text = DateTime.Now.ToString("HH:mm:ss.fff") + " :\tReceived:" + session.RemoteEndPoint.Address.ToString()+" :\t" 
                 +CommArithmetic.ToHexString( requestInfo.Body)+" \r\n" + txtConsole.Text;
                 if (chkLog.IsChecked == true)
