@@ -65,6 +65,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="BusinessLayer\Position.cs" />
     <Compile Include="SocketLayer\HyperWSNReceiveFilter.cs" />
     <Compile Include="SocketLayer\HyperWSNSession.cs" />
     <Compile Include="SocketLayer\HyperWSNSocketServer.cs" />

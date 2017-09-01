@@ -53,6 +53,7 @@ namespace SocketMonitorUI
                     IdleSessionTimeOut = 120,
                     ClearIdleSession= true,
                     ClearIdleSessionInterval=5
+                    //ReceiveBufferSize
                 };
 
                 //保证启动时，前面AppServer对象已经释放
@@ -64,7 +65,7 @@ namespace SocketMonitorUI
 
                 server = new HyperWSN.Socket.HyperWSNSocketServer();
                 server.NewSessionConnected += Server_NewSessionConnected; ;
-                server.NewRequestReceived += Server_NewRequestReceived; ;
+                //server.NewRequestReceived += Server_NewRequestReceived; ;
                 server.SessionClosed += Server_SessionClosed; ;
 
 
