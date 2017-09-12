@@ -68,6 +68,10 @@
     <Compile Include="BusinessLayer\CMD00.cs" />
     <Compile Include="BusinessLayer\CMD02.cs" />
     <Compile Include="BusinessLayer\CMD03.cs" />
+    <Compile Include="BusinessLayer\GatewayStatusReport.cs" />
+    <Compile Include="BusinessLayer\GetwayPing.cs" />
+    <Compile Include="BusinessLayer\NTP.cs" />
+    <Compile Include="BusinessLayer\ServiceStatus.cs" />
     <Compile Include="SocketLayer\HyperWSNReceiveFilter.cs" />
     <Compile Include="SocketLayer\HyperWSNSession.cs" />
     <Compile Include="SocketLayer\HyperWSNSocketServer.cs" />

@@ -39,6 +39,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AlarmGateway1.cs" />
     <Compile Include="CommArithmetic.cs" />
     <Compile Include="Device.cs" />
     <Compile Include="DeviceFactory.cs" />

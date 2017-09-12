@@ -83,6 +83,11 @@ namespace YyWsnDeviceLibrary
         public byte SymbolRate { get; set; }
 
 
+        /// <summary>
+        /// 设备的最后传输日期和时间
+        /// </summary>
+        public DateTime LastTransforDate { get; set; }
+
 
 
 

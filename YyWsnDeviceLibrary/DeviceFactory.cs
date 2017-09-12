@@ -19,6 +19,29 @@ namespace YyWsnDeviceLibrary
             if (SourceData == null)
                 return null;
 
+            //处理从互联网端接收到的数据
+            try
+            {
+                //可能的数据包括: 网关的上报信息包
+                if (SourceData[0] == 0xBE && SourceData[1] == 0xBE && 
+                    SourceData[48] == 0xEB && SourceData[49] == 0xEB &&
+                    SourceData[3]==0x92)
+                {
+                    //一体机数据
+                    //BE BE 24 92 01 01 A2 59 11 11 11 11 20 17 09 11 15 13 10 68 00 01 00 01 00  00 00 00 12 69 21 74 09 09 75 70 00 33 46 6E 00 00 06 6F 00 00 00 00 EB EB
+                    AlarmGateway1 alarm1 = new AlarmGateway1(SourceData);
+                    return alarm1;
+                }
+
+
+
+            }
+            catch (Exception)
+            {
+
+                return null;
+            }
+
             //处理从USB Gateway收到的传感器数据
             try
             {

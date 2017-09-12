@@ -20,6 +20,8 @@ using YyWsnDeviceLibrary;
 
 using YyWsnCommunicatonLibrary;
 
+using SocketMonitorUI.BusinessLayer;
+
 
 
 namespace SocketMonitorUI
@@ -74,7 +76,10 @@ namespace SocketMonitorUI
                 //AppServer对象的基础设置
 
 
-                //server.
+                //服务器状态设置
+                ServiceStatus.ResponsePing = cbPing.IsChecked.Value;
+                ServiceStatus.ResponseGatewayReport = cbGatewayReport.IsChecked.Value;
+
 
                 server.Start();
                 if (server.State == ServerState.Running)
@@ -164,6 +169,16 @@ namespace SocketMonitorUI
                 }
 
             }));
+        }
+
+        private void cbPing_Click(object sender, RoutedEventArgs e)
+        {
+            ServiceStatus.ResponsePing = cbPing.IsChecked.Value;
+        }
+
+        private void cbGatewayReport_Click(object sender, RoutedEventArgs e)
+        {
+            ServiceStatus.ResponseGatewayReport = cbGatewayReport.IsChecked.Value;
         }
     }
 }
