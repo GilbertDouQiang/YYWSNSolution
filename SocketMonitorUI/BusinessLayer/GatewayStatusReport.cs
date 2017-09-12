@@ -53,27 +53,21 @@ namespace SocketMonitorUI.BusinessLayer
                 {
                     //发现一体机
                     //发送默认反馈
-                    byte[] response = new byte[17];
+                    byte[] response = new byte[11];
                     response[0] = 0xEB;
                     response[1] = 0xEB;
-                    response[2] = 0x10;
+                    response[2] = 0x04;
                     response[3] = 0x92;
+                   
                     response[4] = requestInfo.Body[4];
                     response[5] = requestInfo.Body[5];
                     response[6] = requestInfo.Body[6];
 
-                    response[7] = requestInfo.Body[8];
-                    response[8] = requestInfo.Body[9];
-                    response[9] = requestInfo.Body[10];
-                    response[10] = requestInfo.Body[11];
 
-
-                    response[11] = 0x00;
-                    response[12] = 0x00;
-                    response[13] = 0x00;
-                    response[14] = 0x00;
-                    response[15] = 0xBE;
-                    response[16] = 0xBE;
+                    response[7] = 0x00;
+                    response[8] = 0x00;
+                    response[9] = 0xBE;
+                    response[10] = 0xBE;
 
                     session.Send(response, 0, response.Length); ;
                     Logger.AddLog(DateTime.Now.ToString("HH:mm:ss.fff") + " :SendData:" + session.RemoteEndPoint.Address.ToString() + " :\t"

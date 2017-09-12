@@ -33,7 +33,7 @@ namespace SocketMonitorUI.BusinessLayer
             //The logic of saving GPS position data
             //var response = session.AppServer.DefaultResponse;
             //byte[] response = new byte[] { 0xEB, 0xEB, 0x01, 0x03, 0x00, 0x00, 0xBE, 0xBE };
-            if (ServiceStatus.ResponsePing == true && requestInfo.Body.Length == 22)
+            if (ServiceStatus.ResponseNTP == true && requestInfo.Body.Length == 22)
             {
 
                 byte[] response = new byte[21];

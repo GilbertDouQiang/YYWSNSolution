@@ -79,6 +79,8 @@ namespace SocketMonitorUI
                 //服务器状态设置
                 ServiceStatus.ResponsePing = cbPing.IsChecked.Value;
                 ServiceStatus.ResponseGatewayReport = cbGatewayReport.IsChecked.Value;
+                ServiceStatus.ResponseNTP = cbNTP.IsChecked.Value;
+                ServiceStatus.ResponseSensorData = cbSensorData.IsChecked.Value;
 
 
                 server.Start();
@@ -179,6 +181,16 @@ namespace SocketMonitorUI
         private void cbGatewayReport_Click(object sender, RoutedEventArgs e)
         {
             ServiceStatus.ResponseGatewayReport = cbGatewayReport.IsChecked.Value;
+        }
+
+        private void cbNTP_Click(object sender, RoutedEventArgs e)
+        {
+            ServiceStatus.ResponseNTP = cbNTP.IsChecked.Value;
+        }
+
+        private void cbSensorData_Click(object sender, RoutedEventArgs e)
+        {
+            ServiceStatus.ResponseSensorData = cbSensorData.IsChecked.Value;
         }
     }
 }

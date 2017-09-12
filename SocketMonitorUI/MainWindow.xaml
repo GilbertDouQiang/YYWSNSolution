@@ -32,13 +32,16 @@
                 <Grid Margin="0 0 0 5">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="2*"/>
-                        <ColumnDefinition Width="2*"/>
-                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
                         
                     </Grid.ColumnDefinitions>
                     <CheckBox Grid.Column="0" Content="Response Ping" x:Name="cbPing" IsChecked="True" Click="cbPing_Click" Margin="0 0 10 0"/>
                     <CheckBox Grid.Column="1" Content="Response Gateway Report" x:Name="cbGatewayReport" IsChecked="True" Click="cbGatewayReport_Click" Margin="0 0 10 0" />
+                    <CheckBox Grid.Column="2" Content="Response NTP" x:Name="cbNTP" IsChecked="True" Click="cbNTP_Click" Margin="0 0 10 0" />
+                    <CheckBox Grid.Column="3" Content="Response Sensor Data" x:Name="cbSensorData" IsChecked="True" Click="cbSensorData_Click" Margin="0 0 10 0" />
+                    
 
 
 

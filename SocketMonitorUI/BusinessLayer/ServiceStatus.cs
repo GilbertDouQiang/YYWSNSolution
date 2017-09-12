@@ -17,5 +17,15 @@ namespace SocketMonitorUI.BusinessLayer
         /// </summary>
         public static bool ResponseGatewayReport { get; set; }
 
+        /// <summary>
+        /// 是否响应授时请求
+        /// </summary>
+        public static bool ResponseNTP { get; set; }
+
+        /// <summary>
+        /// 是否响应用户传感器数据
+        /// </summary>
+        public static bool ResponseSensorData { get; set; }
+
     }
 }
