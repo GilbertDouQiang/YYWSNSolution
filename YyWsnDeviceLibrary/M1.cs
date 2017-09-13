@@ -17,6 +17,12 @@ namespace YyWsnDeviceLibrary
 
         public M1(byte[] SourceData)
         {
+
+            //2017版协议 v3.5
+            //判断第三位 ，01 代表从传感器发出的正常数据，长度不是固定值
+
+
+
             //上电自检数据
             if (SourceData.Length==82)
             {

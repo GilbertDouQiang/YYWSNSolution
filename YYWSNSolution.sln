@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RussianAnalyse", "RussianAn
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocketMonitorUI", "SocketMonitorUI\SocketMonitorUI.csproj", "{4D688CAC-49A3-47BF-83AA-CE45D0C0C190}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceVerifyGUI", "DeviceVerifyGUI\DeviceVerifyGUI.csproj", "{997BB859-791A-4F2B-A41F-420B97BE88A9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -69,6 +71,10 @@ Global
 		{4D688CAC-49A3-47BF-83AA-CE45D0C0C190}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4D688CAC-49A3-47BF-83AA-CE45D0C0C190}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4D688CAC-49A3-47BF-83AA-CE45D0C0C190}.Release|Any CPU.Build.0 = Release|Any CPU
+		{997BB859-791A-4F2B-A41F-420B97BE88A9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{997BB859-791A-4F2B-A41F-420B97BE88A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{997BB859-791A-4F2B-A41F-420B97BE88A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{997BB859-791A-4F2B-A41F-420B97BE88A9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

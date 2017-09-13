@@ -19,5 +19,20 @@ namespace HyperWSN.Socket
             }
         }
 
+        public void ConnectQueue()
+        {
+
+        }
+
+        public void DisconnectQueue()
+        {
+
+        }
+
+        public void SaveToQueue()
+        {
+
+        }
+
     }
 }
