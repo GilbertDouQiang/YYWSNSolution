@@ -3,11 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using System.Timers;
 
 namespace YyWsnCommunicatonLibrary
 {
     public class Logger
     {
+
+        private static StringBuilder LogStringBuilder = new StringBuilder();
+        private static Timer writeTimer;
+
 
         private static object ob = "lock";
         /// <summary>
@@ -18,7 +23,32 @@ namespace YyWsnCommunicatonLibrary
         /// <param name="strErrorDescription"></param>
         public static void AddLog(string LogText)
         {
+            if (writeTimer==null)
+            {
+                writeTimer = new Timer();
+                writeTimer.Interval = 5000;
+                writeTimer.Enabled = true;
+                writeTimer.Elapsed += WriteTimer_Elapsed;
+            }
 
+            lock (ob)
+            {
+                LogStringBuilder.Append(LogText + "\r\n");
+            }
+
+
+
+
+            
+        }
+
+        private static void WriteTimer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            //定期写入,去掉没有必要的写入操作
+            if (LogStringBuilder.Length==0)
+            {
+                return;
+            }
 
             string strMatter; //错误内容
             string strPath; //错误文件的路径
@@ -36,14 +66,17 @@ namespace YyWsnCommunicatonLibrary
                     Directory.CreateDirectory(strPath); //建立目录　Directory为目录对象
                 }
                 strPath = strPath + "\\" + fileName;
-                strMatter = LogText;
+                
                 //TODO: 去掉末尾的\r\n
 
 
                 lock (ob)
                 {
                     StreamWriter FileWriter = new StreamWriter(strPath, true, Encoding.Unicode); //创建日志文件
+                    strMatter = LogStringBuilder.ToString();
+                    LogStringBuilder.Clear();
                     FileWriter.WriteLine(strMatter);
+                    
                     FileWriter.Close(); //关闭StreamWriter对象
                     FileWriter = null;
 
@@ -57,7 +90,6 @@ namespace YyWsnCommunicatonLibrary
                 string str = ex.Message.ToString();
             }
         }
-
 
         public static void AddLogAutoTime(string LogText)
         {

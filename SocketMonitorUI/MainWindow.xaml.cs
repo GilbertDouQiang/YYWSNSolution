@@ -182,7 +182,7 @@ namespace SocketMonitorUI
                 //MQ 相关操作
                 try
                 {
-                    session.ConnectQueue("HyperWSNQueue");
+                    session.ConnectQueue("HyperWSNQueue",session.RemoteEndPoint.Address.ToString()+"."+session.RemoteEndPoint.Port.ToString());
 
                 }
                 catch (Exception)

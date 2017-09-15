@@ -13,7 +13,7 @@ namespace YyWsnCommunicatonLibrary.Tests
         [TestMethod()]
         public void SendMessageTest()
         {
-            ActiveMQHelper mymq = new ActiveMQHelper(isLocalMachine: true, remoteAddress: "");
+            ActiveMQHelper mymq = new ActiveMQHelper(isLocalMachine: true, remoteAddress: "",clientID: "clientid");
 
             mymq.InitQueueOrTopic(topic: false, name: "SensorData", selector: false);
             mymq.SendMessage("BE BE 01 01 02 EB EB");

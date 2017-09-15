@@ -21,15 +21,16 @@ namespace HyperWSN.Socket
             }
         }
 
-        public void ConnectQueue(string QueueName)
+        public void ConnectQueue(string QueueName,string ClientID)
         {
             try
             {
-                mymq = new ActiveMQHelper(isLocalMachine: true, remoteAddress: "");
+                mymq = new ActiveMQHelper(isLocalMachine: true, remoteAddress: "",clientID: ClientID);
+                //mymq.ClientID = ClientID;
                 mymq.InitQueueOrTopic(topic: false, name: QueueName, selector: false);
                 QueueStatic = true;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
 
                 mymq = null;

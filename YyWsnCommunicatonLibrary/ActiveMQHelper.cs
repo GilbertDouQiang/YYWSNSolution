@@ -19,19 +19,20 @@ namespace YyWsnCommunicatonLibrary
 
         private bool isTopic = false;
         private bool hasSelector = false;
-        private const string ClientID = "clientid";
+        //private const string ClientID = "clientid";
         private const string Selector = "filter='demo'";
         private bool sendSuccess = true;
         private bool receiveSuccess = true;
 
-        public ActiveMQHelper(bool isLocalMachine, string remoteAddress)
+        public string ClientID { get; set; }
+        public ActiveMQHelper(bool isLocalMachine, string remoteAddress,string clientID)
         {
             try
             {
                 //初始化工厂   
                 if (isLocalMachine)
                 {
-                    factory = new ConnectionFactory("tcp://localhost:61616/");
+                    factory = new ConnectionFactory("tcp://localhost:61616?wireFormat.maxInactivityDuration=0");
                 }
                 else
                 {
@@ -39,7 +40,7 @@ namespace YyWsnCommunicatonLibrary
                 }
                 //通过工厂建立连接
                 connection = factory.CreateConnection();
-                connection.ClientId = ClientID;
+                connection.ClientId = clientID;
                 connection.Start();
                 //通过连接创建Session会话
                 session = connection.CreateSession();
