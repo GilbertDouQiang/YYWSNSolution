@@ -36,6 +36,8 @@ namespace SocketMonitorUI
 
         IServerConfig m_Config;
 
+        
+
         public MainWindow()
         {
             InitializeComponent();
@@ -128,6 +130,17 @@ namespace SocketMonitorUI
         {
             Dispatcher.BeginInvoke(new Action(delegate
             {
+                try
+                {
+                    session.DisconnectQueue();
+
+
+                }
+                catch (Exception)
+                {
+
+                    throw;
+                }
                 txtConsole.Text = DateTime.Now.ToString("HH:mm:ss.fff") + " :\tClient Disconnect:\t " + session.RemoteEndPoint.Address.ToString() + " :"
                 + session.RemoteEndPoint.Port.ToString() + "\t Reason:" + value.ToString() + " \r\n" + txtConsole.Text;
 
@@ -146,6 +159,7 @@ namespace SocketMonitorUI
             //客户端连接成功
             Dispatcher.BeginInvoke(new Action(delegate
             {
+              
                 session.Send(requestInfo.Body, 0, requestInfo.Body.Length);
                 txtConsole.Text = DateTime.Now.ToString("HH:mm:ss.fff") + " :\tReceived:" + session.RemoteEndPoint.Address.ToString()+" :\t" 
                 +CommArithmetic.ToHexString( requestInfo.Body)+" \r\n" + txtConsole.Text;
@@ -164,6 +178,24 @@ namespace SocketMonitorUI
             //客户端连接成功
             Dispatcher.BeginInvoke(new Action(delegate
             {
+
+                //MQ 相关操作
+                try
+                {
+                    session.ConnectQueue("HyperWSNQueue");
+
+                }
+                catch (Exception)
+                {
+
+
+                }
+
+
+
+                //MQ 相关操作结束
+              
+
                 txtConsole.Text = DateTime.Now.ToString("HH:mm:ss.fff") + " :\tClient Connect:      \t"+ session.RemoteEndPoint.Address.ToString() +" :" +session.RemoteEndPoint.Port.ToString()+ " \r\n" + txtConsole.Text;
                 if (chkLog.IsChecked == true)
                 {

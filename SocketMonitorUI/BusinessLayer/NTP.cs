@@ -13,7 +13,8 @@ using YyWsnDeviceLibrary;
 namespace SocketMonitorUI.BusinessLayer
 {
     /// <summary>
-    /// 服务器想网关发送授时反馈
+    /// 服务器想网关发送授时反馈</br>
+    /// BE BE 0F 91 01 00 18 51 00 10 00 17 09 15 01 38 46 01 95 89 EB EB
     /// </summary>
     public class NTP : CommandBase<HyperWSNSession, BinaryRequestInfo>
     {
@@ -65,6 +66,22 @@ namespace SocketMonitorUI.BusinessLayer
 
 
                 session.Send(response, 0, response.Length); ;
+
+                try
+                {
+                    if (session.QueueStatic == true)
+                    {
+                        session.SaveToQueue(CommArithmetic.ToHexString(requestInfo.Body));
+
+                    }
+
+                }
+                catch (Exception)
+                {
+
+                    
+                }
+                
                 Logger.AddLog(DateTime.Now.ToString("HH:mm:ss.fff") + " :SendData:" + session.RemoteEndPoint.Address.ToString() + " :\t"
                    + CommArithmetic.ToHexString(response) + " ");
 
