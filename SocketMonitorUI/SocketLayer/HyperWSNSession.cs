@@ -47,7 +47,7 @@ namespace HyperWSN.Socket
             }
         }
 
-        public void SaveToQueue(string StringData)
+        public void SaveToQueue(byte[] StringData)
         {
             try
             {

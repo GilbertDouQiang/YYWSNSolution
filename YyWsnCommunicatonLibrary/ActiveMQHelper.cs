@@ -15,7 +15,8 @@ namespace YyWsnCommunicatonLibrary
         private ISession session;
         private IMessageProducer prod;
         private IMessageConsumer consumer;
-        private ITextMessage msg;
+        //private ITextMessage msg;
+        private IBytesMessage msg;
 
         private bool isTopic = false;
         private bool hasSelector = false;
@@ -95,7 +96,8 @@ namespace YyWsnCommunicatonLibrary
                     isTopic = false;
                 }
                 //创建一个发送的消息对象
-                msg = prod.CreateTextMessage();
+                //msg = prod.CreateTextMessage();
+                msg = prod.CreateBytesMessage();
             }
             catch (System.Exception e)
             {
@@ -107,7 +109,7 @@ namespace YyWsnCommunicatonLibrary
             return sendSuccess;
         }
 
-        public bool SendMessage(string message, string msgId = "defult", MsgPriority priority = MsgPriority.Normal)
+        public bool SendMessage(byte[] message, string msgId = "defult", MsgPriority priority = MsgPriority.Normal)
         {
             if (prod == null)
             {
@@ -122,8 +124,10 @@ namespace YyWsnCommunicatonLibrary
             msg.NMSCorrelationID = msgId;
             msg.Properties["MyID"] = msgId;
             msg.NMSMessageId = msgId;
-            msg.Text = message;
-            Console.WriteLine(message);
+            msg.Content = message;
+
+            
+            //Console.WriteLine(message);
 
             if (isTopic)
             {
@@ -137,7 +141,7 @@ namespace YyWsnCommunicatonLibrary
             return sendSuccess;
         }
 
-        private bool ProducerSubcriber(string message, MsgPriority priority)
+        private bool ProducerSubcriber(byte[] message, MsgPriority priority)
         {
             try
             {
@@ -161,7 +165,7 @@ namespace YyWsnCommunicatonLibrary
             return sendSuccess;
         }
 
-        private bool P2P(string message, MsgPriority priority)
+        private bool P2P(byte[] message, MsgPriority priority)
         {
             try
             {
@@ -203,7 +207,7 @@ namespace YyWsnCommunicatonLibrary
         }
 
 
-        public string GetMessage()
+        public byte[] GetMessage()
         {
             if (prod == null)
             {
@@ -212,11 +216,11 @@ namespace YyWsnCommunicatonLibrary
             }
 
             //Console.WriteLine("Begin receive messages...");
-            ITextMessage revMessage = null;
+            IBytesMessage revMessage = null;
             try
             {
                 //同步阻塞10ms,没消息就直接返回null,注意此处时间不能设太短，否则还没取到消息就直接返回null了！！！
-                revMessage = consumer.Receive(new TimeSpan(TimeSpan.TicksPerMillisecond * 10)) as ITextMessage;
+                revMessage = consumer.Receive(new TimeSpan(TimeSpan.TicksPerMillisecond * 10)) as IBytesMessage;
             }
             catch (System.Exception e)
             {
@@ -237,7 +241,7 @@ namespace YyWsnCommunicatonLibrary
                 //Console.WriteLine("Received message with text: " + revMessage.Text);
             }
 
-            return revMessage.Text;
+            return revMessage.Content;
         }
 
 

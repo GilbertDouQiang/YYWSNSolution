@@ -71,8 +71,7 @@ namespace SocketMonitorUI.BusinessLayer
                 {
                     if (session.QueueStatic == true)
                     {
-                        session.SaveToQueue(CommArithmetic.ToHexString(requestInfo.Body));
-
+                        session.SaveToQueue(requestInfo.Body);
                     }
 
                 }

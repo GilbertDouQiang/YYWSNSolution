@@ -16,8 +16,8 @@ namespace YyWsnCommunicatonLibrary.Tests
             ActiveMQHelper mymq = new ActiveMQHelper(isLocalMachine: true, remoteAddress: "",clientID: "clientid");
 
             mymq.InitQueueOrTopic(topic: false, name: "SensorData", selector: false);
-            mymq.SendMessage("BE BE 01 01 02 EB EB");
-            mymq.SendMessage("hello26");
+            //mymq.SendMessage("BE BE 01 01 02 EB EB");
+            //mymq.SendMessage("hello26");
 
             System.Threading.Thread.Sleep(500);
             mymq.ShutDown();

@@ -79,13 +79,6 @@ namespace SocketMonitorUI.BusinessLayer
             }
                 
 
-           
-
-              
-
-            
-
-
 
         }
 
