@@ -203,6 +203,16 @@ namespace YyWsnDeviceLibrary
 
             ObservableCollection<Device> devices = new ObservableCollection<Device>();
 
+            //临时应用，为兼容Z协议，只能处理单条，可能出现丢包
+            if(SourceData.Length ==28 && SourceData[0]==0xEA && SourceData[1] ==0x18)
+            {
+                Device device = CreateDevice(SourceData);
+                devices.Add(device);
+                return devices;
+            }
+
+
+            //仅适合新协议，不兼容Z协议
             for (int i = 0; i < SourceData.Length; i++)
             {
                 try
