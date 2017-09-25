@@ -5,8 +5,45 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DeviceSQLDatabaseWPFUI"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+         Title="HyperWSN MQ DataBase GUI" Height="660" Width="1024" WindowStartupLocation="CenterScreen">
     <Grid>
-        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="9*"/>
+        </Grid.RowDefinitions>
+        <Border Padding="5" Grid.Row="0">
+            <StackPanel>
+                <Grid Margin="0 0 0 5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="8*"/>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="*"/>
+
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Connection String" Grid.Column="0" FontWeight="Bold" Margin="0 0 10 0" />
+                    <TextBox x:Name="txtConnectionString" Text="Server = 172.16.148.154; Database = HyperWSN_DB; Uid = sa; Pwd = M5m4v0e0" Grid.Column="1" Margin="0 0 10 0"></TextBox>
+                    <Button Grid.Column="2" Content="Start Service" Margin="0,0,10.5,0" x:Name="btnStartService" Click="btnStartService_Click" Height="19" VerticalAlignment="Bottom"  />
+                    <CheckBox Content="Log to File" Grid.Column="3" x:Name="chkLog" IsChecked="True"/>
+
+                </Grid>
+                <Grid Margin="0 0 0 5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+
+                    </Grid.ColumnDefinitions>
+                   
+
+
+
+                </Grid>
+            </StackPanel>
+
+        </Border>
+
     </Grid>
 </Window>

@@ -109,7 +109,7 @@ namespace YyWsnCommunicatonLibrary
             return sendSuccess;
         }
 
-        public bool SendMessage(byte[] message, string msgId = "defult", MsgPriority priority = MsgPriority.Normal)
+        public bool SendMessage(byte[] message, string msgId = "defult", MsgPriority priority = MsgPriority.Highest)
         {
             if (prod == null)
             {
@@ -220,7 +220,7 @@ namespace YyWsnCommunicatonLibrary
             try
             {
                 //同步阻塞10ms,没消息就直接返回null,注意此处时间不能设太短，否则还没取到消息就直接返回null了！！！
-                revMessage = consumer.Receive(new TimeSpan(TimeSpan.TicksPerMillisecond * 10)) as IBytesMessage;
+                revMessage = consumer.Receive(new TimeSpan(TimeSpan.TicksPerMillisecond * 20)) as IBytesMessage;
             }
             catch (System.Exception e)
             {

@@ -239,6 +239,10 @@ namespace SnifferGUI
                     
                     //m1groups.Add(item);
 
+                    if (item.DeviceMac == null)
+                    {
+                        continue;
+                    }
 
 
                     if (txtFilterClientID.Text.Length > 0)

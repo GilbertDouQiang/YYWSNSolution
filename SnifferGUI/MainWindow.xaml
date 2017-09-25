@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SnifferGUI"
         mc:Ignorable="d"
-        Title="YYWSN Sniffer GUI" Height="660" Width="1024" WindowStartupLocation="CenterScreen">
+        Title="Hyper WSN Sniffer GUI" Height="660" Width="1024" WindowStartupLocation="CenterScreen">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
@@ -45,7 +45,7 @@
                     <ComboBox x:Name="cbSerialPort" Grid.Column="1" Margin="0 0 10 0"/>
                     <Button Grid.Column="2" Content="Open" Margin="0 0 10 0" x:Name="btnOpenComPort" Click="btnOpenComPort_Click"/>
                     <Button Grid.Column="3" Content="Refersh" x:Name="btnResersh" Click="btnResersh_Click" Margin="0 0 10 0"/>
-                    <TextBox Grid.Column="4" x:Name="txtSendCommand" Text="EA 14 30 1E" Margin="0 0 10 0"/>
+                    <TextBox Grid.Column="4" x:Name="txtSendCommand" Text="CE 09 A0 01 00 19 CF 0E 40 00 01 00 00 EC" Margin="0 0 10 0"/>
                     <Button Grid.Column="5" Content="Send" x:Name="btnSendCommand" Click="btnSendCommand_Click" Height="21" Margin="0,0,0.5,0" VerticalAlignment="Top"/>
 
 

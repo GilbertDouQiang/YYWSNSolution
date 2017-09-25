@@ -50,7 +50,22 @@ namespace SocketMonitorUI.BusinessLayer
                     response[9] = 0x00;
                     response[10] = 0xBE;
                     response[11] = 0xBE;
-                    session.Send(response, 0, response.Length); ;
+                    session.Send(response, 0, response.Length);
+
+                    try
+                    {
+                        if (session.QueueStatic == true)
+                        {
+                            session.SaveToQueue(requestInfo.Body);
+                        }
+
+                    }
+                    catch (Exception)
+                    {
+
+
+                    }
+
                     Logger.AddLog(DateTime.Now.ToString("HH:mm:ss.fff") + " :SendData:" + session.RemoteEndPoint.Address.ToString() + " :\t"
                        + CommArithmetic.ToHexString(response) + " ");
                 }

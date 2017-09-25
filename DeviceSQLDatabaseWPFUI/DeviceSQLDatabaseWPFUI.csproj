@@ -90,6 +90,12 @@
     </None>
     <AppDesigner Include="Properties\" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DeviceSQLDatabaseLibrary\DeviceSQLDatabaseLibrary.csproj">
+      <Project>{dc2d93c3-df31-4058-b1ac-ad3b4801b654}</Project>
+      <Name>DeviceSQLDatabaseLibrary</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -7,6 +7,29 @@ namespace YyWsnDeviceLibrary
 {
     public class CommArithmetic
     {
+
+        public static int Byte2Int(byte[] Sourcebytes,int Position,int Length)
+        {
+            try
+            {
+                if (Length == 2)
+                {
+                    return Sourcebytes[Position] * 256 + Sourcebytes[Position + 1];
+                }
+                else if (Length == 3)
+                {
+                    return Sourcebytes[Position] * 65536 + Sourcebytes[Position + 1] * 256 + Sourcebytes[Position + 2];
+                }
+            }
+            catch (Exception)
+            {
+
+                
+            }
+            
+            return 0;
+
+        }
         /// <summary>
         /// 
         /// </summary>
@@ -221,6 +244,12 @@ namespace YyWsnDeviceLibrary
 
         }
 
+        public static double DecodeVoltage(byte[] SourceData, int Start)
+        {
+            return Math.Round(Convert.ToDouble((SourceData[Start] * 256 + SourceData[Start + 1])) / 1000, 2);
+
+        }
+
         public static  byte[] EncodeDateTime(DateTime dateTime)
         {
             
@@ -283,5 +312,35 @@ namespace YyWsnDeviceLibrary
             
             return datetimeByte;
         }
+
+
+        public static double SHT20Temperature(byte a, byte b)
+        {
+            //double a = ((Convert.ToInt32(buf[bufRef + 5].ToString("X2"), 16) * 256 + Convert.ToInt32(buf[bufRef + 6].ToString("X2"), 16)) / 65536) * 175.72 - 46.85;
+            double c = Math.Round(( -46.85 + 175.72 * (a * 256 + b) / 65536),2);
+
+            return c;
+
+        }
+
+
+        public static double SHT20Humidity(byte a, byte b)
+        {
+            //double a = ((Convert.ToInt32(buf[bufRef + 5].ToString("X2"), 16) * 256 + Convert.ToInt32(buf[bufRef + 6].ToString("X2"), 16)) / 65536) * 175.72 - 46.85;
+            double c = Math.Round((0 - 6.0 + 125.0 * (a * 256.0 + b) / 65536),2);
+
+            return c;
+
+        }
+
+        public static double SHT20Voltage(byte a, byte b)
+        {
+            //x = MSB*256 + LSB， U = x*4/1023
+
+            double c = Math.Round(((a * 256 + b) * 4 / (double)1023),2);
+            return c;
+
+        }
+
     }
 }

@@ -94,7 +94,44 @@ namespace YyWsnDeviceLibrary
             }
 
 
-            //模式1 正常传输的数据，兼容原Z版本
+            //兼容模式，兼容Z模式
+            if (SourceData.Length == 28)
+            {
+                Name = "M1";
+                DeviceID = "51";
+                DeviceMac = CommArithmetic.DecodeMAC(SourceData, 5);
+                ClientID = CommArithmetic.DecodeClientID(SourceData, 3);
+                WorkFunction = SourceData[2];
+                ProtocolVersion = 0x00;
+
+                SensorSN = SourceData[12] * 256 + SourceData[13];
+                //传感器信息
+                ICTemperature = 0; //老协议中没有IC 温度
+
+
+                Volt = CommArithmetic.SHT20Voltage(SourceData[24],SourceData[25]);
+
+
+                Temperature = CommArithmetic.SHT20Temperature(SourceData[16], SourceData[17]);
+
+
+                Humidity = CommArithmetic.SHT20Humidity(SourceData[20],SourceData[21]);
+                //广播模式，补充采集和传输时间
+                SensorCollectTime = System.DateTime.Now;
+                SensorTransforTime = System.DateTime.Now;
+                //RSSI = SourceData[30] / 2 - 138; //1101 方案
+                //可能收到没有RSSI的数据
+                if (SourceData.Length == 28)
+                {
+                    RSSI = SourceData[27] - 256;
+                }
+                this.SourceData = CommArithmetic.ToHexString(SourceData);
+
+
+            }
+
+
+            //模式1 正常传输的数据，
             if (SourceData.Length==31)
             {
                 

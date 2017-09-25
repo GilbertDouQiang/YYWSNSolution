@@ -50,6 +50,9 @@ namespace SocketMonitorUI.BusinessLayer
                 response[10] = 0xBE;
 
                 session.Send(response, 0, response.Length); ;
+
+               
+
                 Logger.AddLog(DateTime.Now.ToString("HH:mm:ss.fff") + " :SendData:" + session.RemoteEndPoint.Address.ToString() + " :\t"
                    + CommArithmetic.ToHexString(response) + " ");
 

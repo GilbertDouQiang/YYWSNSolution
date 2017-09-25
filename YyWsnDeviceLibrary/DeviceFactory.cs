@@ -45,6 +45,17 @@ namespace YyWsnDeviceLibrary
             //处理从USB Gateway收到的传感器数据
             try
             {
+                //兼容Z协议的USB/UART接收
+                if (SourceData[0]==0xEA && SourceData[1]==0x18 && SourceData.Length==28)
+                {
+                    M1 sensorM1 = new M1(SourceData);
+                    if (sensorM1 != null)
+                    {
+                        return sensorM1;
+                    }
+                }
+
+
                 if (SourceData[0]==0xEC && SourceData[1]==0x4D && SourceData[4]==0x51)
                 {
                     //发现M1 上电自检包

@@ -36,6 +36,33 @@ namespace YyWsnDeviceLibrary.Tests
         }
 
 
+
+        [TestMethod()]
+        public void CreateDeviceTest2()
+        {
+
+
+            //EA 18 01 02 00 52 00 27 70 10 0F 02 00 8D 0B 02 6C 15 0C 02 84 18 09 02 03 04 AE DB
+            //EA 19 01 53 01 D3 9A 11 11 11 11 0E 61 00 D9 63 18 64 0B A3 65 09 48 66 1A 9C 00 98 EE AE D9
+
+            //模式1 发出的数据，兼容Z协议
+            string SourceBinary = "EA 18 01 02 00 52 00 27 70 10 0F 02 00 8D 0B 02 6C 15 0C 02 84 18 09 02 03 04 AE DB ";
+            byte[] SourceByte = CommArithmetic.HexStringToByteArray(SourceBinary, 0);
+
+            Device device = DeviceFactory.CreateDevice(SourceByte);
+            Assert.AreEqual(typeof(M1), device.GetType());
+            Assert.AreEqual(((M1)device).DeviceMac, "11 11 11 11 ");
+
+
+            //上电自检发出的数据
+            SourceBinary = "EC 4D 01 01 51 02 11 76 B8 4A F1 76 B8 4A FF FF FF FF A1 05 D3 9A 00 02 00 00 0A 17 04 01 23 59 59 01 00 0D 01 00 17 70 F0 60 23 28 03 E8 1B 58 EC 78 25 1C 01 F4 00 00 00 00 1A 0B CE 00 00 04 00 00 00 00 00 00 00 00 00 0A CA 1C 51 00 E1 47 E7 CE";
+            SourceByte = CommArithmetic.HexStringToByteArray(SourceBinary, 0);
+            device = DeviceFactory.CreateDevice(SourceByte);
+            Assert.AreEqual(typeof(M1), device.GetType());
+
+        }
+
+
         [TestMethod()]
         public void CreateDeviceUartGateway()
         {
