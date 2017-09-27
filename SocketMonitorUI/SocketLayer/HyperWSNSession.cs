@@ -25,12 +25,12 @@ namespace HyperWSN.Socket
         {
             try
             {
-                mymq = new ActiveMQHelper(isLocalMachine: true, remoteAddress: "",clientID: ClientID);
-                //mymq.ClientID = ClientID;
-                mymq.InitQueueOrTopic(topic: false, name: QueueName, selector: false);
+                mymq = new ActiveMQHelper(isLocalMachine: true, remoteAddress: "");
+                mymq.ClientID = "HyperWSNTopicClient"; ;
+                mymq.InitQueueOrTopic(topic: true, name: QueueName, selector: false);
                 QueueStatic = true;
             }
-            catch (Exception ex)
+            catch (Exception )
             {
 
                 mymq = null;

@@ -47,7 +47,7 @@ namespace SocketMonitorUI.BusinessLayer
             
             //识别出不同的网关
             Device gateway = DeviceFactory.CreateDevice(requestInfo.Body);
-            if (gateway.GetType()==typeof(AlarmGateway1))
+            if (gateway!=null && gateway.GetType()==typeof(AlarmGateway1))
             {
                 if (ServiceStatus.ResponseGatewayReport == true)
                 {

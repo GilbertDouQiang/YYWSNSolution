@@ -53,8 +53,9 @@ namespace DeviceSQLDatabaseLibrary
 
             try
             {
-                mq = new ActiveMQHelper(isLocalMachine: true, remoteAddress: "", clientID: ClientID);
-                mq.InitQueueOrTopic(topic: false, name: QueueName, selector: false);
+                mq = new ActiveMQHelper(isLocalMachine: true, remoteAddress: "");
+                mq.ClientID = "HyperWSNTopicClient";
+                mq.InitQueueOrTopic(topic: true, name: "HyperWSNQueue", selector: false);
 
             }
             catch (Exception)

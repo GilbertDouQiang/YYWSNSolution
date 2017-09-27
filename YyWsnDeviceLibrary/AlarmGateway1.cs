@@ -25,17 +25,18 @@ namespace YyWsnDeviceLibrary
             Volt = Math.Round(Convert.ToDouble((SourceData[18] * 256 + SourceData[19])) / 1000, 2);
             SoftwareVersion = CommArithmetic.DecodeClientID(SourceData, 20);
             ClientID = CommArithmetic.DecodeClientID(SourceData, 22);
-            RAMCoutnt = SourceData[24];
-            ROMCount = SourceData[25] * 65536 + SourceData[26] * 256 + SourceData[27];
-            CSQ = SourceData[30];
-            ReceivedSensorCount = SourceData[32];
-            BindingSensorCount = SourceData[33];
+            TransStrategy = SourceData[24];
+            RAMCoutnt = SourceData[25];
+            ROMCount = SourceData[26] * 65536 + SourceData[27] * 256 + SourceData[28];
+            CSQ = SourceData[31];
+            ReceivedSensorCount = SourceData[33];
+            BindingSensorCount = SourceData[34];
 
-            SimcardNum = CommArithmetic.DecodeMAC(SourceData, 35);
+            SimcardNum = CommArithmetic.DecodeMAC(SourceData, 36);
 
-            LastTransforNumber = SourceData[40] * 65536 + SourceData[41] * 256 + SourceData[42];
+            LastTransforNumber = SourceData[41] * 65536 + SourceData[42] * 256 + SourceData[43];
 
-            LastTransforStatus = SourceData[44] * 256 + SourceData[45];
+            LastTransforStatus = SourceData[45] * 256 + SourceData[46];
 
 
 
@@ -46,5 +47,7 @@ namespace YyWsnDeviceLibrary
 
 
         }
+
+        public byte TransStrategy { get; set; }
     }
 }

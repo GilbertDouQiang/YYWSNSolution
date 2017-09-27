@@ -23,7 +23,7 @@
 
                     </Grid.ColumnDefinitions>
                     <TextBlock Text="Connection String" Grid.Column="0" FontWeight="Bold" Margin="0 0 10 0" />
-                    <TextBox x:Name="txtConnectionString" Text="Server = 172.16.148.154; Database = HyperWSN_DB; Uid = sa; Pwd = M5m4v0e0" Grid.Column="1" Margin="0 0 10 0"></TextBox>
+                    <TextBox x:Name="txtConnectionString" Text="Server = 172.16.149.70; Database = HyperWSN_DB; Uid = sa; Pwd = M5m4v0e0" Grid.Column="1" Margin="0 0 10 0"></TextBox>
                     <Button Grid.Column="2" Content="Start Service" Margin="0,0,10.5,0" x:Name="btnStartService" Click="btnStartService_Click" Height="19" VerticalAlignment="Bottom"  />
                     <CheckBox Content="Log to File" Grid.Column="3" x:Name="chkLog" IsChecked="True"/>
 

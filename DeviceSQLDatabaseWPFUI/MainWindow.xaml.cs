@@ -45,7 +45,7 @@ namespace DeviceSQLDatabaseWPFUI
                 //service.StopService();
                 service.SaveInterval = 2000;
                 service.QueueName = "HyperWSNQueue";
-                service.ClientID = "Receive1";
+                
                 service.StartService();
 
                 btnStartService.Content = "Stop Service";

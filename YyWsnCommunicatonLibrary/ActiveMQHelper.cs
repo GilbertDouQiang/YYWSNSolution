@@ -15,18 +15,16 @@ namespace YyWsnCommunicatonLibrary
         private ISession session;
         private IMessageProducer prod;
         private IMessageConsumer consumer;
-        //private ITextMessage msg;
         private IBytesMessage msg;
 
-        private bool isTopic = false;
+        private bool isTopic = true;
         private bool hasSelector = false;
-        //private const string ClientID = "clientid";
+        public string ClientID = "clientid";
         private const string Selector = "filter='demo'";
         private bool sendSuccess = true;
         private bool receiveSuccess = true;
 
-        public string ClientID { get; set; }
-        public ActiveMQHelper(bool isLocalMachine, string remoteAddress,string clientID)
+        public ActiveMQHelper(bool isLocalMachine, string remoteAddress)
         {
             try
             {
@@ -37,11 +35,11 @@ namespace YyWsnCommunicatonLibrary
                 }
                 else
                 {
-                    factory = new ConnectionFactory("tcp://" + remoteAddress + ":61616/"); //写tcp://192.168.1.111:61616的形式连接其他服务器上的ActiveMQ服务器           
+                    factory = new ConnectionFactory("tcp://" + remoteAddress + ":61616?wireFormat.maxInactivityDuration=0"); //写tcp://192.168.1.111:61616的形式连接其他服务器上的ActiveMQ服务器           
                 }
                 //通过工厂建立连接
                 connection = factory.CreateConnection();
-                connection.ClientId = clientID;
+                connection.ClientId = ClientID;
                 connection.Start();
                 //通过连接创建Session会话
                 session = connection.CreateSession();
@@ -53,9 +51,11 @@ namespace YyWsnCommunicatonLibrary
             {
                 sendSuccess = false;
                 receiveSuccess = false;
+                Console.WriteLine("Exception:{0}", e.Message);
+                Console.ReadLine();
                 throw e;
             }
-
+            Console.WriteLine("Begin connection...");
         }
 
         public bool InitQueueOrTopic(bool topic, string name, bool selector = false)
@@ -80,7 +80,6 @@ namespace YyWsnCommunicatonLibrary
                 }
                 else
                 {
-                    //标准的使用在这里
                     prod = session.CreateProducer(new Apache.NMS.ActiveMQ.Commands.ActiveMQQueue(name));
                     if (selector)
                     {
@@ -89,27 +88,27 @@ namespace YyWsnCommunicatonLibrary
                     }
                     else
                     {
-                        //核心部分
                         consumer = session.CreateConsumer(new Apache.NMS.ActiveMQ.Commands.ActiveMQQueue(name));
                         hasSelector = false;
                     }
                     isTopic = false;
                 }
                 //创建一个发送的消息对象
-                //msg = prod.CreateTextMessage();
                 msg = prod.CreateBytesMessage();
             }
             catch (System.Exception e)
             {
                 sendSuccess = false;
                 receiveSuccess = false;
+                Console.WriteLine("Exception:{0}", e.Message);
+                Console.ReadLine();
                 throw e;
             }
 
             return sendSuccess;
         }
 
-        public bool SendMessage(byte[] message, string msgId = "defult", MsgPriority priority = MsgPriority.Highest)
+        public bool SendMessage(byte[] message, string msgId = "defult", MsgPriority priority = MsgPriority.Normal)
         {
             if (prod == null)
             {
@@ -125,9 +124,7 @@ namespace YyWsnCommunicatonLibrary
             msg.Properties["MyID"] = msgId;
             msg.NMSMessageId = msgId;
             msg.Content = message;
-
-            
-            //Console.WriteLine(message);
+            Console.WriteLine(message);
 
             if (isTopic)
             {
@@ -141,30 +138,46 @@ namespace YyWsnCommunicatonLibrary
             return sendSuccess;
         }
 
-        private bool ProducerSubcriber(byte[] message, MsgPriority priority)
+
+        public byte[] GetMessage()
         {
+            if (prod == null)
+            {
+                Console.WriteLine("call InitQueueOrTopic() first!!");
+                return null;
+            }
+
+            Console.WriteLine("Begin receive messages...");
+            IBytesMessage revMessage = null;
             try
             {
-                prod.Priority = priority;
-                //设置持久化,如果DeliveryMode没有设置或者设置为NON_PERSISTENT，那么重启MQ之后消息就会丢失
-                prod.DeliveryMode = MsgDeliveryMode.Persistent;
-                prod.Send(msg, Apache.NMS.MsgDeliveryMode.Persistent, priority, TimeSpan.MinValue);
-                //prod.CreateBytesMessage()
-                //IBytesMessage bytemessage = session.CreateBytesMessage();
-                //bytemessage.writeBytes(content);
-
-                //System.Threading.Thread.Sleep(1000);  
+                //同步阻塞10ms,没消息就直接返回null,注意此处时间不能设太短，否则还没取到消息就直接返回null了！！！
+                revMessage = consumer.Receive(new TimeSpan(TimeSpan.TicksPerMillisecond * 10)) as IBytesMessage;
             }
             catch (System.Exception e)
             {
-                sendSuccess = false;
-              
+                receiveSuccess = false;
+                Console.WriteLine("Exception:{0}", e.Message);
+                Console.ReadLine();
                 throw e;
             }
 
-            return sendSuccess;
+            if (revMessage == null)
+            {
+                Console.WriteLine("No message received!");
+                return null;
+            }
+            else
+            {
+                Console.WriteLine("Received message with Correlation ID: " + revMessage.NMSCorrelationID);
+                //Console.WriteLine("Received message with Properties'ID: " + revMessage.Properties["MyID"]);
+                //Console.WriteLine("Received message with text: " + revMessage.Text);
+            }
+
+            return revMessage.Content;
         }
 
+        //P2P模式，一个生产者对应一个消费者
         private bool P2P(byte[] message, MsgPriority priority)
         {
             try
@@ -183,7 +196,36 @@ namespace YyWsnCommunicatonLibrary
             catch (System.Exception e)
             {
                 sendSuccess = false;
-               
+                Console.WriteLine("Exception:{0}", e.Message);
+                Console.ReadLine();
+                throw e;
+            }
+
+            return sendSuccess;
+        }
+
+
+        //发布订阅模式，一个生产者多个消费者 
+        private bool ProducerSubcriber(byte[] message, MsgPriority priority)
+        {
+            try
+            {
+                prod.Priority = priority;
+                //设置持久化,如果DeliveryMode没有设置或者设置为NON_PERSISTENT，那么重启MQ之后消息就会丢失
+                prod.DeliveryMode = MsgDeliveryMode.Persistent;
+
+                prod.Send(msg, Apache.NMS.MsgDeliveryMode.Persistent, priority, TimeSpan.MinValue);
+                //prod.CreateBytesMessage()
+                //IBytesMessage bytemessage = session.CreateBytesMessage();
+                //bytemessage.writeBytes(content);
+
+                //System.Threading.Thread.Sleep(1000);  
+            }
+            catch (System.Exception e)
+            {
+                sendSuccess = false;
+                Console.WriteLine("Exception:{0}", e.Message);
+                Console.ReadLine();
                 throw e;
             }
 
@@ -193,57 +235,10 @@ namespace YyWsnCommunicatonLibrary
 
         public void ShutDown()
         {
-            try
-            {
-                session.Close();
-                connection.Close();
-            }
-            catch (Exception ex)
-            {
-
-                throw ex;
-            }
-           
+            Console.WriteLine("Close connection and session...");
+            session.Close();
+            connection.Close();
         }
-
-
-        public byte[] GetMessage()
-        {
-            if (prod == null)
-            {
-                //Console.WriteLine("call InitQueueOrTopic() first!!");
-                return null;
-            }
-
-            //Console.WriteLine("Begin receive messages...");
-            IBytesMessage revMessage = null;
-            try
-            {
-                //同步阻塞10ms,没消息就直接返回null,注意此处时间不能设太短，否则还没取到消息就直接返回null了！！！
-                revMessage = consumer.Receive(new TimeSpan(TimeSpan.TicksPerMillisecond * 20)) as IBytesMessage;
-            }
-            catch (System.Exception e)
-            {
-                receiveSuccess = false;
-               
-                throw e;
-            }
-
-            if (revMessage == null)
-            {
-                
-                return null;
-            }
-            else
-            {
-                //Console.WriteLine("Received message with Correlation ID: " + revMessage.NMSCorrelationID);
-                //Console.WriteLine("Received message with Properties'ID: " + revMessage.Properties["MyID"]);
-                //Console.WriteLine("Received message with text: " + revMessage.Text);
-            }
-
-            return revMessage.Content;
-        }
-
 
     }
 }

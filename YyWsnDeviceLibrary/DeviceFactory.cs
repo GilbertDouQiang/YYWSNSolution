@@ -24,7 +24,7 @@ namespace YyWsnDeviceLibrary
             {
                 //可能的数据包括: 网关的上报信息包
                 if (SourceData[0] == 0xBE && SourceData[1] == 0xBE && 
-                    SourceData[48] == 0xEB && SourceData[49] == 0xEB &&
+                    SourceData[49] == 0xEB && SourceData[50] == 0xEB &&
                     SourceData[3]==0x92)
                 {
                     //一体机数据
