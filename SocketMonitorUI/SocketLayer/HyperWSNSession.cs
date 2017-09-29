@@ -7,11 +7,18 @@ using SuperSocket.SocketBase.Command;
 using SuperSocket.SocketBase.Protocol;
 using YyWsnCommunicatonLibrary;
 
+using System.Data; // State variables 
+using System.Data.SqlClient; // Database 
+
+using System.Configuration;
+
+
 namespace HyperWSN.Socket
 {
     public class HyperWSNSession : AppSession<HyperWSNSession, BinaryRequestInfo>
     {
         ActiveMQHelper mymq;// = new ActiveMQHelper(isLocalMachine: true, remoteAddress: "");
+        public SqlConnection SQLConn;
 
         public new HyperWSNSocketServer AppServer
         {
@@ -21,7 +28,7 @@ namespace HyperWSN.Socket
             }
         }
 
-        public void ConnectQueue(string QueueName,string ClientID)
+        public void ConnectQueue(string QueueName, string ClientID)
         {
             try
             {
@@ -30,18 +37,18 @@ namespace HyperWSN.Socket
                 mymq.InitQueueOrTopic(topic: true, name: QueueName, selector: false);
                 QueueStatic = true;
             }
-            catch (Exception )
+            catch (Exception)
             {
 
                 mymq = null;
             }
-           
+
 
         }
 
         public void DisconnectQueue()
         {
-            if (mymq!=null)
+            if (mymq != null)
             {
                 mymq.ShutDown();
             }
@@ -60,11 +67,56 @@ namespace HyperWSN.Socket
             catch (Exception)
             {
 
-                
+
+            }
+        }
+
+        public void ConnectSQLServer()
+        {
+            try
+            {
+                string conn = ConfigurationManager.AppSettings["ConnectionString"];
+                SQLConn = new SqlConnection(conn);
+                SQLConn.Open();
+                SQLStatic = true;
+
+            }
+            catch (Exception ex)
+            {
+
+                SQLStatic = false;
+                throw ex;
+            }
+        }
+
+
+        public void DisConnectSQLServer()
+        {
+            try
+            {
+                if (SQLConn != null)
+                {
+                    if (SQLConn.State == ConnectionState.Open)
+                    {
+                        SQLConn.Close();
+                    }
+                    SQLConn.Dispose();
+                    SQLConn = null;
+                }
+
+                SQLStatic = false;
+
+            }
+            catch (Exception)
+            {
+
+                SQLStatic = false;
             }
         }
 
         public bool QueueStatic { get; set; }
+
+        public bool SQLStatic { get; set; }
 
     }
 }

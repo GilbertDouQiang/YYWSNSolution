@@ -22,7 +22,7 @@ namespace YyWsnDeviceLibrary
             Name = "AlarmGateway-1";
             DeviceMac = CommArithmetic.DecodeMAC(SourceData, 8);
             LastTransforDate = CommArithmetic.DecodeDateTime(SourceData, 12);
-            Volt = Math.Round(Convert.ToDouble((SourceData[18] * 256 + SourceData[19])) / 1000, 2);
+            Volt = CommArithmetic.DecodeVoltage(SourceData, 18);
             SoftwareVersion = CommArithmetic.DecodeClientID(SourceData, 20);
             ClientID = CommArithmetic.DecodeClientID(SourceData, 22);
             TransStrategy = SourceData[24];
@@ -37,6 +37,8 @@ namespace YyWsnDeviceLibrary
             LastTransforNumber = SourceData[41] * 65536 + SourceData[42] * 256 + SourceData[43];
 
             LastTransforStatus = SourceData[45] * 256 + SourceData[46];
+            ACPower = CommArithmetic.DecodeACPower(SourceData[18]);
+
 
 
 
@@ -49,5 +51,6 @@ namespace YyWsnDeviceLibrary
         }
 
         public byte TransStrategy { get; set; }
+        public byte ACPower { get; set;}
     }
 }

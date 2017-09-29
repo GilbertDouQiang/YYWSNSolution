@@ -246,10 +246,30 @@ namespace YyWsnDeviceLibrary
 
         public static double DecodeVoltage(byte[] SourceData, int Start)
         {
-            return Math.Round(Convert.ToDouble((SourceData[Start] * 256 + SourceData[Start + 1])) / 1000, 2);
+            UInt16 voltint =(UInt16)( (UInt16)SourceData[Start] * (UInt16)256 + (UInt16)SourceData[Start + 1]);
+            double volt;
+            if (voltint >= 32768)
+            {
+                //连接到充电器
+                volt =((double) voltint - 32768) / 1000;
+            }
+            else
+            {
+                //未连接充电器
+                volt = (double)voltint / 1000;
+            }
+            return Math.Round(volt, 2);
 
         }
 
+
+        public static double DecodeSensorVoltage(byte[] SourceData, int Start)
+        {
+            double volt = (SourceData[Start] * 256 + SourceData[Start + 1])/1000;
+           
+            return Math.Round(volt, 2);
+
+        }
         public static  byte[] EncodeDateTime(DateTime dateTime)
         {
             
@@ -340,6 +360,19 @@ namespace YyWsnDeviceLibrary
             double c = Math.Round(((a * 256 + b) * 4 / (double)1023),2);
             return c;
 
+        }
+
+        public static byte DecodeACPower(byte a)
+        {
+            if (a >=0x80)
+            {
+                return 1;
+
+            }
+            else
+            {
+                return 0;
+            }
         }
 
     }

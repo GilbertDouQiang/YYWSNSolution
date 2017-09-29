@@ -83,6 +83,7 @@ namespace SocketMonitorUI
                 ServiceStatus.ResponseGatewayReport = cbGatewayReport.IsChecked.Value;
                 ServiceStatus.ResponseNTP = cbNTP.IsChecked.Value;
                 ServiceStatus.ResponseSensorData = cbSensorData.IsChecked.Value;
+                ServiceStatus.SaveToSQLServer = chkDataBase.IsChecked.Value;
 
 
                 server.Start();
@@ -133,6 +134,7 @@ namespace SocketMonitorUI
                 try
                 {
                     session.DisconnectQueue();
+                    session.DisConnectSQLServer();
 
 
                 }
@@ -182,7 +184,7 @@ namespace SocketMonitorUI
                 //MQ 相关操作
                 try
                 {
-                    session.ConnectQueue("HyperWSNQueue",session.RemoteEndPoint.Address.ToString()+"."+session.RemoteEndPoint.Port.ToString());
+                    //session.ConnectQueue("HyperWSNQueue",session.RemoteEndPoint.Address.ToString()+"."+session.RemoteEndPoint.Port.ToString());
 
                 }
                 catch (Exception)
@@ -190,6 +192,9 @@ namespace SocketMonitorUI
 
 
                 }
+                //connection to database
+
+              
 
 
 
@@ -200,6 +205,17 @@ namespace SocketMonitorUI
                 if (chkLog.IsChecked == true)
                 {
                     Logger.AddLog(DateTime.Now.ToString("HH:mm:ss.fff") + " :\tClient Connect:      \t" + session.RemoteEndPoint.Address.ToString() + " :" + session.RemoteEndPoint.Port.ToString() );
+                }
+
+                try
+                {
+                    session.ConnectSQLServer();
+                    
+                }
+                catch (Exception ex)
+                {
+                    Logger.AddLog(DateTime.Now.ToString("HH:mm:ss.fff") + " :\tConnect Database Error" + ex.Message);
+
                 }
 
             }));
@@ -223,6 +239,11 @@ namespace SocketMonitorUI
         private void cbSensorData_Click(object sender, RoutedEventArgs e)
         {
             ServiceStatus.ResponseSensorData = cbSensorData.IsChecked.Value;
+        }
+
+        private void chkDataBase_Click(object sender, RoutedEventArgs e)
+        {
+            ServiceStatus.SaveToSQLServer = chkDataBase.IsChecked.Value;
         }
     }
 }

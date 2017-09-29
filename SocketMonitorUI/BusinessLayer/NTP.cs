@@ -8,6 +8,8 @@ using SuperSocket.SocketBase.Protocol;
 using HyperWSN.Socket;
 using YyWsnCommunicatonLibrary;
 using YyWsnDeviceLibrary;
+using System.Data;
+using System.Data.SqlClient;
 
 
 namespace SocketMonitorUI.BusinessLayer
@@ -67,6 +69,50 @@ namespace SocketMonitorUI.BusinessLayer
 
                 session.Send(response, 0, response.Length); ;
 
+                //Save to Database
+                //授时响应
+                if (session.SQLStatic == true)
+                {
+                    SqlCommand command = new SqlCommand();
+                    command.Connection = session.SQLConn;
+                    command.CommandText = "INSERT INTO [dbo].[NTPStatus]([DeviceMAC],[SerialNo],[ProtocolVersion],[NTPStatus],[RequestDateTime],[SendDateTime],[SourceData],[SendData]) VALUES (" +
+                        " @DeviceMAC,@SerialNo,@ProtocolVersion,@NTPStatus,@RequestDateTime,@SendDateTime,@SourceData,@SendData)";
+                    command.Parameters.Add("@DeviceMAC", SqlDbType.VarChar);
+                    command.Parameters.Add("@SerialNo", SqlDbType.Int);
+                    command.Parameters.Add("@ProtocolVersion", SqlDbType.VarChar);
+                    command.Parameters.Add("@NTPStatus", SqlDbType.Int);
+                    command.Parameters.Add("@RequestDateTime", SqlDbType.DateTime);
+                    command.Parameters.Add("@SendDateTime", SqlDbType.DateTime);
+                    command.Parameters.Add("@SourceData", SqlDbType.VarChar);
+                    command.Parameters.Add("@SendData", SqlDbType.VarChar);
+
+
+
+                    command.Parameters["@DeviceMAC"].Value = CommArithmetic.DecodeMAC(requestInfo.Body, 7);//协议起始位置-1
+                    command.Parameters["@SerialNo"].Value = CommArithmetic.Byte2Int(requestInfo.Body,5,2);
+                    command.Parameters["@ProtocolVersion"].Value = requestInfo.Body[4].ToString("X2");
+                    command.Parameters["@NTPStatus"].Value = requestInfo.Body[17];
+                    command.Parameters["@RequestDateTime"].Value = CommArithmetic.DecodeDateTime(requestInfo.Body, 11);
+                    command.Parameters["@SendDateTime"].Value = System.DateTime.Now;
+                    command.Parameters["@SourceData"].Value = CommArithmetic.ToHexString(requestInfo.Body);
+                    command.Parameters["@SendData"].Value = CommArithmetic.ToHexString(response);
+
+                    try
+                    {
+                        command.ExecuteNonQuery();
+                    }
+                    catch (Exception ex)
+                    {
+
+
+
+                    }
+
+                }
+
+               
+
+                //Save to Queue
                 try
                 {
                     if (session.QueueStatic == true)
@@ -80,6 +126,9 @@ namespace SocketMonitorUI.BusinessLayer
 
                     
                 }
+
+                //save to database
+
                 
                 Logger.AddLog(DateTime.Now.ToString("HH:mm:ss.fff") + " :SendData:" + session.RemoteEndPoint.Address.ToString() + " :\t"
                    + CommArithmetic.ToHexString(response) + " ");

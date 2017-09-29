@@ -27,21 +27,23 @@
                     <TextBox x:Name="txtPort" Text="11003" Grid.Column="1" Margin="0 0 10 0"></TextBox>
                     <Button Grid.Column="2" Content="Start Service" Margin="0,0,10.5,0" x:Name="btnStartService" Click="btnStartService_Click" Height="19" VerticalAlignment="Bottom"  />
                     <CheckBox Content="Log to File" Grid.Column="3" x:Name="chkLog" IsChecked="True"/>
+                    <CheckBox Content="Save to SQL Server" Grid.Column="4" x:Name="chkDataBase" IsChecked="True" Click="chkDataBase_Click"/>
 
                 </Grid>
                 <Grid Margin="0 0 0 5">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                        
+                        <ColumnDefinition Width="252*"/>
+                        <ColumnDefinition Width="165*"/>
+                        <ColumnDefinition Width="88*"/>
+                        <ColumnDefinition Width="252*"/>
+                        <ColumnDefinition Width="253*"/>
+
                     </Grid.ColumnDefinitions>
                     <CheckBox Grid.Column="0" Content="Response Ping" x:Name="cbPing" IsChecked="True" Click="cbPing_Click" Margin="0 0 10 0"/>
-                    <CheckBox Grid.Column="1" Content="Response Gateway Report" x:Name="cbGatewayReport" IsChecked="True" Click="cbGatewayReport_Click" Margin="0 0 10 0" />
-                    <CheckBox Grid.Column="2" Content="Response NTP" x:Name="cbNTP" IsChecked="True" Click="cbNTP_Click" Margin="0 0 10 0" />
-                    <CheckBox Grid.Column="3" Content="Response Sensor Data" x:Name="cbSensorData" IsChecked="True" Click="cbSensorData_Click" Margin="0 0 10 0" />
-                    
+                    <CheckBox Grid.Column="1" Content="Response Gateway Report" x:Name="cbGatewayReport" IsChecked="True" Click="cbGatewayReport_Click" Margin="0,0,10.5,0" Grid.ColumnSpan="2" />
+                    <CheckBox Grid.Column="2" Content="Response NTP" x:Name="cbNTP" IsChecked="True" Click="cbNTP_Click" Margin="87,0,10.5,0" Grid.ColumnSpan="2" />
+                    <CheckBox Grid.Column="3" Content="Response Sensor Data" x:Name="cbSensorData" IsChecked="True" Click="cbSensorData_Click" Margin="251.5,0,10,0" Grid.ColumnSpan="2" />
+
 
 
 

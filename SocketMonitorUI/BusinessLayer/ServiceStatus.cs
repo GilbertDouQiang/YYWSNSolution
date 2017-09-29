@@ -27,5 +27,10 @@ namespace SocketMonitorUI.BusinessLayer
         /// </summary>
         public static bool ResponseSensorData { get; set; }
 
+        /// <summary>
+        /// 标记是否要存入数据库
+        /// </summary>
+        public static bool SaveToSQLServer { get; set; }
+
     }
 }
