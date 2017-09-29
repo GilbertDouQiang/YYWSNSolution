@@ -34,6 +34,7 @@ EndProject
 Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "WebServicePorject", "WebServicePorject\", "{09F73755-6295-461C-95AD-97CBAC9F32DE}"
 	ProjectSection(WebsiteProperties) = preProject
 		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.5"
+		ProjectReferences = "{4bcf8ea3-f5c3-4788-b5a4-2143ffc3e0b0}|YyWsnDeviceLibrary.dll;"
 		Debug.AspNetCompiler.VirtualPath = "/localhost_53129"
 		Debug.AspNetCompiler.PhysicalPath = "WebServicePorject\"
 		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_53129\"
@@ -54,6 +55,9 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "WebServicePorject", "WebSer
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QueryData_GUI", "QueryData_GUI\QueryData_GUI.csproj", "{59BE3996-0A08-4441-BE60-46D3CCDECC09}"
+	ProjectSection(ProjectDependencies) = postProject
+		{09F73755-6295-461C-95AD-97CBAC9F32DE} = {09F73755-6295-461C-95AD-97CBAC9F32DE}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -4,6 +4,13 @@ using System.Linq;
 using System.Web;
 using System.Web.Services;
 
+using YyWsnDeviceLibrary;
+using System.Data;
+using System.Data.SqlClient;
+using System.Configuration;
+
+
+
 /// <summary>
 /// Summary description for queryservice
 /// </summary>
@@ -25,6 +32,46 @@ public class queryservice : System.Web.Services.WebService
     public string HelloWorld()
     {
         return "Hello World";
+    }
+
+
+
+    [WebMethod]
+    public DataTable QueryNTP(string mac ,DateTime startdate,DateTime edndate)
+    {
+        string connStr = ConfigurationManager.AppSettings["ConnectionString"];
+        SqlConnection connection = new SqlConnection(connStr);
+        connection.Open();
+
+        SqlCommand cmd = new SqlCommand();
+
+        cmd.Connection = connection;
+
+        cmd.CommandType = CommandType.Text;
+
+        cmd.CommandText = "select * from ntpstatus where DeviceMac=@DeviceMac and SystemDate>=@startDate and SystemDate<=@endDate";
+
+        cmd.Parameters.Add("@DeviceMAC", SqlDbType.VarChar);
+        cmd.Parameters.Add("@startDate", SqlDbType.DateTime);
+        cmd.Parameters.Add("@endDate", SqlDbType.DateTime);
+
+        cmd.Parameters["@DeviceMAC"].Value = mac;
+
+
+        DataTable dt = new DataTable();
+        dt.TableName = "NTP";
+
+        SqlDataAdapter adapter = new SqlDataAdapter();
+
+        adapter.SelectCommand = cmd;
+
+        adapter.Fill(dt);
+
+
+
+
+
+        return dt;
     }
 
 }

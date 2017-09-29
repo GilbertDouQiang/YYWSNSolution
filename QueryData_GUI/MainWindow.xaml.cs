@@ -13,6 +13,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
+using System.Data;
+
 namespace QueryData_GUI
 {
     /// <summary>
@@ -23,6 +25,31 @@ namespace QueryData_GUI
         public MainWindow()
         {
             InitializeComponent();
+
+            dateStart.DateTimeText = System.DateTime.Now.AddHours(-4).ToString();
+            dateEnd.DateTimeText = System.DateTime.Now.AddHours(1).ToString();
+
+
+        }
+
+        private void RadButton_Click(object sender, RoutedEventArgs e)
+        {
+            QueryService.queryserviceSoapClient service = new QueryService.queryserviceSoapClient();
+            txtHelloWorld.Text= service.HelloWorld();
+
+
+        }
+
+        
+
+        private void btnQuery_Click(object sender, RoutedEventArgs e)
+        {
+            QueryService.queryserviceSoapClient service = new QueryService.queryserviceSoapClient();
+            string queryMac = txtMac.Text.Trim().ToString();
+            string startDate = dateStart.CurrentDateTimeText;
+            string endDate = dateEnd.CurrentDateTimeText;
+            DataTable dt =  service.QueryNTP(queryMac,startDate,endDate);
+            int x = dt.Rows.Count;
         }
     }
 }

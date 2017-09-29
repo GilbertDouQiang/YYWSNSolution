@@ -1,4 +1,4 @@
-﻿<Window x:Class="QueryData_GUI.MainWindow"
+﻿<Window xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation"  x:Class="QueryData_GUI.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -9,21 +9,51 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="6*"/>
+            <RowDefinition Height="8*"/>
         </Grid.RowDefinitions>
         <Border Padding="5" Grid.Row="0">
             <StackPanel>
                 <Grid Margin="0 0 0 5">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="10*"/>
+                        <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="3*"/>
                     </Grid.ColumnDefinitions>
+                    <telerik:RadWatermarkTextBox Grid.Column="0" x:Name="txtHelloWorld" Margin="0 0 10 0"/>
+                    <telerik:RadButton Grid.Column="1" Content="Get Service" Click="RadButton_Click"/>
+                    
+
                 </Grid>
-                
+                <Grid Margin="0 0 0 5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.5*"/>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="3*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="3*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <telerik:Label Content="Device Type:" Grid.Column="0" Margin="0 0 10 0" HorizontalAlignment="Right"/>
+                    
+
+                    <telerik:Label Content="Mac" Grid.Column="2" Margin="0 0 10 0"/>
+                    <telerik:RadWatermarkTextBox Grid.Column="3" x:Name="txtMac" Margin="0 0 10 0"/>
+                    <telerik:Label Content="Start Time" Grid.Column="4" Margin="0 0 10 0"/>
+                    <telerik:RadDateTimePicker x:Name="dateStart" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Column="5" Width="158"/>
+                    <telerik:Label Content="End Time"  Grid.Column="6" Margin="0 0 10 0"/>
+                    <telerik:RadDateTimePicker x:Name="dateEnd" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Column="7" Width="158"/>
+                    <telerik:RadButton Grid.Column="8" Content="Search..." x:Name="btnQuery" Click="btnQuery_Click" />
+                </Grid>
+
+
+
             </StackPanel>
         </Border>
+
 
     </Grid>
 </Window>
