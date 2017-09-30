@@ -37,7 +37,7 @@ public class queryservice : System.Web.Services.WebService
 
 
     [WebMethod]
-    public DataTable QueryNTP(string mac ,DateTime startdate,DateTime edndate)
+    public DataTable QueryNTP(string mac ,string startdate,string edndate)
     {
         string connStr = ConfigurationManager.AppSettings["ConnectionString"];
         SqlConnection connection = new SqlConnection(connStr);
@@ -48,6 +48,7 @@ public class queryservice : System.Web.Services.WebService
         cmd.Connection = connection;
 
         cmd.CommandType = CommandType.Text;
+        //cmd.CommandText = "select * from ntpstatus where DeviceMac=@DeviceMac ";
 
         cmd.CommandText = "select * from ntpstatus where DeviceMac=@DeviceMac and SystemDate>=@startDate and SystemDate<=@endDate";
 
@@ -56,7 +57,9 @@ public class queryservice : System.Web.Services.WebService
         cmd.Parameters.Add("@endDate", SqlDbType.DateTime);
 
         cmd.Parameters["@DeviceMAC"].Value = mac;
-
+        cmd.Parameters["@startDate"].Value = startdate;
+        cmd.Parameters["@endDate"].Value = edndate;
+        
 
         DataTable dt = new DataTable();
         dt.TableName = "NTP";

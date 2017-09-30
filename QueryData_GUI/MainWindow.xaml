@@ -9,7 +9,7 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="8*"/>
+            <RowDefinition Height="15*"/>
         </Grid.RowDefinitions>
         <Border Padding="5" Grid.Row="0">
             <StackPanel>
@@ -21,37 +21,79 @@
                         <ColumnDefinition Width="3*"/>
                     </Grid.ColumnDefinitions>
                     <telerik:RadWatermarkTextBox Grid.Column="0" x:Name="txtHelloWorld" Margin="0 0 10 0"/>
-                    <telerik:RadButton Grid.Column="1" Content="Get Service" Click="RadButton_Click"/>
-                    
+                    <telerik:RadButton Grid.Column="1" Content="Test Service" Click="RadButton_Click"/>
+
 
                 </Grid>
-                <Grid Margin="0 0 0 5">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="1.5*"/>
-                        <ColumnDefinition Width="2*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="2*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="3*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="3*"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <telerik:Label Content="Device Type:" Grid.Column="0" Margin="0 0 10 0" HorizontalAlignment="Right"/>
-                    
 
-                    <telerik:Label Content="Mac" Grid.Column="2" Margin="0 0 10 0"/>
-                    <telerik:RadWatermarkTextBox Grid.Column="3" x:Name="txtMac" Margin="0 0 10 0"/>
-                    <telerik:Label Content="Start Time" Grid.Column="4" Margin="0 0 10 0"/>
-                    <telerik:RadDateTimePicker x:Name="dateStart" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Column="5" Width="158"/>
-                    <telerik:Label Content="End Time"  Grid.Column="6" Margin="0 0 10 0"/>
-                    <telerik:RadDateTimePicker x:Name="dateEnd" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Column="7" Width="158"/>
-                    <telerik:RadButton Grid.Column="8" Content="Search..." x:Name="btnQuery" Click="btnQuery_Click" />
-                </Grid>
 
 
 
             </StackPanel>
+        </Border>
+
+        <Border Padding="5" Grid.Row="1">
+            <TabControl Margin="5,-5,-5,5" >
+                <TabItem x:Name="tabM1" Header=" NTP ">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="15*"/>
+                        </Grid.RowDefinitions>
+                        <Grid Margin="0 0 0 5" Grid.Column="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="3*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="3*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+
+                            <telerik:Label Content="Mac" Grid.Column="2" Margin="0 0 10 0" />
+                            <telerik:RadWatermarkTextBox Grid.Column="3" x:Name="txtMac" Margin="0 0 10 0"/>
+                            <telerik:Label Content="Start Time" Grid.Column="4" Margin="0 0 10 0"/>
+                            <telerik:RadDateTimePicker x:Name="dateStart" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Column="5" Width="158"/>
+                            <telerik:Label Content="End Time"  Grid.Column="6" Margin="0 0 10 0"/>
+                            <telerik:RadDateTimePicker x:Name="dateEnd" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Column="7" Width="158"/>
+                            <telerik:RadButton Grid.Column="8" Content="Search..." x:Name="btnQuery" Click="btnQuery_Click" />
+                        </Grid>
+
+                        <Grid Grid.Row="1">
+                            <telerik:RadGridView AutoGenerateColumns="False"  x:Name="gridNTP" ItemsSource="{Binding}" ShowGroupPanel="False" >
+                                <telerik:RadGridView.Columns>
+                                    <telerik:GridViewSelectColumn/>
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding ID}" Header="ID" />
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding DeviceMAC}" Header="Gateway MAC" />
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding SerialNo}" Header="Serial No." />
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding NTPStatus}" Header="NTP Status" />
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding RequestDateTime}" Header="Request Date" DataFormatString="{}{0:MM-dd HH:mm:ss}"/>
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding SendDateTime}" Header="Response Date" DataFormatString="{}{0:MM-dd HH:mm:ss}"/>
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding SystemDate }" Header="Server Date" DataFormatString="{}{0:MM-dd HH:mm:ss.fff}"/>
+                                    
+                                    
+                                    <telerik:GridViewColumn Header="Source Data">
+                                        <telerik:GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Label  Content="{Binding SourceData}" ></Label>
+                                            </DataTemplate>
+                                        </telerik:GridViewColumn.CellTemplate>
+                                    </telerik:GridViewColumn>
+
+
+                                </telerik:RadGridView.Columns>
+
+                            </telerik:RadGridView>
+                        </Grid>
+                    </Grid>
+
+
+                </TabItem>
+            </TabControl>
         </Border>
 
 

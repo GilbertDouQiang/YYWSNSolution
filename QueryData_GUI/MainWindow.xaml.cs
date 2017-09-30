@@ -40,16 +40,18 @@ namespace QueryData_GUI
 
         }
 
-        
 
+        DataTable DTNTP;
         private void btnQuery_Click(object sender, RoutedEventArgs e)
         {
             QueryService.queryserviceSoapClient service = new QueryService.queryserviceSoapClient();
             string queryMac = txtMac.Text.Trim().ToString();
             string startDate = dateStart.CurrentDateTimeText;
             string endDate = dateEnd.CurrentDateTimeText;
-            DataTable dt =  service.QueryNTP(queryMac,startDate,endDate);
-            int x = dt.Rows.Count;
+            DTNTP =  service.QueryNTP(queryMac,startDate,endDate);
+            int x = DTNTP.Rows.Count;
+            gridNTP.ItemsSource = DTNTP.DefaultView;
+            
         }
     }
 }
