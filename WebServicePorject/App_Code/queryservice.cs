@@ -77,4 +77,87 @@ public class queryservice : System.Web.Services.WebService
         return dt;
     }
 
+    [WebMethod]
+    public DataTable QueryGatewayStatus(string mac, string startdate, string edndate)
+    {
+        string connStr = ConfigurationManager.AppSettings["ConnectionString"];
+        SqlConnection connection = new SqlConnection(connStr);
+        connection.Open();
+
+        SqlCommand cmd = new SqlCommand();
+
+        cmd.Connection = connection;
+
+        cmd.CommandType = CommandType.Text;
+        //cmd.CommandText = "select * from ntpstatus where DeviceMac=@DeviceMac ";
+
+        cmd.CommandText = "select * from GatewayStatus where DeviceMac=@DeviceMac and SystemDate>=@startDate and SystemDate<=@endDate";
+
+        cmd.Parameters.Add("@DeviceMAC", SqlDbType.VarChar);
+        cmd.Parameters.Add("@startDate", SqlDbType.DateTime);
+        cmd.Parameters.Add("@endDate", SqlDbType.DateTime);
+
+        cmd.Parameters["@DeviceMAC"].Value = mac;
+        cmd.Parameters["@startDate"].Value = startdate;
+        cmd.Parameters["@endDate"].Value = edndate;
+
+
+        DataTable dt = new DataTable();
+        dt.TableName = "GatewayStatus";
+
+        SqlDataAdapter adapter = new SqlDataAdapter();
+
+        adapter.SelectCommand = cmd;
+
+        adapter.Fill(dt);
+
+
+
+
+
+        return dt;
+    }
+
+    [WebMethod]
+    public DataTable QueryM1Status(string mac, string startdate, string edndate)
+    {
+        string connStr = ConfigurationManager.AppSettings["ConnectionString"];
+        SqlConnection connection = new SqlConnection(connStr);
+        connection.Open();
+
+        SqlCommand cmd = new SqlCommand();
+
+        cmd.Connection = connection;
+
+        cmd.CommandType = CommandType.Text;
+        //cmd.CommandText = "select * from ntpstatus where DeviceMac=@DeviceMac ";
+
+        cmd.CommandText = "select * from M1Data where SensorMac=@DeviceMac and SystemDate>=@startDate and SystemDate<=@endDate";
+
+        cmd.Parameters.Add("@DeviceMAC", SqlDbType.VarChar);
+        cmd.Parameters.Add("@startDate", SqlDbType.DateTime);
+        cmd.Parameters.Add("@endDate", SqlDbType.DateTime);
+
+        cmd.Parameters["@DeviceMAC"].Value = mac;
+        cmd.Parameters["@startDate"].Value = startdate;
+        cmd.Parameters["@endDate"].Value = edndate;
+
+
+        DataTable dt = new DataTable();
+        dt.TableName = "M1Data";
+
+        SqlDataAdapter adapter = new SqlDataAdapter();
+
+        adapter.SelectCommand = cmd;
+
+        adapter.Fill(dt);
+
+
+
+
+
+        return dt;
+    }
+
+
 }

@@ -35,6 +35,52 @@
           </s:sequence>
         </s:complexType>
       </s:element>
+      <s:element name="QueryGatewayStatus">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="mac" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="startdate" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="edndate" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="QueryGatewayStatusResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="QueryGatewayStatusResult">
+              <s:complexType>
+                <s:sequence>
+                  <s:any minOccurs="0" maxOccurs="unbounded" namespace="http://www.w3.org/2001/XMLSchema" processContents="lax" />
+                  <s:any minOccurs="1" namespace="urn:schemas-microsoft-com:xml-diffgram-v1" processContents="lax" />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="QueryM1Status">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="mac" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="startdate" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="edndate" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="QueryM1StatusResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="QueryM1StatusResult">
+              <s:complexType>
+                <s:sequence>
+                  <s:any minOccurs="0" maxOccurs="unbounded" namespace="http://www.w3.org/2001/XMLSchema" processContents="lax" />
+                  <s:any minOccurs="1" namespace="urn:schemas-microsoft-com:xml-diffgram-v1" processContents="lax" />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
     </s:schema>
   </wsdl:types>
   <wsdl:message name="HelloWorldSoapIn">
@@ -49,6 +95,18 @@
   <wsdl:message name="QueryNTPSoapOut">
     <wsdl:part name="parameters" element="tns:QueryNTPResponse" />
   </wsdl:message>
+  <wsdl:message name="QueryGatewayStatusSoapIn">
+    <wsdl:part name="parameters" element="tns:QueryGatewayStatus" />
+  </wsdl:message>
+  <wsdl:message name="QueryGatewayStatusSoapOut">
+    <wsdl:part name="parameters" element="tns:QueryGatewayStatusResponse" />
+  </wsdl:message>
+  <wsdl:message name="QueryM1StatusSoapIn">
+    <wsdl:part name="parameters" element="tns:QueryM1Status" />
+  </wsdl:message>
+  <wsdl:message name="QueryM1StatusSoapOut">
+    <wsdl:part name="parameters" element="tns:QueryM1StatusResponse" />
+  </wsdl:message>
   <wsdl:portType name="queryserviceSoap">
     <wsdl:operation name="HelloWorld">
       <wsdl:input message="tns:HelloWorldSoapIn" />
@@ -57,6 +115,14 @@
     <wsdl:operation name="QueryNTP">
       <wsdl:input message="tns:QueryNTPSoapIn" />
       <wsdl:output message="tns:QueryNTPSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="QueryGatewayStatus">
+      <wsdl:input message="tns:QueryGatewayStatusSoapIn" />
+      <wsdl:output message="tns:QueryGatewayStatusSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="QueryM1Status">
+      <wsdl:input message="tns:QueryM1StatusSoapIn" />
+      <wsdl:output message="tns:QueryM1StatusSoapOut" />
     </wsdl:operation>
   </wsdl:portType>
   <wsdl:binding name="queryserviceSoap" type="tns:queryserviceSoap">
@@ -79,6 +145,24 @@
         <soap:body use="literal" />
       </wsdl:output>
     </wsdl:operation>
+    <wsdl:operation name="QueryGatewayStatus">
+      <soap:operation soapAction="http://tempuri.org/QueryGatewayStatus" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="QueryM1Status">
+      <soap:operation soapAction="http://tempuri.org/QueryM1Status" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
   </wsdl:binding>
   <wsdl:binding name="queryserviceSoap12" type="tns:queryserviceSoap">
     <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
@@ -93,6 +177,24 @@
     </wsdl:operation>
     <wsdl:operation name="QueryNTP">
       <soap12:operation soapAction="http://tempuri.org/QueryNTP" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="QueryGatewayStatus">
+      <soap12:operation soapAction="http://tempuri.org/QueryGatewayStatus" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="QueryM1Status">
+      <soap12:operation soapAction="http://tempuri.org/QueryM1Status" style="document" />
       <wsdl:input>
         <soap12:body use="literal" />
       </wsdl:input>

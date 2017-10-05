@@ -29,6 +29,20 @@ namespace QueryData_GUI.QueryService {
         
         [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/QueryNTP", ReplyAction="*")]
         System.Threading.Tasks.Task<System.Data.DataTable> QueryNTPAsync(string mac, string startdate, string edndate);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/QueryGatewayStatus", ReplyAction="*")]
+        [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
+        System.Data.DataTable QueryGatewayStatus(string mac, string startdate, string edndate);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/QueryGatewayStatus", ReplyAction="*")]
+        System.Threading.Tasks.Task<System.Data.DataTable> QueryGatewayStatusAsync(string mac, string startdate, string edndate);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/QueryM1Status", ReplyAction="*")]
+        [System.ServiceModel.XmlSerializerFormatAttribute(SupportFaults=true)]
+        System.Data.DataTable QueryM1Status(string mac, string startdate, string edndate);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/QueryM1Status", ReplyAction="*")]
+        System.Threading.Tasks.Task<System.Data.DataTable> QueryM1StatusAsync(string mac, string startdate, string edndate);
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
@@ -72,6 +86,22 @@ namespace QueryData_GUI.QueryService {
         
         public System.Threading.Tasks.Task<System.Data.DataTable> QueryNTPAsync(string mac, string startdate, string edndate) {
             return base.Channel.QueryNTPAsync(mac, startdate, edndate);
+        }
+        
+        public System.Data.DataTable QueryGatewayStatus(string mac, string startdate, string edndate) {
+            return base.Channel.QueryGatewayStatus(mac, startdate, edndate);
+        }
+        
+        public System.Threading.Tasks.Task<System.Data.DataTable> QueryGatewayStatusAsync(string mac, string startdate, string edndate) {
+            return base.Channel.QueryGatewayStatusAsync(mac, startdate, edndate);
+        }
+        
+        public System.Data.DataTable QueryM1Status(string mac, string startdate, string edndate) {
+            return base.Channel.QueryM1Status(mac, startdate, edndate);
+        }
+        
+        public System.Threading.Tasks.Task<System.Data.DataTable> QueryM1StatusAsync(string mac, string startdate, string edndate) {
+            return base.Channel.QueryM1StatusAsync(mac, startdate, edndate);
         }
     }
 }

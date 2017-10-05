@@ -42,25 +42,26 @@
                         </Grid.RowDefinitions>
                         <Grid Margin="0 0 0 5" Grid.Column="0">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="2*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="3*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="3*"/>
-                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="25*"/>
+                                <ColumnDefinition Width="47*"/>
+                                <ColumnDefinition Width="72*"/>
+                                <ColumnDefinition Width="72*"/>
+                                <ColumnDefinition Width="143*"/>
+                                <ColumnDefinition Width="72*"/>
+                                <ColumnDefinition Width="215*"/>
+                                <ColumnDefinition Width="72*"/>
+                                <ColumnDefinition Width="215*"/>
+                                <ColumnDefinition Width="72*"/>
                             </Grid.ColumnDefinitions>
 
 
-                            <telerik:Label Content="Mac" Grid.Column="2" Margin="0 0 10 0" />
-                            <telerik:RadWatermarkTextBox Grid.Column="3" x:Name="txtMac" Margin="0 0 10 0"/>
-                            <telerik:Label Content="Start Time" Grid.Column="4" Margin="0 0 10 0"/>
-                            <telerik:RadDateTimePicker x:Name="dateStart" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Column="5" Width="158"/>
-                            <telerik:Label Content="End Time"  Grid.Column="6" Margin="0 0 10 0"/>
-                            <telerik:RadDateTimePicker x:Name="dateEnd" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Column="7" Width="158"/>
-                            <telerik:RadButton Grid.Column="8" Content="Search..." x:Name="btnQuery" Click="btnQuery_Click" />
+                            <telerik:Label Content="Mac" Grid.Column="3" Margin="0 0 10 0" />
+                            <telerik:RadWatermarkTextBox Grid.Column="4" x:Name="txtMac" Margin="0 0 10 0"/>
+                            <telerik:Label Content="Start Time" Grid.Column="5" Margin="0,0,9.5,0"/>
+                            <telerik:RadDateTimePicker x:Name="dateStart" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Column="6" Width="158" Margin="0.5,0,0,0"/>
+                            <telerik:Label Content="End Time"  Grid.Column="6" Margin="214.5,0,10.5,0" Grid.ColumnSpan="2"/>
+                            <telerik:RadDateTimePicker x:Name="dateEnd" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Column="7" Width="158" Grid.ColumnSpan="2" Margin="71.5,0,0,0"/>
+                            <telerik:RadButton Grid.Column="9" Content="Search..." x:Name="btnQuery" Click="btnQuery_Click" Margin="0.5,0,0,0" />
                         </Grid>
 
                         <Grid Grid.Row="1">
@@ -74,8 +75,8 @@
                                     <telerik:GridViewDataColumn DataMemberBinding="{Binding RequestDateTime}" Header="Request Date" DataFormatString="{}{0:MM-dd HH:mm:ss}"/>
                                     <telerik:GridViewDataColumn DataMemberBinding="{Binding SendDateTime}" Header="Response Date" DataFormatString="{}{0:MM-dd HH:mm:ss}"/>
                                     <telerik:GridViewDataColumn DataMemberBinding="{Binding SystemDate }" Header="Server Date" DataFormatString="{}{0:MM-dd HH:mm:ss.fff}"/>
-                                    
-                                    
+
+
                                     <telerik:GridViewColumn Header="Source Data">
                                         <telerik:GridViewColumn.CellTemplate>
                                             <DataTemplate>
@@ -83,6 +84,150 @@
                                             </DataTemplate>
                                         </telerik:GridViewColumn.CellTemplate>
                                     </telerik:GridViewColumn>
+
+
+                                </telerik:RadGridView.Columns>
+
+                            </telerik:RadGridView>
+                        </Grid>
+                    </Grid>
+
+
+                </TabItem>
+                <TabItem x:Name="tabGatewayStatic" Header="Gateway Status ">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="15*"/>
+                        </Grid.RowDefinitions>
+                        <Grid Margin="0 0 0 5" Grid.Column="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="25*"/>
+                                <ColumnDefinition Width="47*"/>
+                                <ColumnDefinition Width="72*"/>
+                                <ColumnDefinition Width="72*"/>
+                                <ColumnDefinition Width="143*"/>
+                                <ColumnDefinition Width="72*"/>
+                                <ColumnDefinition Width="215*"/>
+                                <ColumnDefinition Width="72*"/>
+                                <ColumnDefinition Width="215*"/>
+                                <ColumnDefinition Width="72*"/>
+                            </Grid.ColumnDefinitions>
+
+
+                            <telerik:Label Content="Mac" Grid.Column="3" Margin="0 0 10 0" />
+                            <telerik:RadWatermarkTextBox Grid.Column="4" x:Name="txtGatewayStaticMac" Margin="0 0 10 0"/>
+                            <telerik:Label Content="Start Time" Grid.Column="5" Margin="0,0,9.5,0"/>
+                            <telerik:RadDateTimePicker x:Name="dateGatewayStaticStart" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Column="6" Width="158" Margin="0.5,0,0,0"/>
+                            <telerik:Label Content="End Time"  Grid.Column="6" Margin="214.5,0,10.5,0" Grid.ColumnSpan="2"/>
+                            <telerik:RadDateTimePicker x:Name="dateGatewayStaticEnd" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Column="7" Width="158" Grid.ColumnSpan="2" Margin="71.5,0,0,0"/>
+                            <telerik:RadButton Grid.Column="9" Content="Search..." x:Name="btnGatewayStaticQuery" Click="btnGatewayStaticQuery_Click" Margin="0.5,0,0,0" />
+                        </Grid>
+
+                        <Grid Grid.Row="1">
+                            <telerik:RadGridView AutoGenerateColumns="False"  x:Name="gridGatewayStatic" ItemsSource="{Binding}" ShowGroupPanel="False" >
+                                <telerik:RadGridView.Columns>
+                                    <telerik:GridViewSelectColumn/>
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding ID}" Header="ID" />
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding DeviceMAC}" Header="Gateway MAC" />
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding SerialNo}" Header="SN" />
+                                    
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding GatewayTransDateTime}" Header="TransDateTime " />
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding GatewayVoltage}" Header="Volt" />
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding ACPower}" Header="ACPower" />
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding RamCount}" Header="Ram" />
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding RomCount}" Header="Rom" />
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding LastSuccessNumber}" Header="Last Num" />
+
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding TransStrategy}" Header="TransStrategy" />
+
+                                   
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding GSMSignal}" Header="CSQ" />
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding BindingNumber}" Header="Bind Num" />
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding TransforNumber}" Header="Trans Num" />
+
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding SimNumber}" Header="SimNumber" />
+                                   
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding LastStatus}" Header="LastStatus" />
+
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding DeviceType}" Header="DeviceType" />
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding SoftwareVersion}" Header="Software" />
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding ClientID}" Header="ClientID" />
+                                    
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding SystemDate }" Header="Server Date" DataFormatString="{}{0:MM-dd HH:mm:ss.fff}"/>
+
+
+                                    <telerik:GridViewColumn Header="Source Data">
+                                        <telerik:GridViewColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Label  Content="{Binding SourceData}" ></Label>
+                                            </DataTemplate>
+                                        </telerik:GridViewColumn.CellTemplate>
+                                    </telerik:GridViewColumn>
+
+
+                                </telerik:RadGridView.Columns>
+
+                            </telerik:RadGridView>
+                        </Grid>
+                    </Grid>
+
+
+                </TabItem>
+                <TabItem x:Name="tabM1Data" Header=" M1  ">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="15*"/>
+                        </Grid.RowDefinitions>
+                        <Grid Margin="0 0 0 5" Grid.Column="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="25*"/>
+                                <ColumnDefinition Width="47*"/>
+                                <ColumnDefinition Width="72*"/>
+                                <ColumnDefinition Width="72*"/>
+                                <ColumnDefinition Width="143*"/>
+                                <ColumnDefinition Width="72*"/>
+                                <ColumnDefinition Width="215*"/>
+                                <ColumnDefinition Width="72*"/>
+                                <ColumnDefinition Width="215*"/>
+                                <ColumnDefinition Width="72*"/>
+                            </Grid.ColumnDefinitions>
+
+
+                            <telerik:Label Content="Mac" Grid.Column="3" Margin="0 0 10 0" />
+                            <telerik:RadWatermarkTextBox Grid.Column="4" x:Name="txtM1Mac" Margin="0 0 10 0"/>
+                            <telerik:Label Content="Start Time" Grid.Column="5" Margin="0,0,9.5,0"/>
+                            <telerik:RadDateTimePicker x:Name="dateM1Start" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Column="6" Width="158" Margin="0.5,0,0,0"/>
+                            <telerik:Label Content="End Time"  Grid.Column="6" Margin="214.5,0,10.5,0" Grid.ColumnSpan="2"/>
+                            <telerik:RadDateTimePicker x:Name="dateM1End" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Column="7" Width="158" Grid.ColumnSpan="2" Margin="71.5,0,0,0"/>
+                            <telerik:RadButton Grid.Column="9" Content="Search..." x:Name="btnM1Query" Click="btnM1Query_Click" Margin="0.5,0,0,0" />
+                        </Grid>
+
+                        <Grid Grid.Row="1">
+                            <telerik:RadGridView AutoGenerateColumns="False"  x:Name="gridM1" ItemsSource="{Binding}" ShowGroupPanel="False" >
+                                <telerik:RadGridView.Columns>
+                                    <telerik:GridViewSelectColumn/>
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding ID}" Header="ID" />
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding SensorMac}" Header="SensorMac" />
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding SensorSN}" Header="SensorSN" />
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding SensorStatic}" Header="Current" />
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding SensorRSSI }" Header="RSSI" />
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding SensorRAMCount }" Header="RAM" />
+
+                                    
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding SensorROMCount}" Header="ROM" />
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding ICTemperature}" Header="ICTemp" />
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding SensorTemperature}" Header="Temp" />
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding SensorHumidity }" Header="Humi" />
+
+
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding SensorCollectDatetime}" Header="CollectDatetime" DataFormatString="{}{0:MM-dd HH:mm:ss}"/>
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding SensorTransforDatetime}" Header="TransforDatetime" DataFormatString="{}{0:MM-dd HH:mm:ss}"/>
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding SystemDate}" Header="SystemDate" DataFormatString="{}{0:MM-dd HH:mm:ss.fff}"/>
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding SourceData }" Header="SourceData" />
+
+
 
 
                                 </telerik:RadGridView.Columns>
