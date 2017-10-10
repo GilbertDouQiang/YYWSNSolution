@@ -129,20 +129,20 @@
                                 <telerik:RadGridView.Columns>
                                     <telerik:GridViewSelectColumn/>
                                     <telerik:GridViewDataColumn DataMemberBinding="{Binding ID}" Header="ID" />
-                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding DeviceMAC}" Header="Gateway MAC" />
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding DeviceMAC}" Header="Gateway ID" />
                                     <telerik:GridViewDataColumn DataMemberBinding="{Binding SerialNo}" Header="SN" />
-                                    
-                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding GatewayTransDateTime}" Header="TransDateTime " />
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding SystemDate }" Header="Server Date" DataFormatString="{}{0:MM-dd HH:mm:ss.fff}"/>
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding GatewayTransDateTime}" Header="TransDate" DataFormatString="{}{0:MM-dd HH:mm:ss}" />
                                     <telerik:GridViewDataColumn DataMemberBinding="{Binding GatewayVoltage}" Header="Volt" />
-                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding ACPower}" Header="ACPower" />
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding ACPower}" Header="AC" />
                                     <telerik:GridViewDataColumn DataMemberBinding="{Binding RamCount}" Header="Ram" />
                                     <telerik:GridViewDataColumn DataMemberBinding="{Binding RomCount}" Header="Rom" />
-                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding LastSuccessNumber}" Header="Last Num" />
-
-                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding TransStrategy}" Header="TransStrategy" />
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding LastSuccessNumber}" Header="Trans Num" />
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding GSMSignal}" Header="CSQ" />
+                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding TransStrategy}" Header="Type" />
 
                                    
-                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding GSMSignal}" Header="CSQ" />
+                                    
                                     <telerik:GridViewDataColumn DataMemberBinding="{Binding BindingNumber}" Header="Bind Num" />
                                     <telerik:GridViewDataColumn DataMemberBinding="{Binding TransforNumber}" Header="Trans Num" />
 
@@ -153,9 +153,6 @@
                                     <telerik:GridViewDataColumn DataMemberBinding="{Binding DeviceType}" Header="DeviceType" />
                                     <telerik:GridViewDataColumn DataMemberBinding="{Binding SoftwareVersion}" Header="Software" />
                                     <telerik:GridViewDataColumn DataMemberBinding="{Binding ClientID}" Header="ClientID" />
-                                    
-                                    <telerik:GridViewDataColumn DataMemberBinding="{Binding SystemDate }" Header="Server Date" DataFormatString="{}{0:MM-dd HH:mm:ss.fff}"/>
-
 
                                     <telerik:GridViewColumn Header="Source Data">
                                         <telerik:GridViewColumn.CellTemplate>

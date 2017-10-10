@@ -251,12 +251,12 @@ namespace YyWsnDeviceLibrary
             if (voltint >= 32768)
             {
                 //连接到充电器
-                volt =((double) voltint - 32768) / 1000;
+                volt =((double) voltint - 32768) / (double)1000;
             }
             else
             {
                 //未连接充电器
-                volt = (double)voltint / 1000;
+                volt = (double)voltint / (double)1000;
             }
             return Math.Round(volt, 2);
 

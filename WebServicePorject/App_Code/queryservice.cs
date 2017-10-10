@@ -31,7 +31,7 @@ public class queryservice : System.Web.Services.WebService
     [WebMethod]
     public string HelloWorld()
     {
-        return "Hello World";
+        return "Service Status OK";
     }
 
 
@@ -50,7 +50,7 @@ public class queryservice : System.Web.Services.WebService
         cmd.CommandType = CommandType.Text;
         //cmd.CommandText = "select * from ntpstatus where DeviceMac=@DeviceMac ";
 
-        cmd.CommandText = "select * from ntpstatus where DeviceMac=@DeviceMac and SystemDate>=@startDate and SystemDate<=@endDate";
+        cmd.CommandText = "select * from ntpstatus where DeviceMac=@DeviceMac and SystemDate>=@startDate and SystemDate<=@endDate order by SystemDate Desc";
 
         cmd.Parameters.Add("@DeviceMAC", SqlDbType.VarChar);
         cmd.Parameters.Add("@startDate", SqlDbType.DateTime);
@@ -74,6 +74,7 @@ public class queryservice : System.Web.Services.WebService
 
 
 
+
         return dt;
     }
 
@@ -91,7 +92,7 @@ public class queryservice : System.Web.Services.WebService
         cmd.CommandType = CommandType.Text;
         //cmd.CommandText = "select * from ntpstatus where DeviceMac=@DeviceMac ";
 
-        cmd.CommandText = "select * from GatewayStatus where DeviceMac=@DeviceMac and SystemDate>=@startDate and SystemDate<=@endDate";
+        cmd.CommandText = "select * from GatewayStatus where DeviceMac=@DeviceMac and SystemDate>=@startDate and SystemDate<=@endDate order by SystemDate Desc";
 
         cmd.Parameters.Add("@DeviceMAC", SqlDbType.VarChar);
         cmd.Parameters.Add("@startDate", SqlDbType.DateTime);
@@ -110,6 +111,14 @@ public class queryservice : System.Web.Services.WebService
         adapter.SelectCommand = cmd;
 
         adapter.Fill(dt);
+        //加入序列号的计算
+        DataColumn snColumn = new DataColumn("SnCalc", System.Type.GetType("System.Int32"));
+
+        dt.Columns.Add(snColumn);
+        for (int i=0;i<dt.Rows.Count-1; i++)
+        {
+            dt.Rows[i]["SnCalc"] =(int) dt.Rows[i]["SerialNo"] -(int) dt.Rows[i + 1]["SerialNo"];
+        }
 
 
 
@@ -132,7 +141,48 @@ public class queryservice : System.Web.Services.WebService
         cmd.CommandType = CommandType.Text;
         //cmd.CommandText = "select * from ntpstatus where DeviceMac=@DeviceMac ";
 
-        cmd.CommandText = "select * from M1Data where SensorMac=@DeviceMac and SystemDate>=@startDate and SystemDate<=@endDate";
+        cmd.CommandText = "select * from M1Data where SensorMac=@DeviceMac and SystemDate>=@startDate and SystemDate<=@endDate order by SystemDate Desc";
+
+        cmd.Parameters.Add("@DeviceMAC", SqlDbType.VarChar);
+        cmd.Parameters.Add("@startDate", SqlDbType.DateTime);
+        cmd.Parameters.Add("@endDate", SqlDbType.DateTime);
+
+        cmd.Parameters["@DeviceMAC"].Value = mac;
+        cmd.Parameters["@startDate"].Value = startdate;
+        cmd.Parameters["@endDate"].Value = edndate;
+
+
+        DataTable dt = new DataTable();
+        dt.TableName = "M1Data";
+
+        SqlDataAdapter adapter = new SqlDataAdapter();
+
+        adapter.SelectCommand = cmd;
+
+        adapter.Fill(dt);
+
+
+
+
+
+        return dt;
+    }
+
+    [WebMethod]
+    public DataTable QueryM1StatusByCollectTime(string mac, string startdate, string edndate)
+    {
+        string connStr = ConfigurationManager.AppSettings["ConnectionString"];
+        SqlConnection connection = new SqlConnection(connStr);
+        connection.Open();
+
+        SqlCommand cmd = new SqlCommand();
+
+        cmd.Connection = connection;
+
+        cmd.CommandType = CommandType.Text;
+        //cmd.CommandText = "select * from ntpstatus where DeviceMac=@DeviceMac ";
+
+        cmd.CommandText = "select * from M1Data where SensorMac=@DeviceMac and SensorCollectDatetime>=@startDate and SensorCollectDatetime<=@endDate order by SensorCollectDatetime Desc";
 
         cmd.Parameters.Add("@DeviceMAC", SqlDbType.VarChar);
         cmd.Parameters.Add("@startDate", SqlDbType.DateTime);
