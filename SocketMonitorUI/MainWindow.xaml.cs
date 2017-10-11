@@ -21,8 +21,7 @@ using YyWsnDeviceLibrary;
 using YyWsnCommunicatonLibrary;
 
 using SocketMonitorUI.BusinessLayer;
-
-
+using System.Configuration;
 
 namespace SocketMonitorUI
 {
@@ -143,9 +142,11 @@ namespace SocketMonitorUI
 
                     throw;
                 }
-                txtConsole.Text = DateTime.Now.ToString("HH:mm:ss.fff") + " :\tClient Disconnect:\t " + session.RemoteEndPoint.Address.ToString() + " :"
-                + session.RemoteEndPoint.Port.ToString() + "\t Reason:" + value.ToString() + " \r\n" + txtConsole.Text;
-
+                if (chkShowTextBox.IsChecked == true)
+                {
+                    txtConsole.Text = DateTime.Now.ToString("HH:mm:ss.fff") + " :\tClient Disconnect:\t " + session.RemoteEndPoint.Address.ToString() + " :"
+                    + session.RemoteEndPoint.Port.ToString() + "\t Reason:" + value.ToString() + " \r\n" + txtConsole.Text;
+                }
                 if (chkLog.IsChecked == true)
                 {
                     Logger.AddLog(DateTime.Now.ToString("HH:mm:ss.fff") + " :\tClient Disconnect:\t " + session.RemoteEndPoint.Address.ToString() + " :"
@@ -163,8 +164,13 @@ namespace SocketMonitorUI
             {
               
                 session.Send(requestInfo.Body, 0, requestInfo.Body.Length);
-                txtConsole.Text = DateTime.Now.ToString("HH:mm:ss.fff") + " :\tReceived:" + session.RemoteEndPoint.Address.ToString()+" :\t" 
-                +CommArithmetic.ToHexString( requestInfo.Body)+" \r\n" + txtConsole.Text;
+                if (chkShowTextBox.IsChecked == true)
+                {
+                    txtConsole.Text = DateTime.Now.ToString("HH:mm:ss.fff") + " :\tReceived:" + session.RemoteEndPoint.Address.ToString() + " :\t"
+               + CommArithmetic.ToHexString(requestInfo.Body) + " \r\n" + txtConsole.Text;
+
+                }
+               
                 if (chkLog.IsChecked == true)
                 {
                     Logger.AddLog(DateTime.Now.ToString("HH:mm:ss.fff") + " :\tReceived:" + session.RemoteEndPoint.Address.ToString() + " :\t"
@@ -194,14 +200,17 @@ namespace SocketMonitorUI
                 }
                 //connection to database
 
-              
+
 
 
 
                 //MQ 相关操作结束
-              
 
-                txtConsole.Text = DateTime.Now.ToString("HH:mm:ss.fff") + " :\tClient Connect:      \t"+ session.RemoteEndPoint.Address.ToString() +" :" +session.RemoteEndPoint.Port.ToString()+ " \r\n" + txtConsole.Text;
+
+                if (chkShowTextBox.IsChecked == true)
+                {
+                    txtConsole.Text = DateTime.Now.ToString("HH:mm:ss.fff") + " :\tClient Connect:      \t" + session.RemoteEndPoint.Address.ToString() + " :" + session.RemoteEndPoint.Port.ToString() + " \r\n" + txtConsole.Text;
+                }
                 if (chkLog.IsChecked == true)
                 {
                     Logger.AddLog(DateTime.Now.ToString("HH:mm:ss.fff") + " :\tClient Connect:      \t" + session.RemoteEndPoint.Address.ToString() + " :" + session.RemoteEndPoint.Port.ToString() );
@@ -244,6 +253,30 @@ namespace SocketMonitorUI
         private void chkDataBase_Click(object sender, RoutedEventArgs e)
         {
             ServiceStatus.SaveToSQLServer = chkDataBase.IsChecked.Value;
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            //read setup from config
+            try
+            {
+                string portStr = ConfigurationManager.AppSettings["port"];
+                txtPort.Text = portStr;
+
+            }
+            catch(Exception)
+            {
+
+            }
+            
+        }
+
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            System.Configuration.Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+            config.AppSettings.Settings["port"].Value = txtPort.Text;
+            config.Save(ConfigurationSaveMode.Modified);
+
         }
     }
 }

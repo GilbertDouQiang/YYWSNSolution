@@ -265,7 +265,7 @@ namespace YyWsnDeviceLibrary
 
         public static double DecodeSensorVoltage(byte[] SourceData, int Start)
         {
-            double volt = (SourceData[Start] * 256 + SourceData[Start + 1])/1000;
+            double volt = (double)(SourceData[Start] * 256 + SourceData[Start + 1])/(double)1000;
            
             return Math.Round(volt, 2);
 

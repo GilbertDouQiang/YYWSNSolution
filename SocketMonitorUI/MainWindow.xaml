@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SocketMonitorUI"
         mc:Ignorable="d"
-       Title="HyperWSN Socket ECHo Monitor" Height="660" Width="1024" WindowStartupLocation="CenterScreen">
+       Title="HyperWSN Socket ECHo Monitor" Height="660" Width="1024" WindowStartupLocation="CenterScreen" Loaded="Window_Loaded" Closed="Window_Closed">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
@@ -27,7 +27,8 @@
                     <TextBox x:Name="txtPort" Text="11003" Grid.Column="1" Margin="0 0 10 0"></TextBox>
                     <Button Grid.Column="2" Content="Start Service" Margin="0,0,10.5,0" x:Name="btnStartService" Click="btnStartService_Click" Height="19" VerticalAlignment="Bottom"  />
                     <CheckBox Content="Log to File" Grid.Column="3" x:Name="chkLog" IsChecked="True"/>
-                    <CheckBox Content="Save to SQL Server" Grid.Column="4" x:Name="chkDataBase" IsChecked="True" Click="chkDataBase_Click"/>
+                    <CheckBox Content="Log to Console" Grid.Column="4" x:Name="chkShowTextBox" IsChecked="False"/>
+                    <CheckBox Content="Save to SQL Server" Grid.Column="5" x:Name="chkDataBase" IsChecked="True" Click="chkDataBase_Click"/>
 
                 </Grid>
                 <Grid Margin="0 0 0 5">
