@@ -70,7 +70,7 @@
                     <telerik:GridBoundColumn DataField="LastSuccessNumber" HeaderText="Trans Num">
                     </telerik:GridBoundColumn>
                     <telerik:GridBoundColumn DataField="GSMSignal" HeaderText="CSQ" />
-                    <telerik:GridBoundColumn DataField="TransStrategy" HeaderText="Trans Strategy" />
+                    <telerik:GridBoundColumn DataField="SensorInstant" HeaderText="Instant" />
                      <telerik:GridBoundColumn DataField="BindingNumber" HeaderText="Bind Num" />
                      <telerik:GridBoundColumn DataField="TransforNumber" HeaderText="Trans Num" />
                      <telerik:GridBoundColumn DataField="SimNumber" HeaderText="Sim Num" />

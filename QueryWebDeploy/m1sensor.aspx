@@ -12,19 +12,27 @@
             <telerik:LayoutRow>
                 <Columns>
                     <telerik:LayoutColumn Span="4">
+                        
                         <telerik:RadLabel runat="server" Text="M1 Query :Sensor Mac" ID="lbMac" />
                         <telerik:RadTextBox runat="server" ID="txtMac" />
                     </telerik:LayoutColumn>
 
-                    <telerik:LayoutColumn Span="4">
+                    <telerik:LayoutColumn Span="3">
                         <telerik:RadLabel runat="server" Text="Start Date" />
                         <telerik:RadDateTimePicker runat="server" ID="dateStart" Width="240px" />
                     </telerik:LayoutColumn>
 
-                    <telerik:LayoutColumn Span="4">
+                    <telerik:LayoutColumn Span="5">
                         <telerik:RadLabel runat="server" Text="End Date" />
                         <telerik:RadDateTimePicker runat="server" ID="dateEnd" Width="240px" />
+                        <telerik:RadComboBox runat="server" ID ="comboDatetime" >
+                            <Items>
+                                <telerik:RadComboBoxItem Text="Collect Datetime" Selected="true"/>
+                                <telerik:RadComboBoxItem Text="Server Datetime" />
+                            </Items>
+                        </telerik:RadComboBox>
                         <telerik:RadButton runat="server" ID="btnQuery" OnClick="btnQuery_Click" Text="Query" />
+                        <telerik:RadButton runat="server" ID="btnExport" OnClick="btnExport_Click" Text="Export" />
                     </telerik:LayoutColumn>
 
                 </Columns>
