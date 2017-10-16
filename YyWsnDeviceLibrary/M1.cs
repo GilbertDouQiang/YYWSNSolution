@@ -187,8 +187,10 @@ namespace YyWsnDeviceLibrary
             //兼容M1 和 M1P
             if (DeviceID == "51")
                 updateBytes[4] = 0x51;
-            else
+            else if (DeviceID == "53")
                 updateBytes[4] = 0x53;
+            else if (DeviceID == "57")
+                updateBytes[4] = 0x57;
 
             updateBytes[5] = 0x02;
 
@@ -227,14 +229,25 @@ namespace YyWsnDeviceLibrary
         {
             byte[] updateBytes = new byte[27];
             updateBytes[0] = 0xCE;
-            updateBytes[1] = 0x16;
+            if (DeviceID == "57")
+            {
+                updateBytes[1] = 0x14;
+            }
+                
+            else
+            {
+                updateBytes[1] = 0x16;
+            }
+            
             updateBytes[2] = 0xA2;
             updateBytes[3] = 0x01;
             //兼容M1 和 M1P
             if (DeviceID == "51")
                 updateBytes[4] = 0x51;
-            else
+            else if (DeviceID == "53")
                 updateBytes[4] = 0x53;
+            else if (DeviceID == "57")
+                updateBytes[4] = 0x57;
 
             updateBytes[5] = 0x02;
             //Mac
@@ -268,18 +281,36 @@ namespace YyWsnDeviceLibrary
             updateBytes[19] = 0x00;
             updateBytes[20] = 0x00;
 
-            //湿度补偿：TODO 暂未实现
-            updateBytes[21] = 0x00;
-            updateBytes[22] = 0x00;
+            if (DeviceID == "57")
+            {
+                //湿度补偿：TODO 暂未实现,M2 没有湿度补偿
+               
 
-            updateBytes[23] = MaxLength;
+                updateBytes[21] = MaxLength;
 
-            //CRC：TODO 暂未实现
-            updateBytes[24] = 0x00;
-            updateBytes[25] = 0x00;
+                //CRC：TODO 暂未实现
+                updateBytes[22] = 0x00;
+                updateBytes[23] = 0x00;
 
 
-            updateBytes[26] = 0xEC;
+                updateBytes[24] = 0xEC;
+            }
+            else
+            {
+                updateBytes[21] = 0x00;
+                updateBytes[22] = 0x00;
+
+                updateBytes[23] = MaxLength;
+
+                //CRC：TODO 暂未实现
+                updateBytes[24] = 0x00;
+                updateBytes[25] = 0x00;
+
+
+                updateBytes[26] = 0xEC;
+
+            }
+                
 
             //updateBytes[0] = 0xCE;
 
@@ -294,14 +325,25 @@ namespace YyWsnDeviceLibrary
         {
             byte[] updateBytes = new byte[38];
             updateBytes[0] = 0xCE;
-            updateBytes[1] = 0x21;
+            if (DeviceID != "57")
+            {
+                updateBytes[1] = 0x21;
+            }
+            else
+            {
+                updateBytes[1] = 0x19;
+
+            }
+                
             updateBytes[2] = 0xA3;
             updateBytes[3] = 0x01;
             //兼容M1 和 M1P
             if (DeviceID == "51")
                 updateBytes[4] = 0x51;
-            else
+            else if (DeviceID == "53")
                 updateBytes[4] = 0x53;
+            else if (DeviceID == "57")
+                updateBytes[4] = 0x57;
 
             updateBytes[5] = 0x02;
             //Mac
@@ -326,47 +368,85 @@ namespace YyWsnDeviceLibrary
 
             updateBytes[18] = TXTimers;
 
-            deviceMacBytes = CommArithmetic.Double_2Bytes(TemperatureInfoHigh);
-            updateBytes[19] = deviceMacBytes[0];
-            updateBytes[20] = deviceMacBytes[1];
+            if (DeviceID == "57")
+            {
+                deviceMacBytes = CommArithmetic.Double_2Bytes(TemperatureInfoHigh);
+                updateBytes[19] = deviceMacBytes[0];
+                updateBytes[20] = deviceMacBytes[1];
 
-            deviceMacBytes = CommArithmetic.Double_2Bytes(TemperatureInfoLow);
-            updateBytes[21] = deviceMacBytes[0];
-            updateBytes[22] = deviceMacBytes[1];
+                deviceMacBytes = CommArithmetic.Double_2Bytes(TemperatureInfoLow);
+                updateBytes[21] = deviceMacBytes[0];
+                updateBytes[22] = deviceMacBytes[1];
 
-            deviceMacBytes = CommArithmetic.Double_2Bytes(HumidityInfoHigh);
-            updateBytes[23] = deviceMacBytes[0];
-            updateBytes[24] = deviceMacBytes[1];
+               
 
-            deviceMacBytes = CommArithmetic.Double_2Bytes(HumidityInfoLow);
-            updateBytes[25] = deviceMacBytes[0];
-            updateBytes[26] = deviceMacBytes[1];
-
-            deviceMacBytes = CommArithmetic.Double_2Bytes(TemperatureWarnHigh);
-            updateBytes[27] = deviceMacBytes[0];
-            updateBytes[28] = deviceMacBytes[1];
+                deviceMacBytes = CommArithmetic.Double_2Bytes(TemperatureWarnHigh);
+                updateBytes[23] = deviceMacBytes[0];
+                updateBytes[24] = deviceMacBytes[1];
 
 
-            deviceMacBytes = CommArithmetic.Double_2Bytes(TemperatureWarnLow);
-            updateBytes[29] = deviceMacBytes[0];
-            updateBytes[30] = deviceMacBytes[1];
+                deviceMacBytes = CommArithmetic.Double_2Bytes(TemperatureWarnLow);
+                updateBytes[25] = deviceMacBytes[0];
+                updateBytes[26] = deviceMacBytes[1];
 
-            deviceMacBytes = CommArithmetic.Double_2Bytes(HumidityWarnHigh);
-            updateBytes[31] = deviceMacBytes[0];
-            updateBytes[32] = deviceMacBytes[1];
-
-            deviceMacBytes = CommArithmetic.Double_2Bytes(HumidityWarnLow);
-            updateBytes[33] = deviceMacBytes[0];
-            updateBytes[34] = deviceMacBytes[1];
+               
 
 
 
-            //CRC：TODO 暂未实现
-            updateBytes[35] = 0x00;
-            updateBytes[36] = 0x00;
+                //CRC：TODO 暂未实现
+                updateBytes[27] = 0x00;
+                updateBytes[28] = 0x00;
 
 
-            updateBytes[37] = 0xEC;
+                updateBytes[29] = 0xEC;
+
+            }
+            else
+            {
+                deviceMacBytes = CommArithmetic.Double_2Bytes(TemperatureInfoHigh);
+                updateBytes[19] = deviceMacBytes[0];
+                updateBytes[20] = deviceMacBytes[1];
+
+                deviceMacBytes = CommArithmetic.Double_2Bytes(TemperatureInfoLow);
+                updateBytes[21] = deviceMacBytes[0];
+                updateBytes[22] = deviceMacBytes[1];
+
+                deviceMacBytes = CommArithmetic.Double_2Bytes(HumidityInfoHigh);
+                updateBytes[23] = deviceMacBytes[0];
+                updateBytes[24] = deviceMacBytes[1];
+
+                deviceMacBytes = CommArithmetic.Double_2Bytes(HumidityInfoLow);
+                updateBytes[25] = deviceMacBytes[0];
+                updateBytes[26] = deviceMacBytes[1];
+
+                deviceMacBytes = CommArithmetic.Double_2Bytes(TemperatureWarnHigh);
+                updateBytes[27] = deviceMacBytes[0];
+                updateBytes[28] = deviceMacBytes[1];
+
+
+                deviceMacBytes = CommArithmetic.Double_2Bytes(TemperatureWarnLow);
+                updateBytes[29] = deviceMacBytes[0];
+                updateBytes[30] = deviceMacBytes[1];
+
+                deviceMacBytes = CommArithmetic.Double_2Bytes(HumidityWarnHigh);
+                updateBytes[31] = deviceMacBytes[0];
+                updateBytes[32] = deviceMacBytes[1];
+
+                deviceMacBytes = CommArithmetic.Double_2Bytes(HumidityWarnLow);
+                updateBytes[33] = deviceMacBytes[0];
+                updateBytes[34] = deviceMacBytes[1];
+
+
+
+                //CRC：TODO 暂未实现
+                updateBytes[35] = 0x00;
+                updateBytes[36] = 0x00;
+
+
+                updateBytes[37] = 0xEC;
+
+            }
+            
 
             //updateBytes[0] = 0xCE;
 
@@ -386,8 +466,11 @@ namespace YyWsnDeviceLibrary
             //兼容M1 和 M1P
             if (DeviceID == "51")
                 updateBytes[4] = 0x51;
-            else
+            else if (DeviceID == "53")
                 updateBytes[4] = 0x53;
+            else if (DeviceID == "57")
+                updateBytes[4] = 0x57;
+
             updateBytes[5] = 0x02;
 
             byte[] deviceMacBytes = CommArithmetic.HexStringToByteArray(DeviceMac);

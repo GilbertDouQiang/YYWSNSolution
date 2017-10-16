@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SnifferGUI"
         mc:Ignorable="d"
-        Title="Hyper WSN Sniffer GUI v1.3" Height="660" Width="1024" WindowStartupLocation="CenterScreen">
+        Title="Hyper WSN Sniffer GUI v1.5" Height="660" Width="1024" WindowStartupLocation="CenterScreen">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
@@ -20,14 +20,6 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="3*"/>
                     </Grid.ColumnDefinitions>
-
-                    <TextBlock Text="文件:" Grid.Column="0" FontWeight="Bold" Margin="0 0 10 0" />
-                    <TextBox x:Name="TxtOpenFileName" Grid.Column="1" Padding="2" Margin="0 0 10 0"/>
-
-
-
-
-                    <Button Grid.Column="2" Content="Open..." x:Name="btnOpenFile" Click="btnOpenFile_Click_1"/>
                 </Grid>
 
                 <Grid Margin="0 0 0 5">
@@ -43,9 +35,9 @@
 
                     <TextBlock Text="串口:" Grid.Column="0" FontWeight="Bold" Margin="0 0 10 0" />
                     <ComboBox x:Name="cbSerialPort" Grid.Column="1" Margin="0 0 10 0"/>
-                    <Button Grid.Column="2" Content="Open" Margin="0 0 10 0" x:Name="btnOpenComPort" Click="btnOpenComPort_Click"/>
+                    <Button Grid.Column="1" Content="Open" Margin="268.5,0,9.5,0" x:Name="btnOpenComPort" Click="btnOpenComPort_Click" Grid.ColumnSpan="2" Height="21" VerticalAlignment="Top"/>
                     <Button Grid.Column="3" Content="Refersh" x:Name="btnResersh" Click="btnResersh_Click" Margin="0 0 10 0"/>
-                    <TextBox Grid.Column="4" x:Name="txtSendCommand" Text="CE 09 A0 01 02 19 D8 36 00 00 01 00 00 EC" Margin="0 0 10 0"/>
+                    <TextBox Grid.Column="4" x:Name="txtSendCommand" Text="CE 09 A0 01 00 19 CF 0E 40 00 01 00 00 EC" Margin="0 0 10 0"/>
                     <Button Grid.Column="5" Content="Send" x:Name="btnSendCommand" Click="btnSendCommand_Click" Height="21" Margin="0,0,0.5,0" VerticalAlignment="Top"/>
 
 
@@ -78,10 +70,15 @@
 
         </Border>
         <Border Padding="5" Grid.Row="1">
-            <TabControl Margin="5,-5,-5,5" >
+            <TabControl x:Name="tabData" Margin="5,-5,-5,5" >
                 <TabItem x:Name="tabM1" Header=" M1 ">
                     <Grid>
-                        <DataGrid  x:Name="dgM1" AutoGenerateColumns="False"  AlternatingRowBackground="#F4F4F4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="60*"/>
+                            <ColumnDefinition Width="155*"/>
+                            <ColumnDefinition Width="788*"/>
+                        </Grid.ColumnDefinitions>
+                        <DataGrid  x:Name="dgM1" AutoGenerateColumns="False"  AlternatingRowBackground="#F4F4F4" Grid.ColumnSpan="3">
                             <DataGrid.Columns>
 
                                 <DataGridTextColumn Header="SN" Binding="{Binding DisplayID}" />
@@ -116,6 +113,47 @@
                 </TabItem>
 
                 <TabItem x:Name="tabM2" Header=" M2 ">
+                    <Grid>
+                        <DataGrid  x:Name="dgM2" AutoGenerateColumns="False"  AlternatingRowBackground="#F4F4F4">
+                            <DataGrid.Columns>
+
+                                <DataGridTextColumn Header="SN" Binding="{Binding DisplayID}" />
+                                <DataGridTextColumn Header="MAC" Binding="{Binding DeviceMac}" />
+                                <DataGridTextColumn Header="传输序列号" Binding="{Binding SensorSN}" />
+                                <DataGridTextColumn Header="温度℃" Binding="{Binding Temperature}" />
+                                <DataGridTextColumn Header="IC温度℃" Binding="{Binding ICTemperature}" />
+                                <DataGridTextColumn Header="时间" Binding="{Binding SensorCollectTime,StringFormat=HH:mm:ss}" />
+                                
+                                <DataGridTextColumn Header="客户码" Binding="{Binding ClientID}" />
+
+                                <DataGridTextColumn Header="工作模式" Binding="{Binding WorkFunction}" />
+                                <DataGridTextColumn Header="协议版本" Binding="{Binding ProtocolVersion}" />
+
+
+
+
+
+                                <DataGridTextColumn Header="电压V" Binding="{Binding Volt}" />
+
+
+
+
+
+
+
+
+                                <DataGridTextColumn Header="信号强度" Binding="{Binding RSSI}" />
+
+                                <DataGridTextColumn Header="元数据" Binding="{Binding SourceData}" />
+
+
+
+
+
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+
                 </TabItem>
 
                 <TabItem x:Name="tabUartGateway" Header=" UartGateway ">

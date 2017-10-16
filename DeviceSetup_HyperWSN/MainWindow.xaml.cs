@@ -27,6 +27,7 @@ namespace DeviceSetup_HyperWSN
         String UartCommand;
         Timer monitorTimer;
         M1 m1Device;
+        M2 m2Device;
         Socket1 socket1Device;
         bool continueFlag = false; //是否需要继续监听的控制位
 
@@ -165,7 +166,7 @@ namespace DeviceSetup_HyperWSN
                 }
             }));
 
-            //
+            //处理 M1 M1P M4的上电自检数据
             if (e.ReceivedBytes.Length == 0x52)
             {
                 continueFlag = false;
@@ -187,10 +188,35 @@ namespace DeviceSetup_HyperWSN
                     }
 
 
+
                     //enable monitor
                     btnStopMonitor_Click(this, null);
 
                    
+                }));
+
+            }
+
+
+            //处理M2上电自检数据
+            if (e.ReceivedBytes.Length == 0x46)
+            {
+                continueFlag = false;
+                Dispatcher.BeginInvoke(new Action(delegate
+                {
+                    txtConsole.Text += Logger.GetTimeString() + "\t" + CommArithmetic.ToHexString(e.ReceivedBytes) + "\r\n";
+                    //需要过滤掉不符合长度
+                    Device device = DeviceFactory.CreateDevice(e.ReceivedBytes);
+                    if (device != null && device.GetType() == typeof(M2))
+                    {
+                        m2Device = (M2)device;
+                        StackM1.DataContext = m2Device;
+                    }
+
+                    //enable monitor
+                    btnStopMonitor_Click(this, null);
+
+
                 }));
 
             }
@@ -310,6 +336,10 @@ namespace DeviceSetup_HyperWSN
                 {
                     updateDevice.DeviceID = "53";
                 }
+                else if (txtDeviceName.Text == "M2")
+                {
+                    updateDevice.DeviceID = "57";
+                }
 
                 //
 
@@ -380,6 +410,11 @@ namespace DeviceSetup_HyperWSN
                 {
                     updateDevice.DeviceID = "53";
                 }
+
+                else if (txtDeviceName.Text == "M2")
+                {
+                    updateDevice.DeviceID = "57";
+                }
                 updateDevice.ClientID = txtNewClientID.Text;
                 updateDevice.DebugString = txtNewDebug.Text;
                 updateDevice.Category = Convert.ToByte(txtNewCategory.Text);
@@ -388,7 +423,13 @@ namespace DeviceSetup_HyperWSN
                 updateDevice.TXPower = Convert.ToByte(txtNewTXPower.Text);
                 updateDevice.Frequency = Convert.ToByte(txtNewFrequency.Text);
                 updateDevice.TemperatureCompensation = Convert.ToDouble(txtNewTemperatureCompensation.Text);
-                updateDevice.HumidityCompensation = Convert.ToDouble(txtNewHumidityCompensation.Text);
+                if (updateDevice.DeviceID !="57")
+                {
+                    updateDevice.HumidityCompensation = Convert.ToDouble(txtNewHumidityCompensation.Text);
+
+                }
+               
+
                 updateDevice.MaxLength = Convert.ToByte(txtNewMaxLength.Text);
 
 
@@ -438,6 +479,10 @@ namespace DeviceSetup_HyperWSN
                 else if (txtDeviceName.Text == "M1P")
                 {
                     updateDevice.DeviceID = "53";
+                }
+                else if (txtDeviceName.Text == "M2")
+                {
+                    updateDevice.DeviceID = "57";
                 }
                 updateDevice.Interval = Convert.ToInt32(txtNewInterval.Text);
                 updateDevice.TXTimers = Convert.ToByte(txtNewTXTimers.Text);
@@ -519,6 +564,10 @@ namespace DeviceSetup_HyperWSN
                 else if (txtDeviceName.Text == "M1P")
                 {
                     updateDevice.DeviceID = "53";
+                }
+                else if (txtDeviceName.Text == "M2")
+                {
+                    updateDevice.DeviceID = "57";
                 }
 
                 byte[] updateCommand = updateDevice.DeleteData();

@@ -45,6 +45,7 @@
     <Compile Include="DeviceFactory.cs" />
     <Compile Include="Gateway.cs" />
     <Compile Include="M1.cs" />
+    <Compile Include="M2.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Sensor.cs" />
     <Compile Include="Socket1.cs" />

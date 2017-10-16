@@ -51,6 +51,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="CommArithmeticTests.cs" />
     <Compile Include="DeviceFactoryTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UartGatewayCommandTests.cs" />

@@ -102,6 +102,23 @@ namespace YyWsnDeviceLibrary
 
                 }
 
+                //M2
+                if (SourceData[0] == 0xEC && SourceData[1] == 0x41 && SourceData[4] == 0x57)
+                {
+                    //发现Socket1 上电自检包
+                    if (SourceData.Length == 0x46)
+                    {
+                        M2 m2 = new M2(SourceData);
+                        if (m2 != null)
+                        {
+                            return m2;
+                        }
+
+                    }
+
+                }
+
+
             }
             catch (Exception)
             {
@@ -144,6 +161,10 @@ namespace YyWsnDeviceLibrary
                                 device = new M1(SourceData);
                                 return device;
 
+                            case 0x57:
+                                device = new M2(SourceData);
+                                return device;
+
 
                             default:
                                 return null;
@@ -178,7 +199,7 @@ namespace YyWsnDeviceLibrary
                 }
 
             }
-            catch (Exception )
+            catch (Exception ex)
             {
 
                 return null;

@@ -375,5 +375,18 @@ namespace YyWsnDeviceLibrary
             }
         }
 
+        public static string FormatIPAddress(string IPString)
+        {
+            string[] part = IPString.Split('.');
+            string result="";
+            foreach (var item in part)
+            {
+                result += item.ToString().PadLeft(3,'0')+".";
+
+            }
+
+            return result;
+        }
+
     }
 }

@@ -32,8 +32,11 @@ namespace SnifferGUI
     {
 
         ObservableCollection<M1> m1groups = new ObservableCollection<M1>(); //DataGrid 中对应M1的表格
+        ObservableCollection<M2> m2groups = new ObservableCollection<M2>(); //DataGrid 中对应M2的表格
+
         SerialPortHelper comport;
         int SerialNo = 1;
+        int SerialNoM2 = 1;
 
         /// <summary>
         /// Main Windows 初始化
@@ -45,12 +48,22 @@ namespace SnifferGUI
             FindComport();
 
             dgM1.ItemsSource = m1groups;
+            dgM2.ItemsSource = m2groups;
 
+
+            //M1 排序用
             ICollectionView v = CollectionViewSource.GetDefaultView(dgM1.ItemsSource);
             v.SortDescriptions.Clear();
             ListSortDirection d = ListSortDirection.Descending;
             v.SortDescriptions.Add(new SortDescription("DisplayID", d));
             v.Refresh();
+
+            //M2 排序用
+            ICollectionView vM2 = CollectionViewSource.GetDefaultView(dgM2.ItemsSource);
+            vM2.SortDescriptions.Clear();
+            ListSortDirection dM2 = ListSortDirection.Descending;
+            vM2.SortDescriptions.Add(new SortDescription("DisplayID", dM2));
+            vM2.Refresh();
         }
 
 
@@ -92,7 +105,7 @@ namespace SnifferGUI
             if (openFileDialog.ShowDialog() == true)
             {
                 string filename = openFileDialog.FileName;
-                TxtOpenFileName.Text = openFileDialog.FileName;
+                //TxtOpenFileName.Text = openFileDialog.FileName;
                 ObservableCollection<Device> devices = FileHelper.ReadFile(filename);
                 int i = 1;
                 foreach (M1 item in devices)
@@ -127,23 +140,43 @@ namespace SnifferGUI
         {
             SerialNo = 1;
             m1groups.Clear();
+
+            SerialNoM2 = 1;
+            m2groups.Clear();
+
         }
 
         private void btnExportExcel_Click(object sender, RoutedEventArgs e)
         {
-
             SaveFileDialog saveDlg = new SaveFileDialog();
             saveDlg.Filter = "XLS文件|*.xls|所有文件|*.*";
-            saveDlg.FileName = "UART_Export_"+DateTime.Now.ToString("MMddhhmmss");
-            
-            if (saveDlg.ShowDialog() == true)
-            {
-                ExportXLS export = new ExportXLS();
-                export.ExportWPFDataGrid(dgM1, saveDlg.FileName, m1groups );
+            saveDlg.FileName = "UART_Export_" + DateTime.Now.ToString("MMddhhmmss");
 
+            if (tabData.SelectedIndex == 0)
+            {
+                
+
+                if (saveDlg.ShowDialog() == true)
+                {
+                    ExportXLS export = new ExportXLS();
+                    export.ExportWPFDataGrid(dgM1, saveDlg.FileName, m1groups);
+
+                }
             }
 
-               
+            if (tabData.SelectedIndex == 1)
+            {
+
+
+                if (saveDlg.ShowDialog() == true)
+                {
+                    ExportXLS export = new ExportXLS();
+                    export.ExportWPFDataGridM2(dgM2, saveDlg.FileName,m2groups);
+
+                }
+            }
+
+
             //
 
         }
@@ -202,6 +235,7 @@ namespace SnifferGUI
                 if (comport.OpenPort())
                 {
                     btnOpenComPort.Content = "Close";
+                    txtFilterClientID.IsEnabled = false;
                     //EnableControls();
                 }
 
@@ -214,6 +248,7 @@ namespace SnifferGUI
                 {
                     comport.ClosePort();
                     btnOpenComPort.Content = "Open";
+                    txtFilterClientID.IsEnabled = true;
                     //DisableControl();
                 }
             }
@@ -232,44 +267,84 @@ namespace SnifferGUI
 
                 ObservableCollection<Device> devices = DeviceFactory.CreateDevices(e.ReceivedBytes);
 
-               
-                foreach (M1 item in devices)
-                {
-                    
-                    
-                    //m1groups.Add(item);
+                //YyWsnDeviceLibrary.M2”的对象强制转换为类型“YyWsnDeviceLibrary.M1”。
+                //TODO:
 
-                    if (item.DeviceMac == null)
+                for (int i = 0; i < devices.Count; i++)
+                {
+                    //通用有效性验证
+
+                    if (devices[i].DeviceMac == null)
                     {
                         continue;
                     }
 
-
-                    if (txtFilterClientID.Text.Length > 0)
+                    if (devices[i].GetType() == typeof(M1))
                     {
-
-                      
-
-                        //符合过滤调价的才加入
-                        byte[] checkClientID = CommArithmetic.HexStringToByteArray(item.ClientID);
-                        byte[] byteFilterClientID = CommArithmetic.HexStringToByteArray(txtFilterClientID.Text);
-                        if (checkClientID[0] == byteFilterClientID[0] && checkClientID[1] == byteFilterClientID[1])
+                        //处理合法的M1数据
+                        if (txtFilterClientID.Text.Length > 0)
                         {
-                            item.DisplayID = SerialNo;
+
+
+
+                            //符合过滤调价的才加入
+                            byte[] checkClientID = CommArithmetic.HexStringToByteArray(devices[i].ClientID);
+                            byte[] byteFilterClientID = CommArithmetic.HexStringToByteArray(txtFilterClientID.Text);
+                            if (checkClientID[0] == byteFilterClientID[0] && checkClientID[1] == byteFilterClientID[1])
+                            {
+                                devices[i].DisplayID = SerialNo;
+                                SerialNo++;
+
+                                m1groups.Add((M1)devices[i]);
+                            }
+                            //if (item.ClientID)
+                        }
+                        else
+                        {
+
+                            devices[i].DisplayID = SerialNo;
                             SerialNo++;
 
-                            m1groups.Add(item);
+                            m1groups.Add((M1)devices[i]);
                         }
-                        //if (item.ClientID)
-                    }
-                    else
-                    {
 
-                        item.DisplayID = SerialNo;
-                        SerialNo++;
-                       
-                        m1groups.Add(item);
+
                     }
+
+                    if (devices[i].GetType() == typeof(M2))
+                    {
+                        //处理合法的M1数据
+                        if (txtFilterClientID.Text.Length > 0)
+                        {
+
+
+
+                            //符合过滤调价的才加入
+                            byte[] checkClientID = CommArithmetic.HexStringToByteArray(devices[i].ClientID);
+                            byte[] byteFilterClientID = CommArithmetic.HexStringToByteArray(txtFilterClientID.Text);
+                            if (checkClientID[0] == byteFilterClientID[0] && checkClientID[1] == byteFilterClientID[1])
+                            {
+                                devices[i].DisplayID = SerialNoM2;
+                                SerialNoM2++;
+
+                                m2groups.Add((M2)devices[i]);
+                            }
+                            //if (item.ClientID)
+                        }
+                        else
+                        {
+
+                            devices[i].DisplayID = SerialNoM2;
+                            SerialNoM2++;
+
+                            m2groups.Add((M2)devices[i]);
+                        }
+
+
+                    }
+
+
+
 
                 }
                       

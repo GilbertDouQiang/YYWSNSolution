@@ -52,7 +52,7 @@
         </Border>
         <Border Padding="5" Grid.Row="1">
             <TabControl Margin="5,-5,-5,5" >
-                <TabItem x:Name="tabM1" Header="M1 &amp; S1+ ">
+                <TabItem x:Name="tabM1" Header="M1 &amp; M1P &amp; M2 ">
                     <StackPanel x:Name="StackM1">
                         <Grid Margin="0 0 0 10" x:Name="btns">
                             <Grid.ColumnDefinitions>
@@ -438,7 +438,7 @@
                             <TextBlock   Grid.Column="6" Text="Queue Len:" Margin="0,0,10,0" HorizontalAlignment="Right" />
                             <TextBox  Text="{Binding FlashQueueLength}" Grid.Column="7" Padding="2" Margin="0 0 10 0"/>
 
-                            <Button x:Name="btnDeleteData" Content="Delete Data" Grid.Column="10" Grid.ColumnSpan="2" Click="btnDeleteData_Click"    Margin="0.5,0,10,0"/>
+                            <Button x:Name="btnDeleteData" Content="Delete Data" Grid.Column="10" Grid.ColumnSpan="2" Click="btnDeleteData_Click"    Margin="0,0,10,0" Height="21" VerticalAlignment="Bottom"/>
 
 
 
