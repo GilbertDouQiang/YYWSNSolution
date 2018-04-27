@@ -20,23 +20,35 @@ using YyWsnCommunicatonLibrary;
 using ExcelExport;
 using System.ComponentModel;
 
+
+using System.Data;
+using System.Configuration;
+using System.Web;
+//using System.Web.Security;
+//using System.Web.UI;
+//using System.Web.UI.WebControls;
+//using System.Web.UI.WebControls.WebParts;
+//using System.Web.UI.HtmlControls;
+//using System.Drawing;
+//using System.Drawing.Imaging;
+using System.Runtime.InteropServices;
+
 namespace SnifferGUI
 {
-  
-    
-
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
-
         ObservableCollection<M1> m1groups = new ObservableCollection<M1>(); //DataGrid 中对应M1的表格
         ObservableCollection<M2> m2groups = new ObservableCollection<M2>(); //DataGrid 中对应M2的表格
 
         SerialPortHelper comport;
-        int SerialNo = 1;
-        int SerialNoM2 = 1;
+        int SerialNoM1 = 1;                 // M1表格的行编号              
+        int SerialNoM2 = 1;                 // M2表格的行编号
+
+        UInt32 ExSensorId = 0;              // 期望的Sensor ID
+        UInt16 ExCustomer = 0;              // 期望的客户码
 
         /// <summary>
         /// Main Windows 初始化
@@ -66,6 +78,28 @@ namespace SnifferGUI
             vM2.Refresh();
         }
 
+        /// <summary>
+        /// 判断是否是符合要求的设备类型
+        /// </summary>
+        /// <param name="rxDeviceType"></param>
+        /// <returns>
+        /// true:    符合要求，显示
+        /// false： 不符合要求，丢弃
+        /// </returns>
+        string selectItem1 = "";
+        string selectItem2 = "";
+        private bool isDesDeviceType(byte rxDeviceType)
+        {
+            selectItem1 = cbSensorType.SelectedItem.ToString();
+            selectItem2 = cbSensorType.SelectionBoxItem.ToString();
+            if (cbSensorType.SelectedItem.ToString() == "M1")
+            {
+                return true;
+            }
+
+            return false;
+        }
+
 
         private void btnOpenfile_Click(object sender, RoutedEventArgs e)
         {
@@ -77,17 +111,9 @@ namespace SnifferGUI
             M1 m1Single =(M1) DeviceFactory.CreateDevice(SourceByte);
 
             m1groups.Add(m1Single);
-
-           
             */
-   
-
-
-
         }
 
-       
-        
         /// <summary>
         /// 打开文件<br/>
         /// 
@@ -111,13 +137,13 @@ namespace SnifferGUI
                 foreach (M1 item in devices)
                 {
                     //增加ClientID的过滤
-                   
+
                     if (txtFilterClientID.Text.Length > 0)
                     {
                         //符合过滤调价的才加入
-                        byte[] checkClientID= CommArithmetic.HexStringToByteArray(item.ClientID);
+                        byte[] checkClientID = CommArithmetic.HexStringToByteArray(item.ClientID);
                         byte[] byteFilterClientID = CommArithmetic.HexStringToByteArray(txtFilterClientID.Text);
-                        if(checkClientID[0] == byteFilterClientID[0] && checkClientID[1]==byteFilterClientID[1])
+                        if (checkClientID[0] == byteFilterClientID[0] && checkClientID[1] == byteFilterClientID[1])
                         {
                             item.DisplayID = i;
                             i++;
@@ -133,12 +159,12 @@ namespace SnifferGUI
                     }
                 }
             }
-            
+
         }
 
         private void btnClearData_Click(object sender, RoutedEventArgs e)
         {
-            SerialNo = 1;
+            SerialNoM1 = 1;
             m1groups.Clear();
 
             SerialNoM2 = 1;
@@ -150,35 +176,25 @@ namespace SnifferGUI
         {
             SaveFileDialog saveDlg = new SaveFileDialog();
             saveDlg.Filter = "XLS文件|*.xls|所有文件|*.*";
-            saveDlg.FileName = "UART_Export_" + DateTime.Now.ToString("MMddhhmmss");
+            saveDlg.FileName = "Export_" + DateTime.Now.ToString("MMdd_hhmmss");
 
             if (tabData.SelectedIndex == 0)
             {
-                
-
                 if (saveDlg.ShowDialog() == true)
                 {
                     ExportXLS export = new ExportXLS();
                     export.ExportWPFDataGrid(dgM1, saveDlg.FileName, m1groups);
-
                 }
             }
 
             if (tabData.SelectedIndex == 1)
             {
-
-
                 if (saveDlg.ShowDialog() == true)
                 {
                     ExportXLS export = new ExportXLS();
-                    export.ExportWPFDataGridM2(dgM2, saveDlg.FileName,m2groups);
-
+                    export.ExportWPFDataGridM2(dgM2, saveDlg.FileName, m2groups);
                 }
             }
-
-
-            //
-
         }
 
 
@@ -189,7 +205,6 @@ namespace SnifferGUI
             foreach (var portname in spis)
             {
                 cbSerialPort.Items.Add(portname);
-
             }
             if (cbSerialPort.Items.Count > 0)
             {
@@ -197,14 +212,9 @@ namespace SnifferGUI
             }
         }
 
-      
-
-     
-
         private void btnResersh_Click(object sender, RoutedEventArgs e)
         {
             FindComport();
-
         }
 
         /// <summary>
@@ -215,9 +225,7 @@ namespace SnifferGUI
         private void btnSendCommand_Click(object sender, RoutedEventArgs e)
         {
             comport.SendCommand(txtSendCommand.Text);
-
         }
-
 
         /// <summary>
         /// Open Comport
@@ -235,12 +243,10 @@ namespace SnifferGUI
                 if (comport.OpenPort())
                 {
                     btnOpenComPort.Content = "Close";
-                    txtFilterClientID.IsEnabled = false;
                     //EnableControls();
+                    cbSerialPort.IsEnabled = false;
+                    btnResersh.IsEnabled = false;
                 }
-
-
-
             }
             else
             {
@@ -248,27 +254,110 @@ namespace SnifferGUI
                 {
                     comport.ClosePort();
                     btnOpenComPort.Content = "Open";
-                    txtFilterClientID.IsEnabled = true;
                     //DisableControl();
                 }
+                cbSerialPort.IsEnabled = true;
+                btnResersh.IsEnabled = true;
+            }
+        }
+
+        /// <summary>
+        /// 处理Sensor的数据
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>       
+        private Int16 HandleSensorData(Device device)
+        {
+            // 更新期望的客户码
+            if (txtFilterClientID.Text.Length > 0)
+            {
+                byte[] ExCustomerByte = CommArithmetic.HexStringToByteArray(txtFilterClientID.Text);
+                if (ExCustomerByte != null && ExCustomerByte.Length >= 2)
+                {
+                    ExCustomer = (UInt16)(ExCustomerByte[0] * 256 + ExCustomerByte[1]);
+                }
+            }
+            else
+            {
+                ExCustomer = 0x0000;
             }
 
+            // 更新期望的Sensor ID
+            if (txtDestMac.Text.Length > 0)
+            {
+                byte[] ExSensorIdByte = CommArithmetic.HexStringToByteArray(txtDestMac.Text);
+                if (ExSensorIdByte != null && ExSensorIdByte.Length >= 4)
+                {
+                    ExSensorId = (UInt32)(ExSensorIdByte[0] * 256 * 256 * 256 + ExSensorIdByte[1] * 256 * 256 + ExSensorIdByte[2] * 256 + ExSensorIdByte[3]);
+                }
+            }
+            else
+            {
+                ExSensorId = 0x00000000;
+            }  
+            
+            // 接收到数据的设备类型
+            Type deviceType = device.GetType();
+
+            if (deviceType == typeof(M1))
+            {
+                // 接收到数据的Sensor ID
+                byte[] RxSensorIdByte = CommArithmetic.HexStringToByteArray(device.DeviceMac);
+                UInt32 RxSensorId = (UInt32)(RxSensorIdByte[0] * 256 * 256 * 256 + RxSensorIdByte[1] * 256 * 256 + RxSensorIdByte[2] * 256 + RxSensorIdByte[3]);
+                if (ExSensorId != 0 && ExSensorId != RxSensorId)
+                {
+                    return -1;
+                }
+
+                // 接收到数据的客户码
+                byte[] RxCustomerByte = CommArithmetic.HexStringToByteArray(device.ClientID);
+                UInt16 RxCustomer = (UInt16)(RxCustomerByte[0] * 256 + RxCustomerByte[1]);
+                if (ExCustomer != 0 && ExCustomer != RxCustomer)
+                {
+                    return -2;
+                }                
+
+                // 显示数据
+                device.DisplayID = SerialNoM1++;
+                m1groups.Add((M1)device);
+            }
+            else if (deviceType == typeof(M2))
+            {
+                // 接收到数据的Sensor ID
+                byte[] RxSensorIdByte = CommArithmetic.HexStringToByteArray(device.DeviceMac);
+                UInt32 RxSensorId = (UInt32)(RxSensorIdByte[0] * 256 * 256 * 256 + RxSensorIdByte[1] * 256 * 256 + RxSensorIdByte[2] * 256 + RxSensorIdByte[3]);
+                if (ExSensorId != 0 && ExSensorId != RxSensorId)
+                {
+                    return -3;
+                }
+
+                // 接收到数据的客户码
+                byte[] RxCustomerByte = CommArithmetic.HexStringToByteArray(device.ClientID);
+                UInt16 RxCustomer = (UInt16)(RxCustomerByte[0] * 256 + RxCustomerByte[1]);
+                if (ExCustomer != 0 && ExCustomer != RxCustomer)
+                {
+                    return -4;
+                }
+
+                // 显示数据
+                device.DisplayID = SerialNoM2++;
+                m2groups.Add((M2)device);                
+            }
+
+            return 0;
         }
+
 
         private void Comport_SerialPortReceived(object sender, SerialPortEventArgs e)
         {
             //收到数据后的处理,临时用这个方法处理多线程问题,后续严格参考绑定
 
-
             //在Log中体现
             Dispatcher.BeginInvoke(new Action(delegate
             {
-                txtConsole.Text += Logger.GetTimeString() +"\t"+CommArithmetic.ToHexString(e.ReceivedBytes)+"\r\n";
+                txtConsole.Text += Logger.GetTimeString() + "\t" + CommArithmetic.ToHexString(e.ReceivedBytes) + "\r\n";
 
                 ObservableCollection<Device> devices = DeviceFactory.CreateDevices(e.ReceivedBytes);
-
-                //YyWsnDeviceLibrary.M2”的对象强制转换为类型“YyWsnDeviceLibrary.M1”。
-                //TODO:
 
                 for (int i = 0; i < devices.Count; i++)
                 {
@@ -279,80 +368,10 @@ namespace SnifferGUI
                         continue;
                     }
 
-                    if (devices[i].GetType() == typeof(M1))
-                    {
-                        //处理合法的M1数据
-                        if (txtFilterClientID.Text.Length > 0)
-                        {
-
-
-
-                            //符合过滤调价的才加入
-                            byte[] checkClientID = CommArithmetic.HexStringToByteArray(devices[i].ClientID);
-                            byte[] byteFilterClientID = CommArithmetic.HexStringToByteArray(txtFilterClientID.Text);
-                            if (checkClientID[0] == byteFilterClientID[0] && checkClientID[1] == byteFilterClientID[1])
-                            {
-                                devices[i].DisplayID = SerialNo;
-                                SerialNo++;
-
-                                m1groups.Add((M1)devices[i]);
-                            }
-                            //if (item.ClientID)
-                        }
-                        else
-                        {
-
-                            devices[i].DisplayID = SerialNo;
-                            SerialNo++;
-
-                            m1groups.Add((M1)devices[i]);
-                        }
-
-
-                    }
-
-                    if (devices[i].GetType() == typeof(M2))
-                    {
-                        //处理合法的M1数据
-                        if (txtFilterClientID.Text.Length > 0)
-                        {
-
-
-
-                            //符合过滤调价的才加入
-                            byte[] checkClientID = CommArithmetic.HexStringToByteArray(devices[i].ClientID);
-                            byte[] byteFilterClientID = CommArithmetic.HexStringToByteArray(txtFilterClientID.Text);
-                            if (checkClientID[0] == byteFilterClientID[0] && checkClientID[1] == byteFilterClientID[1])
-                            {
-                                devices[i].DisplayID = SerialNoM2;
-                                SerialNoM2++;
-
-                                m2groups.Add((M2)devices[i]);
-                            }
-                            //if (item.ClientID)
-                        }
-                        else
-                        {
-
-                            devices[i].DisplayID = SerialNoM2;
-                            SerialNoM2++;
-
-                            m2groups.Add((M2)devices[i]);
-                        }
-
-
-                    }
-
-
-
-
+                    HandleSensorData(devices[i]);                                  
                 }
-                      
+
             }));
-
-
-
-
         }
     }
 }

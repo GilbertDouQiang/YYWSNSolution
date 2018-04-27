@@ -12,7 +12,7 @@
             <RowDefinition Height="6*"/>
         </Grid.RowDefinitions>
         <Border Padding="5" Grid.Row="0">
-            <StackPanel>
+            <StackPanel Margin="5.2,5.2,-5.2,-5.2">
                 <Grid Margin="0 0 0 5">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -34,16 +34,22 @@
                     </Grid.ColumnDefinitions>
 
                     <TextBlock Text="串口:" Grid.Column="0" FontWeight="Bold" Margin="0 0 10 0" />
-                    <ComboBox x:Name="cbSerialPort" Grid.Column="1" Margin="0 0 10 0"/>
+                    <ComboBox x:Name="cbSerialPort" Grid.Column="1" Margin="0 0 10 0" />
+
                     <Button Grid.Column="1" Content="Open" Margin="268.5,0,9.5,0" x:Name="btnOpenComPort" Click="btnOpenComPort_Click" Grid.ColumnSpan="2" Height="21" VerticalAlignment="Top"/>
                     <Button Grid.Column="3" Content="Refersh" x:Name="btnResersh" Click="btnResersh_Click" Margin="0 0 10 0"/>
                     <TextBox Grid.Column="4" x:Name="txtSendCommand" Text="CE 09 A0 01 00 19 CF 0E 40 00 01 00 00 EC" Margin="0 0 10 0"/>
                     <Button Grid.Column="5" Content="Send" x:Name="btnSendCommand" Click="btnSendCommand_Click" Height="21" Margin="0,0,0.5,0" VerticalAlignment="Top"/>
+                    <ComboBox x:Name="cbSensorType" Grid.Column="2" Margin="36,26,399.6,-26.4" Grid.ColumnSpan="3" SelectedIndex="0" >
+                        <ListBoxItem Content="ALL" />
+                        <ListBoxItem Content="M1" />
+                        <ListBoxItem Content="M1 NTC" />
+                        <ListBoxItem Content="M1 Beetech" />
+                    </ComboBox>
 
 
 
                 </Grid>
-
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -57,13 +63,13 @@
 
                     <Button Grid.Column="0" Content="Clear Data" x:Name="btnClearData" Click="btnClearData_Click" Margin="0,0,10.5,0"/>
                     <Button Content="Export Excel" x:Name="btnExportExcel"  Click="btnExportExcel_Click" Grid.Column="1" />
-                    <TextBlock Text="ClientID Filter" Grid.Column="3"></TextBlock>
-                    <TextBox x:Name="txtFilterClientID" Grid.Column="4"></TextBox>
-
+                    <TextBlock Text="客户码" Grid.Column="6" Margin="53.4,0,204,0.2"/>
+                    <TextBox x:Name="txtFilterClientID" Grid.Column="6" Margin="95.4,-1,125,0.2"/>
+                    <TextBlock Text="SS类型" Grid.Column="2" Margin="23.6,2,31.2,-1.8"/>
+                    <TextBlock Text="MAC" Grid.Column="4" Margin="24,2,31.8,-1.8"/>
+                    <TextBox x:Name="txtDestMac" Grid.Column="4" Margin="59,-1,9.6,0.2" Grid.ColumnSpan="2"/>
 
                 </Grid>
-
-
 
             </StackPanel>
 
@@ -78,33 +84,23 @@
                             <ColumnDefinition Width="155*"/>
                             <ColumnDefinition Width="788*"/>
                         </Grid.ColumnDefinitions>
-                        <DataGrid  x:Name="dgM1" AutoGenerateColumns="False"  AlternatingRowBackground="#F4F4F4" Grid.ColumnSpan="3">
+                        <DataGrid  x:Name="dgM1" AutoGenerateColumns="False"  AlternatingRowBackground="#F4F4F4" Grid.ColumnSpan="3" Height="502" Margin="0,0,0.4,-0.4" VerticalAlignment="Bottom">
                             <DataGrid.Columns>
 
-                                <DataGridTextColumn Header="SN" Binding="{Binding DisplayID}" />
+                                <DataGridTextColumn Header="序号" Binding="{Binding DisplayID}" />
                                 <DataGridTextColumn Header="工作模式" Binding="{Binding WorkFunction}" />
                                 <DataGridTextColumn Header="协议版本" Binding="{Binding ProtocolVersion}" />
                                 <DataGridTextColumn Header="客户码" Binding="{Binding ClientID}" />
-
                                 <DataGridTextColumn Header="MAC" Binding="{Binding DeviceMac}" />
-                                <DataGridTextColumn Header="传输序列号" Binding="{Binding SensorSN}" />
-                                <DataGridTextColumn Header="IC温度℃" Binding="{Binding ICTemperature}" />
+                                <DataGridTextColumn Header="采集序列号" Binding="{Binding SensorSN}" />
+                                <DataGridTextColumn Header="采集时间" Binding="{Binding SensorCollectTime,StringFormat='{}{0:MM-dd HH:mm:ss}'}" />
+                                <DataGridTextColumn Header="IC温度" Binding="{Binding ICTemperature}" />
                                 <DataGridTextColumn Header="电压V" Binding="{Binding Volt}" />
-
                                 <DataGridTextColumn Header="温度℃" Binding="{Binding Temperature}" />
-
-
                                 <DataGridTextColumn Header="湿度%" Binding="{Binding Humidity}" />
-
-
-
                                 <DataGridTextColumn Header="信号强度" Binding="{Binding RSSI}" />
-
+                                <DataGridTextColumn Header="传输时间" Binding="{Binding SensorTransforTime,StringFormat='{}{0:MM-dd HH:mm:ss}'}" />
                                 <DataGridTextColumn Header="元数据" Binding="{Binding SourceData}" />
-
-
-
-
 
                             </DataGrid.Columns>
                         </DataGrid>
@@ -123,32 +119,12 @@
                                 <DataGridTextColumn Header="温度℃" Binding="{Binding Temperature}" />
                                 <DataGridTextColumn Header="IC温度℃" Binding="{Binding ICTemperature}" />
                                 <DataGridTextColumn Header="时间" Binding="{Binding SensorCollectTime,StringFormat=HH:mm:ss}" />
-                                
                                 <DataGridTextColumn Header="客户码" Binding="{Binding ClientID}" />
-
                                 <DataGridTextColumn Header="工作模式" Binding="{Binding WorkFunction}" />
                                 <DataGridTextColumn Header="协议版本" Binding="{Binding ProtocolVersion}" />
-
-
-
-
-
                                 <DataGridTextColumn Header="电压V" Binding="{Binding Volt}" />
-
-
-
-
-
-
-
-
                                 <DataGridTextColumn Header="信号强度" Binding="{Binding RSSI}" />
-
                                 <DataGridTextColumn Header="元数据" Binding="{Binding SourceData}" />
-
-
-
-
 
                             </DataGrid.Columns>
                         </DataGrid>
