@@ -21,8 +21,6 @@ namespace YyWsnDeviceLibrary
             //2017版协议 v3.5
             //判断第三位 ，01 代表从传感器发出的正常数据，长度不是固定值
 
-
-
             //上电自检数据
             if (SourceData.Length==82)
             {
@@ -35,7 +33,7 @@ namespace YyWsnDeviceLibrary
                     Name = "M1P";
                 }
 
-                DeviceID = SourceData[4].ToString("X2");
+                DeviceType = SourceData[4].ToString("X2");
                 ProtocolVersion = SourceData[5];
                 PrimaryMAC = CommArithmetic.DecodeMAC(SourceData, 6);
                 DeviceMac = CommArithmetic.DecodeMAC(SourceData, 10);
@@ -89,16 +87,74 @@ namespace YyWsnDeviceLibrary
                 FlashFront = SourceData[64] * 256 * 256 + SourceData[65] * 256 + SourceData[66];
                 FlashRear = SourceData[67] * 256 * 256 + SourceData[68] * 256 + SourceData[69];
                 FlashQueueLength = SourceData[70] * 256 * 256 + SourceData[71] * 256 + SourceData[72];
+            }
 
+            // 处理监测工具监听到的M1发出的温湿度数据包
+            if (SourceData[0] == 0xEA && SourceData[1] == 0x22 && SourceData[3] == 0x51)
+            {
+                // 将收到的数据填充到属性
 
+                // Cmd
+                WorkFunction = SourceData[2];
+
+                // Device type
+                Name = "M1";
+                DeviceType = SourceData[3].ToString("X2");
+
+                // protocol
+                ProtocolVersion = SourceData[4];
+
+                // Customer
+                ClientID = CommArithmetic.DecodeClientID(SourceData, 5);
+
+                // Sensor ID
+                DeviceMac = CommArithmetic.DecodeMAC(SourceData, 7);                           
+
+                // Serial
+                SensorSN = SourceData[14] * 256 + SourceData[15];
+
+                // Sample Calendar
+                SensorCollectTime = CommArithmetic.DecodeDateTime(SourceData, 16);
+
+                // IC temp
+                ICTemperature = SourceData[22];         
+                if (ICTemperature >= 128)
+                {
+                    ICTemperature -= 256;
+                }
+
+                // voltage
+                Volt = Math.Round(Convert.ToDouble((SourceData[23] * 256 + SourceData[24])) / 1000, 2);
+
+                // temp
+                int tempCalc = SourceData[28] * 256 + SourceData[29];
+                if (tempCalc >= 0x8000)
+                {
+                    tempCalc -= 65536;
+                }
+                Temperature = Math.Round((Convert.ToDouble(tempCalc) / 100), 2);
+
+                // hum
+                Humidity = Math.Round(Convert.ToDouble((SourceData[31] * 256 + SourceData[32])) / 100, 2);
+
+                // 传输时间                
+                SensorTransforTime = System.DateTime.Now;
+      
+                //可能收到没有RSSI的数据
+                if (SourceData.Length >= SourceData[1] + 6)
+                {
+                    RSSI = SourceData[39] - 256;
+                }
+
+                this.SourceData = CommArithmetic.ToHexString(SourceData);
             }
 
 
-            //兼容模式，兼容Z模式
+                //兼容模式，兼容Z模式
             if (SourceData.Length == 28)
             {
                 Name = "M1";
-                DeviceID = "51";
+                DeviceType = "51";
                 DeviceMac = CommArithmetic.DecodeMAC(SourceData, 5);
                 ClientID = CommArithmetic.DecodeClientID(SourceData, 3);
                 WorkFunction = SourceData[2];
@@ -126,18 +182,15 @@ namespace YyWsnDeviceLibrary
                     RSSI = SourceData[27] - 256;
                 }
                 this.SourceData = CommArithmetic.ToHexString(SourceData);
-
-
             }
 
 
             //模式1 正常传输的数据，
             if (SourceData.Length==31)
-            {
-                
+            {          
                 //将收到的数据填充到属性
                 Name = "M1";
-                DeviceID = SourceData[3].ToString("X2");
+                DeviceType = SourceData[3].ToString("X2");
                 DeviceMac = CommArithmetic.DecodeMAC(SourceData, 7);
                 ClientID = CommArithmetic.DecodeClientID(SourceData, 5);
                 WorkFunction = SourceData[2];
@@ -167,13 +220,7 @@ namespace YyWsnDeviceLibrary
                     RSSI = SourceData[30] - 256;
                 }
                 this.SourceData = CommArithmetic.ToHexString(SourceData);
-
-
             }
-
-
-
-
         }
 
         public byte[] UpdateFactory()
@@ -185,11 +232,11 @@ namespace YyWsnDeviceLibrary
             updateBytes[3] = 0x01;
 
             //兼容M1 和 M1P
-            if (DeviceID == "51")
+            if (DeviceType == "51")
                 updateBytes[4] = 0x51;
-            else if (DeviceID == "53")
+            else if (DeviceType == "53")
                 updateBytes[4] = 0x53;
-            else if (DeviceID == "57")
+            else if (DeviceType == "57")
                 updateBytes[4] = 0x57;
 
             updateBytes[5] = 0x02;
@@ -229,7 +276,7 @@ namespace YyWsnDeviceLibrary
         {
             byte[] updateBytes = new byte[27];
             updateBytes[0] = 0xCE;
-            if (DeviceID == "57")
+            if (DeviceType == "57")
             {
                 updateBytes[1] = 0x14;
             }
@@ -242,11 +289,11 @@ namespace YyWsnDeviceLibrary
             updateBytes[2] = 0xA2;
             updateBytes[3] = 0x01;
             //兼容M1 和 M1P
-            if (DeviceID == "51")
+            if (DeviceType == "51")
                 updateBytes[4] = 0x51;
-            else if (DeviceID == "53")
+            else if (DeviceType == "53")
                 updateBytes[4] = 0x53;
-            else if (DeviceID == "57")
+            else if (DeviceType == "57")
                 updateBytes[4] = 0x57;
 
             updateBytes[5] = 0x02;
@@ -281,7 +328,7 @@ namespace YyWsnDeviceLibrary
             updateBytes[19] = 0x00;
             updateBytes[20] = 0x00;
 
-            if (DeviceID == "57")
+            if (DeviceType == "57")
             {
                 //湿度补偿：TODO 暂未实现,M2 没有湿度补偿
                
@@ -325,7 +372,7 @@ namespace YyWsnDeviceLibrary
         {
             byte[] updateBytes = new byte[38];
             updateBytes[0] = 0xCE;
-            if (DeviceID != "57")
+            if (DeviceType != "57")
             {
                 updateBytes[1] = 0x21;
             }
@@ -338,11 +385,11 @@ namespace YyWsnDeviceLibrary
             updateBytes[2] = 0xA3;
             updateBytes[3] = 0x01;
             //兼容M1 和 M1P
-            if (DeviceID == "51")
+            if (DeviceType == "51")
                 updateBytes[4] = 0x51;
-            else if (DeviceID == "53")
+            else if (DeviceType == "53")
                 updateBytes[4] = 0x53;
-            else if (DeviceID == "57")
+            else if (DeviceType == "57")
                 updateBytes[4] = 0x57;
 
             updateBytes[5] = 0x02;
@@ -368,7 +415,7 @@ namespace YyWsnDeviceLibrary
 
             updateBytes[18] = TXTimers;
 
-            if (DeviceID == "57")
+            if (DeviceType == "57")
             {
                 deviceMacBytes = CommArithmetic.Double_2Bytes(TemperatureInfoHigh);
                 updateBytes[19] = deviceMacBytes[0];
@@ -464,11 +511,11 @@ namespace YyWsnDeviceLibrary
             updateBytes[2] = 0xA4;
             updateBytes[3] = 0x01;
             //兼容M1 和 M1P
-            if (DeviceID == "51")
+            if (DeviceType == "51")
                 updateBytes[4] = 0x51;
-            else if (DeviceID == "53")
+            else if (DeviceType == "53")
                 updateBytes[4] = 0x53;
-            else if (DeviceID == "57")
+            else if (DeviceType == "57")
                 updateBytes[4] = 0x57;
 
             updateBytes[5] = 0x02;

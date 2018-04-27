@@ -49,10 +49,6 @@ namespace DeviceSetup_HyperWSN
 
             cbUserParameterSocket1.Items.Add("标准配置");
             cbUserApplicationSocket1.Items.Add("标准配置");
-
-
-
-
         }
 
         private void FindComport()
@@ -329,16 +325,16 @@ namespace DeviceSetup_HyperWSN
                 //兼容M1 and M1P
                 if (txtDeviceName.Text== "M1")
                 {
-                    updateDevice.DeviceID = "51";
+                    updateDevice.DeviceType = "51";
 
                 }
                 else if (txtDeviceName.Text == "M1P")
                 {
-                    updateDevice.DeviceID = "53";
+                    updateDevice.DeviceType = "53";
                 }
                 else if (txtDeviceName.Text == "M2")
                 {
-                    updateDevice.DeviceID = "57";
+                    updateDevice.DeviceType = "57";
                 }
 
                 //
@@ -403,17 +399,17 @@ namespace DeviceSetup_HyperWSN
                 //兼容M1 and M1P
                 if (txtDeviceName.Text == "M1")
                 {
-                    updateDevice.DeviceID = "51";
+                    updateDevice.DeviceType = "51";
 
                 }
                 else if (txtDeviceName.Text == "M1P")
                 {
-                    updateDevice.DeviceID = "53";
+                    updateDevice.DeviceType = "53";
                 }
 
                 else if (txtDeviceName.Text == "M2")
                 {
-                    updateDevice.DeviceID = "57";
+                    updateDevice.DeviceType = "57";
                 }
                 updateDevice.ClientID = txtNewClientID.Text;
                 updateDevice.DebugString = txtNewDebug.Text;
@@ -423,7 +419,7 @@ namespace DeviceSetup_HyperWSN
                 updateDevice.TXPower = Convert.ToByte(txtNewTXPower.Text);
                 updateDevice.Frequency = Convert.ToByte(txtNewFrequency.Text);
                 updateDevice.TemperatureCompensation = Convert.ToDouble(txtNewTemperatureCompensation.Text);
-                if (updateDevice.DeviceID !="57")
+                if (updateDevice.DeviceType !="57")
                 {
                     updateDevice.HumidityCompensation = Convert.ToDouble(txtNewHumidityCompensation.Text);
 
@@ -473,16 +469,16 @@ namespace DeviceSetup_HyperWSN
                 //兼容M1 and M1P
                 if (txtDeviceName.Text == "M1")
                 {
-                    updateDevice.DeviceID = "51";
+                    updateDevice.DeviceType = "51";
 
                 }
                 else if (txtDeviceName.Text == "M1P")
                 {
-                    updateDevice.DeviceID = "53";
+                    updateDevice.DeviceType = "53";
                 }
                 else if (txtDeviceName.Text == "M2")
                 {
-                    updateDevice.DeviceID = "57";
+                    updateDevice.DeviceType = "57";
                 }
                 updateDevice.Interval = Convert.ToInt32(txtNewInterval.Text);
                 updateDevice.TXTimers = Convert.ToByte(txtNewTXTimers.Text);
@@ -558,16 +554,16 @@ namespace DeviceSetup_HyperWSN
                 //兼容M1 and M1P
                 if (txtDeviceName.Text == "M1")
                 {
-                    updateDevice.DeviceID = "51";
+                    updateDevice.DeviceType = "51";
 
                 }
                 else if (txtDeviceName.Text == "M1P")
                 {
-                    updateDevice.DeviceID = "53";
+                    updateDevice.DeviceType = "53";
                 }
                 else if (txtDeviceName.Text == "M2")
                 {
-                    updateDevice.DeviceID = "57";
+                    updateDevice.DeviceType = "57";
                 }
 
                 byte[] updateCommand = updateDevice.DeleteData();
@@ -786,5 +782,6 @@ namespace DeviceSetup_HyperWSN
             }
 
         }
+
     }
 }

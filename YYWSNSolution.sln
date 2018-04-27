@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YyWsnDeviceLibrary", "YyWsnDeviceLibrary\YyWsnDeviceLibrary.csproj", "{4BCF8EA3-F5C3-4788-B5A4-2143FFC3E0B0}"
 EndProject
@@ -58,6 +58,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QueryData_GUI", "QueryData_
 	ProjectSection(ProjectDependencies) = postProject
 		{09F73755-6295-461C-95AD-97CBAC9F32DE} = {09F73755-6295-461C-95AD-97CBAC9F32DE}
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HyperWSN_Gateway_Alert", "HyperWSN_Gateway_Alert\HyperWSN_Gateway_Alert.csproj", "{8F88D92C-97F7-491D-905E-64193ED58EEC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -129,6 +131,10 @@ Global
 		{59BE3996-0A08-4441-BE60-46D3CCDECC09}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{59BE3996-0A08-4441-BE60-46D3CCDECC09}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{59BE3996-0A08-4441-BE60-46D3CCDECC09}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8F88D92C-97F7-491D-905E-64193ED58EEC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8F88D92C-97F7-491D-905E-64193ED58EEC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8F88D92C-97F7-491D-905E-64193ED58EEC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8F88D92C-97F7-491D-905E-64193ED58EEC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

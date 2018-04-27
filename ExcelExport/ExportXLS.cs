@@ -54,17 +54,10 @@ namespace ExcelExport
                 sheet.SetColumnWidth(c,Convert.ToInt32( SourceDataGrid.Columns[c].ActualWidth*40));
                 //CellRangeAddress c = CellRangeAddress.ValueOf();
                 // TODO: 自动筛选：http://blog.csdn.net/u011981242/article/details/50516328
-
-
-
-
-
             }
-
 
             for (r = 0; r < data.Count; r++)
             {
-
                 row = sheet.CreateRow(r + 2);
 
                 //用对象循环，而不是用DATAGrid中的数据循环
@@ -85,23 +78,13 @@ namespace ExcelExport
                             double doubleValue = (double)info1.GetValue(data[r], null);
                             row.CreateCell(c).SetCellValue(doubleValue);
                             break;
-
                         default:
                             string cellString = info1.GetValue(data[r], null).ToString();
                             row.CreateCell(c).SetCellValue(cellString);
                             break;
                     }
                     row.Cells[c].CellStyle = cellStyle;
-
-                    
-                 
-
-
                 }
-
-
-
-
             }
 
             r = 0;
@@ -113,7 +96,7 @@ namespace ExcelExport
                 file = new FileStream(FileName, FileMode.Create);
                 hssfworkbook.Write(file);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 //MessageBox.Show(ex.Message);
                 r = 1;
@@ -124,11 +107,7 @@ namespace ExcelExport
                     file.Close();
             }
 
-
-
             return 0;
-
-
         }
 
         public int ExportWPFDataGridM2(DataGrid SourceDataGrid, String FileName, ObservableCollection<M2> data)
@@ -225,7 +204,7 @@ namespace ExcelExport
                 file = new FileStream(FileName, FileMode.Create);
                 hssfworkbook.Write(file);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 //MessageBox.Show(ex.Message);
                 r = 1;

@@ -31,7 +31,7 @@ namespace YyWsnDeviceLibrary
                     Name = "M2";
                 }
                
-                DeviceID = SourceData[4].ToString("X2");
+                DeviceType = SourceData[4].ToString("X2");
                 ProtocolVersion = SourceData[5];
                 PrimaryMAC = CommArithmetic.DecodeMAC(SourceData, 6);
                 DeviceMac = CommArithmetic.DecodeMAC(SourceData, 10);
@@ -94,7 +94,7 @@ namespace YyWsnDeviceLibrary
             if (SourceData.Length == 29)
             {
                 Name = "M2";
-                DeviceID = "57";
+                DeviceType = "57";
                 DeviceMac = CommArithmetic.DecodeMAC(SourceData, 5);
                 ClientID = CommArithmetic.DecodeClientID(SourceData, 3);
                 WorkFunction = SourceData[2];
@@ -133,7 +133,7 @@ namespace YyWsnDeviceLibrary
 
                 //将收到的数据填充到属性
                 Name = "M2";
-                DeviceID = SourceData[3].ToString("X2");
+                DeviceType = SourceData[3].ToString("X2");
                 DeviceMac = CommArithmetic.DecodeMAC(SourceData, 7);
                 ClientID = CommArithmetic.DecodeClientID(SourceData, 5);
                 WorkFunction = SourceData[2];

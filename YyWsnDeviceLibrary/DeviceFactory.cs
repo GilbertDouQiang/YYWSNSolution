@@ -17,7 +17,9 @@ namespace YyWsnDeviceLibrary
         {
             Device device = null;
             if (SourceData == null)
+            {
                 return null;
+            }
 
             //处理从互联网端接收到的数据
             try
@@ -32,13 +34,9 @@ namespace YyWsnDeviceLibrary
                     AlarmGateway1 alarm1 = new AlarmGateway1(SourceData);
                     return alarm1;
                 }
-
-
-
             }
             catch (Exception)
             {
-
                 return null;
             }
 
@@ -55,6 +53,15 @@ namespace YyWsnDeviceLibrary
                     }
                 }
 
+                // 处理监测工具监听到的M1发出的温湿度数据包
+                if (SourceData[0] == 0xEA && SourceData[1] == 0x22 && (SourceData[3] == 0x51 || SourceData[3] == 0x5C || SourceData[3] == 0x5D) && SourceData.Length == 40)
+                {
+                    M1 sensorM1 = new M1(SourceData);
+                    if (sensorM1 != null)
+                    {
+                        return sensorM1;
+                    }
+                }
 
                 if (SourceData[0]==0xEC && SourceData[1]==0x4D && SourceData[4]==0x51)
                 {
@@ -66,9 +73,7 @@ namespace YyWsnDeviceLibrary
                         {
                             return sensorM1;
                         }
-
-                    }
-                       
+                    }                      
                 }
 
                 if (SourceData[0] == 0xEC && SourceData[1] == 0x4D && SourceData[4] == 0x53)
@@ -81,9 +86,7 @@ namespace YyWsnDeviceLibrary
                         {
                             return sensorM1;
                         }
-
                     }
-
                 }
 
                 //Socket1 M4
@@ -97,9 +100,7 @@ namespace YyWsnDeviceLibrary
                         {
                             return sensorSocket1;
                         }
-
                     }
-
                 }
 
                 //M2
@@ -113,67 +114,57 @@ namespace YyWsnDeviceLibrary
                         {
                             return m2;
                         }
-
                     }
-
                 }
-
-
             }
             catch (Exception)
             {
-
                 return null;
             }
-
 
             try
             {
                 //1101 监控工具获得的数据
                 for (int i = 0; i < SourceData.Length; i++)
                 {
-                    
-
-
-
                     if (SourceData[i] == 0xEA)
                     {
-                        
-
-
                         //首先进行有效性验证，不通过直接返回null
                         //01.长度校验
                         int LengthCheck = SourceData[i + 1] + i;
                         if (SourceData.Length < LengthCheck + 4)
+                        {
                             return null;
+                        }
                         if (SourceData[LengthCheck + 4] != 0xAE)
+                        {
                             return null;
+                        }
 
                         //02.根据产品类型进行判断
                         switch (SourceData[i + 3])
                         {
                             case 0x51:
-
-                                device = new M1(SourceData);
-                                return device;
+                                {
+                                    device = new M1(SourceData);
+                                    return device;
+                                }
                             case 0x53:
-
-                                device = new M1(SourceData);
-                                return device;
-
+                                {
+                                    device = new M1(SourceData);
+                                    return device;
+                                }
                             case 0x57:
-                                device = new M2(SourceData);
-                                return device;
-
-
+                                {
+                                    device = new M2(SourceData);
+                                    return device;
+                                }
                             default:
-                                return null;
-
+                                {
+                                    return null;
+                                }
                         }
-
-
                     }
-
                 }
 
                 // UartGateway 从Uart获得的数据
@@ -193,23 +184,16 @@ namespace YyWsnDeviceLibrary
                         device = new UartGateway(SourceData);
 
                         return device;
-
-
                     }
                 }
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-
                 return null;
             }
-            
-
 
             return null;
-
-
         }
 
         /// <summary>
@@ -220,7 +204,9 @@ namespace YyWsnDeviceLibrary
         public static ObservableCollection<Device> CreateDevices(byte[] SourceData)
         {
             if (SourceData == null)
+            {
                 return null;
+            }
 
             ObservableCollection<Device> devices = new ObservableCollection<Device>();
 
@@ -240,12 +226,13 @@ namespace YyWsnDeviceLibrary
                 {
                     if (SourceData[i] == 0xEA)
                     {
-                        //if(SourceData[i+1] == null)
                         if (SourceData.Length <= i - 1)
                         {
                             continue;
                         }
-                        int LengthCheck = SourceData[i + 1] + i;
+
+                        int LengthCheck = SourceData[i + 1] + i;        // 数据包长度，单位：Byte
+
                         //缺少长度校验
                         if (SourceData.Length >= LengthCheck + 4 && SourceData[LengthCheck + 4] == 0xAE)
                         {
@@ -269,27 +256,14 @@ namespace YyWsnDeviceLibrary
                                 devices.Add(device);
 
                             }
-
-
-
-
                         }
                     }
-
-
-
                 }
                 catch (Exception)
                 {
-
                    // throw;
                 }
-
-
             }
-
-
-
             return devices;
         }
     }

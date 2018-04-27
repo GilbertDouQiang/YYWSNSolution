@@ -101,13 +101,9 @@ namespace SocketMonitorUI.BusinessLayer
                     {
                         command.ExecuteNonQuery();
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
-
-
-
                     }
-
                 }
 
                

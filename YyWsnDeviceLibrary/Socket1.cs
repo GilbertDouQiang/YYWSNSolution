@@ -22,7 +22,7 @@ namespace YyWsnDeviceLibrary
             if (SourceData.Length == 82)
             {
                 Name = "Socket1";
-                DeviceID = SourceData[4].ToString("X2");
+                DeviceType = SourceData[4].ToString("X2");
                 ProtocolVersion = SourceData[5];
                 PrimaryMAC = CommArithmetic.DecodeMAC(SourceData, 6);
                 DeviceMac = CommArithmetic.DecodeMAC(SourceData, 10);
@@ -92,7 +92,7 @@ namespace YyWsnDeviceLibrary
 
                 //将收到的数据填充到属性
                 Name = "Socket1";
-                DeviceID = SourceData[3].ToString("X2");
+                DeviceType = SourceData[3].ToString("X2");
                 DeviceMac = CommArithmetic.DecodeMAC(SourceData, 7);
                 ClientID = CommArithmetic.DecodeClientID(SourceData, 5);
                 WorkFunction = SourceData[2];

@@ -18,7 +18,7 @@ namespace YyWsnDeviceLibrary
         public AlarmGateway1(byte[] SourceData)
         {
             //有效性验证，确定是合理的数据包
-            DeviceID = "59";
+            DeviceType = "59";
             Name = "AlarmGateway-1";
             DeviceMac = CommArithmetic.DecodeMAC(SourceData, 8);
             LastTransforDate = CommArithmetic.DecodeDateTime(SourceData, 12);

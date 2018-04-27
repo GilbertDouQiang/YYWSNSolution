@@ -93,11 +93,11 @@ namespace DeviceSQLDatabaseLibrary
                 return;
             }
 
-           
-            while(serviceStatic && result !=null)
+
+            while (serviceStatic && result != null)
             {
                 //先判断收到数据的属性（命令）
-                if (result.Length<=6)
+                if (result.Length <= 6)
                 {
 
                     result = mq.GetMessage();
@@ -106,7 +106,7 @@ namespace DeviceSQLDatabaseLibrary
 
                 }
 
-                if (result[3] ==0x91)
+                if (result[3] == 0x91)
                 {
                     //授时响应
                     SqlCommand command = new SqlCommand();
@@ -120,7 +120,7 @@ namespace DeviceSQLDatabaseLibrary
                     command.Parameters.Add("@SourceData", SqlDbType.VarChar);
 
 
-                    
+
                     command.Parameters["@DeviceMAC"].Value = CommArithmetic.DecodeMAC(result, 7);//协议起始位置-1
                     command.Parameters["@ProtocolVersion"].Value = result[4].ToString("X2");
                     command.Parameters["@NTPStatus"].Value = result[17];
@@ -135,9 +135,9 @@ namespace DeviceSQLDatabaseLibrary
                     {
 
 
-                       
+
                     }
-                   
+
                 }
 
 
@@ -172,7 +172,7 @@ namespace DeviceSQLDatabaseLibrary
 
 
                     command.Parameters["@DeviceMAC"].Value = CommArithmetic.DecodeMAC(result, 8); //协议起始位置-1
-                    command.Parameters["@ProtocolVersion"].Value  = result[4].ToString("X2");
+                    command.Parameters["@ProtocolVersion"].Value = result[4].ToString("X2");
                     command.Parameters["@SerialNo"].Value = CommArithmetic.Byte2Int(result, 5, 2);
                     command.Parameters["@DeviceType"].Value = result[7].ToString("X2");
                     command.Parameters["@GatewayTransDateTime"].Value = CommArithmetic.DecodeDateTime(result, 12);
@@ -193,28 +193,16 @@ namespace DeviceSQLDatabaseLibrary
                     {
                         command.ExecuteNonQuery();
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
-
-
                     }
-
-
-
                 }
 
-
-
-
-                    Thread.Sleep(10);
+                Thread.Sleep(10);
                 result = mq.GetMessage();
-
             }
 
-
-
             mq.ShutDown();
-
             saveTimer.Enabled = true;
         }
 

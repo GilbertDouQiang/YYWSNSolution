@@ -29,9 +29,9 @@ namespace YyWsnDeviceLibrary
         public string Descript { get; set; }
 
         /// <summary>
-        /// 设备代号，如M1 代号为51
+        /// 设备类型，如M1 代号为51
         /// </summary>
-        public String DeviceID { get; set; }
+        public String DeviceType { get; set; }
 
         /// <summary>
         /// 设备的8位MAC地址

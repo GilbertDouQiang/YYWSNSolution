@@ -145,7 +145,7 @@ namespace SocketMonitorUI.BusinessLayer
                         }
 
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
 
                         throw;
