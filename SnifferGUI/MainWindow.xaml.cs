@@ -159,7 +159,6 @@ namespace SnifferGUI
                     }
                 }
             }
-
         }
 
         private void btnClearData_Click(object sender, RoutedEventArgs e)
@@ -169,7 +168,6 @@ namespace SnifferGUI
 
             SerialNoM2 = 1;
             m2groups.Clear();
-
         }
 
         private void btnExportExcel_Click(object sender, RoutedEventArgs e)
@@ -370,7 +368,6 @@ namespace SnifferGUI
 
                     HandleSensorData(devices[i]);                                  
                 }
-
             }));
         }
     }
