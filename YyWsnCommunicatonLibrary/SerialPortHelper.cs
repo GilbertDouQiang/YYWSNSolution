@@ -68,7 +68,7 @@ namespace YyWsnCommunicatonLibrary
             }
         }
 
-        //向串口发送数据
+        //向串口发送数据，内部可以自动过滤空格
         public void SendCommand(string CommandString)
         {
             byte[] WriteBuffer = CommArithmetic.HexStringToByteArray(CommandString);

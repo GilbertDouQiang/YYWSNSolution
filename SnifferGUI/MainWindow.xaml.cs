@@ -220,9 +220,20 @@ namespace SnifferGUI
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void btnSendCommand_Click(object sender, RoutedEventArgs e)
-        {
-            comport.SendCommand(txtSendCommand.Text);
+        private void btnSendCommand_Click(object sender, RoutedEventArgs e) {
+            // bps
+            byte bps = (byte)cbBps.SelectedIndex;
+
+            // freq
+            UInt32 freq = Convert.ToUInt32(tbxFreq.Text);
+
+            // Expect Number
+            byte expNum = Convert.ToByte(tbxNum.Text);
+
+            // Cmd
+            string Cmd = "CE 09 A0 01" + bps.ToString("X2") + freq.ToString("X8") + expNum.ToString("X2") + "01 00 00 EC";
+
+            comport.SendCommand(Cmd);
         }
 
         /// <summary>

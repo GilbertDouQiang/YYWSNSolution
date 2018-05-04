@@ -12,7 +12,7 @@
             <RowDefinition Height="6*"/>
         </Grid.RowDefinitions>
         <Border Padding="5" Grid.Row="0">
-            <StackPanel Margin="5.2,5.2,-5.2,-5.2">
+            <StackPanel Margin="5.2,5.2,-5.2,0">
                 <Grid Margin="0 0 0 5">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -28,16 +28,29 @@
                         <ColumnDefinition Width="4*"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="6*"/>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
                     <TextBlock Grid.Column="0" Margin="30,3,10,0" HorizontalAlignment="Right" Text="串口" FontWeight="Bold"  />
                     <ComboBox Grid.Column="1" x:Name="cbSerialPort" Margin="0,0,10,0" />
                     <Button Grid.Column="2" x:Name="btnOpenComPort" Content="Open" Margin="10,0,10,0"  Click="btnOpenComPort_Click" />
-                    <Button Grid.Column="3" x:Name="btnResersh" Content="Refersh"  Margin="0,0,20,0" Click="btnResersh_Click" />
-                    <TextBox Grid.Column="4" x:Name="txtSendCommand" Margin="20,0,10,0" Text="CE 09 A0 01 00 19 CF 0E 40 00 01 00 00 EC" />
-                    <Button Grid.Column="5" Margin="0,0,20,0" Content="Send" x:Name="btnSendCommand" Click="btnSendCommand_Click"  />
+                    <Button Grid.Column="3" x:Name="btnResersh" Content="Refersh"  Margin="0,0,10,0" Click="btnResersh_Click" />
+                    <ComboBox Grid.Column="4" Margin="20,0,5,0" x:Name="cbBps" SelectedIndex="0" >
+                        <ListBoxItem Content="50kbps2gfsk" />
+                        <ListBoxItem Content="5kbpsLrm" />
+                        <ListBoxItem Content="38.4kbpsWhite" />
+                    </ComboBox>
+                    <TextBox Grid.Column="5" x:Name="tbxFreq" Margin="5,0,2,0" Text="433000000" MaxLength="9" />
+                    <TextBlock Grid.Column="6" Margin="0,3,5,0" HorizontalAlignment="Left" Text="Hz" />
+                    <TextBox Grid.Column="7" x:Name="tbxNum" Margin="5,0,2,0" Text="0" MaxLength="3"/>
+                    <TextBlock Grid.Column="8" Margin="0,3,0,0" HorizontalAlignment="Left" Text="Byte" />
+                    <!-- CE 09 A0 01 00 19 CF 0E 40 00 01 00 00 EC -->
+                    <Button Grid.Column="9" Margin="0,0,20,0" Content="Send" x:Name="btnSendCommand" Click="btnSendCommand_Click"  />
                 </Grid>
                 
                 <Grid Margin="0,4,0,4">
@@ -73,13 +86,8 @@
         <Border Padding="5" Grid.Row="1">
             <TabControl x:Name="tabData" Margin="20,0,20,10" >
                 <TabItem x:Name="tabM1" Header=" M1 ">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="60*"/>
-                            <ColumnDefinition Width="155*"/>
-                            <ColumnDefinition Width="788*"/>
-                        </Grid.ColumnDefinitions>
-                        <DataGrid Margin="2,2,2,2" x:Name="dgM1" AutoGenerateColumns="False"  AlternatingRowBackground="#F4F4F4" Grid.ColumnSpan="3" Height="502" VerticalAlignment="Bottom">
+                    <Grid Margin="0,0,0,0">
+                        <DataGrid Margin="0,0,0,0" x:Name="dgM1" AutoGenerateColumns="False"  AlternatingRowBackground="#F4F4F4">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="序号" Binding="{Binding DisplayID}" />
                                 <DataGridTextColumn Header="工作模式" Binding="{Binding WorkFunction}" />
@@ -106,7 +114,6 @@
                     <Grid>
                         <DataGrid  x:Name="dgM2" AutoGenerateColumns="False"  AlternatingRowBackground="#F4F4F4">
                             <DataGrid.Columns>
-
                                 <DataGridTextColumn Header="SN" Binding="{Binding DisplayID}" />
                                 <DataGridTextColumn Header="MAC" Binding="{Binding DeviceMac}" />
                                 <DataGridTextColumn Header="传输序列号" Binding="{Binding SensorSN}" />
