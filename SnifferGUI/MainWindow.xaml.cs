@@ -356,7 +356,6 @@ namespace SnifferGUI
             return 0;
         }
 
-
         private void Comport_SerialPortReceived(object sender, SerialPortEventArgs e)
         {
             //收到数据后的处理,临时用这个方法处理多线程问题,后续严格参考绑定

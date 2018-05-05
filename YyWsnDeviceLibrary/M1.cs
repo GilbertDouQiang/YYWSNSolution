@@ -108,7 +108,10 @@ namespace YyWsnDeviceLibrary
                 ClientID = CommArithmetic.DecodeClientID(SourceData, 5);
 
                 // Sensor ID
-                DeviceMac = CommArithmetic.DecodeMAC(SourceData, 7);                           
+                DeviceMac = CommArithmetic.DecodeMAC(SourceData, 7);
+
+                // Last/History
+                LastHistory = CommArithmetic.DecodeLastHistory(SourceData, 11);
 
                 // Serial
                 SensorSN = SourceData[14] * 256 + SourceData[15];

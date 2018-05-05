@@ -12,12 +12,11 @@ namespace YyWsnDeviceLibrary
     {
 
         public int DisplayID { get; set; }
+
         /// <summary>
         /// 如果设备包含电池，代表电池的电压
         /// </summary>
         public double Volt { get; set; }
-
-
 
         /// <summary>
         /// 设备名称
@@ -37,9 +36,15 @@ namespace YyWsnDeviceLibrary
         /// 设备的8位MAC地址
         /// </summary>
         public String DeviceMac { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public string PrimaryMAC { get; set; }
 
-
+        /// <summary>
+        /// 设备的新的8位MAC地址
+        /// </summary>
         public string DeviceNewMAC { get; set; }
 
         /// <summary>
@@ -49,7 +54,6 @@ namespace YyWsnDeviceLibrary
 
         public override string ToString()
         {
-
             return SourceData;
         }
 
@@ -58,18 +62,39 @@ namespace YyWsnDeviceLibrary
         /// </summary>
         public String ClientID { get; set; }
 
+        /// <summary>
+        /// 协议版本
+        /// </summary>
         public byte ProtocolVersion { get; set; }
 
+        /// <summary>
+        /// 硬件版本
+        /// </summary>
         public string HardwareVersion { get; set; }
 
+        /// <summary>
+        /// 软件版本
+        /// </summary>
         public string SoftwareVersion { get; set; }
 
+        /// <summary>
+        /// Debug
+        /// </summary>
         public byte[] Debug { get; set; }
 
+        /// <summary>
+        /// 类
+        /// </summary>
         public byte Category { get; set; }
 
+        /// <summary>
+        /// 时间间隔
+        /// </summary>
         public int Interval { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public DateTime Calendar { get; set; }
 
         /// <summary>
@@ -82,17 +107,14 @@ namespace YyWsnDeviceLibrary
         /// </summary>
         public byte SymbolRate { get; set; }
 
-
         /// <summary>
         /// 设备的最后传输日期和时间
         /// </summary>
         public DateTime LastTransforDate { get; set; }
 
-
-
-
-
-
-
+        /// <summary>
+        /// 最新数据/历史数据
+        /// </summary>
+        public byte LastHistory { get; set; }
     }
 }

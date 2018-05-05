@@ -88,12 +88,24 @@ namespace YyWsnDeviceLibrary
                 mac[2] = source[start + 2];
                 mac[3] = source[start + 3];
                 return ToHexString(mac);
-
             }
 
             return null;
+        }
 
+        /// <summary>
+        /// 将数组中的LastHistory解析出来
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="start"></param>
+        /// <returns></returns>
+        public static byte DecodeLastHistory(byte[] source, int start) {
 
+            if(source == null || source.Length < start) {
+                return 0;
+            }
+
+            return source[start];
         }
 
         public static string DecodeClientID(byte[] source, int start)
