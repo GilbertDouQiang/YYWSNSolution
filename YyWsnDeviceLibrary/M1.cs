@@ -90,16 +90,24 @@ namespace YyWsnDeviceLibrary
             }
 
             // 处理监测工具监听到的M1发出的温湿度数据包
-            if (SourceData[0] == 0xEA && SourceData[1] == 0x22 && SourceData[3] == 0x51)
-            {
+            if (SourceData[0] == 0xEA && SourceData[1] == 0x22 && (SourceData[3] == 0x51 || SourceData[3] == 0x5C || SourceData[3] == 0x5D)) {
                 // 将收到的数据填充到属性
 
                 // Cmd
                 WorkFunction = SourceData[2];
 
-                // Device type
-                Name = "M1";
-                DeviceType = SourceData[3].ToString("X2");
+                // Device type                
+                DeviceTypeB = SourceData[3];
+                DeviceType = DeviceTypeB.ToString("X2");
+                if (DeviceTypeB == 0x51) {
+                    Name = "M1";
+                } else if (DeviceTypeB == 0x5C) {
+                    Name = "M1_NTC";
+                } else if (DeviceTypeB == 0x5D) {
+                    Name = "M1_Beetech";
+                } else {
+                    Name = "M1";
+                }
 
                 // protocol
                 ProtocolVersion = SourceData[4];
@@ -120,9 +128,8 @@ namespace YyWsnDeviceLibrary
                 SensorCollectTime = CommArithmetic.DecodeDateTime(SourceData, 16);
 
                 // IC temp
-                ICTemperature = SourceData[22];         
-                if (ICTemperature >= 128)
-                {
+                ICTemperature = SourceData[22];
+                if (ICTemperature >= 128) {
                     ICTemperature -= 256;
                 }
 
@@ -131,8 +138,7 @@ namespace YyWsnDeviceLibrary
 
                 // temp
                 int tempCalc = SourceData[28] * 256 + SourceData[29];
-                if (tempCalc >= 0x8000)
-                {
+                if (tempCalc >= 0x8000) {
                     tempCalc -= 65536;
                 }
                 Temperature = Math.Round((Convert.ToDouble(tempCalc) / 100), 2);
@@ -142,10 +148,9 @@ namespace YyWsnDeviceLibrary
 
                 // 传输时间                
                 SensorTransforTime = System.DateTime.Now;
-      
+
                 //可能收到没有RSSI的数据
-                if (SourceData.Length >= SourceData[1] + 6)
-                {
+                if (SourceData.Length >= SourceData[1] + 6) {
                     RSSI = SourceData[39] - 256;
                 }
 

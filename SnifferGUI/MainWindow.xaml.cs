@@ -86,18 +86,31 @@ namespace SnifferGUI
         /// true:    符合要求，显示
         /// false： 不符合要求，丢弃
         /// </returns>
-        string selectItem1 = "";
-        string selectItem2 = "";
-        private bool isDesDeviceType(byte rxDeviceType)
-        {
-            selectItem1 = cbSensorType.SelectedItem.ToString();
-            selectItem2 = cbSensorType.SelectionBoxItem.ToString();
-            if (cbSensorType.SelectedItem.ToString() == "M1")
-            {
+        private bool isDesDeviceType(byte rxDeviceType) {
+
+            byte ExDeviceType = 0x00;
+
+            if (cbSensorType.SelectedIndex == 0) {   
+                // All
                 return true;
+            } else if (cbSensorType.SelectedIndex == 1) {
+                // M1
+                ExDeviceType = 0x51;
+            } else if (cbSensorType.SelectedIndex == 2) {
+                // M1_NTC
+                ExDeviceType = 0x5C;
+            } else if (cbSensorType.SelectedIndex == 3) {
+                // M1_Beetech
+                ExDeviceType = 0x5D;
+            }else {
+                return false;
             }
 
-            return false;
+            if(rxDeviceType != ExDeviceType) {
+                return false;
+            }
+
+            return true;
         }
 
 
@@ -277,6 +290,10 @@ namespace SnifferGUI
         /// <param name="e"></param>       
         private Int16 HandleSensorData(Device device)
         {
+            if (isDesDeviceType(device.DeviceTypeB) == false) {
+                return -1;
+            }
+
             // 更新期望的客户码
             if (txtFilterClientID.Text.Length > 0)
             {

@@ -95,16 +95,18 @@
                                 <DataGridTextColumn Header="协议版本" Binding="{Binding ProtocolVersion}" />
                                 <DataGridTextColumn Header="客户码" Binding="{Binding ClientID}" />
                                 <DataGridTextColumn Header="MAC" Binding="{Binding DeviceMac}" />
+                                <DataGridTextColumn Header="L/H" Binding="{Binding LastHistory,StringFormat='{}{0:X2}'}" />
                                 <DataGridTextColumn Header="采集序列号" Binding="{Binding SensorSN}" />
                                 <DataGridTextColumn Header="采集时间" Binding="{Binding SensorCollectTime,StringFormat='{}{0:MM-dd HH:mm:ss}'}" />
-                                <DataGridTextColumn Header="IC温度" Binding="{Binding ICTemperature}" />
-                                <DataGridTextColumn Header="电压V" Binding="{Binding Volt}" />
-                                <DataGridTextColumn Header="温度℃" Binding="{Binding Temperature}" />
-                                <DataGridTextColumn Header="湿度%" Binding="{Binding Humidity}" />
+                                <DataGridTextColumn Header="IC温度" Binding="{Binding ICTemperature,StringFormat='{}{0:F0}'}" />
+                                <DataGridTextColumn Header="电压V" Binding="{Binding Volt,StringFormat='{}{0:F3}'}" />
+                                <DataGridTextColumn Header="温度℃" Binding="{Binding Temperature,StringFormat='{}{0:F2}'}" />
+                                <DataGridTextColumn Header="湿度%" Binding="{Binding Humidity,StringFormat='{}{0:F2}'}" />
                                 <DataGridTextColumn Header="信号强度" Binding="{Binding RSSI}" />
                                 <DataGridTextColumn Header="传输时间" Binding="{Binding SensorTransforTime,StringFormat='{}{0:MM-dd HH:mm:ss}'}" />
                                 <DataGridTextColumn Header="元数据" Binding="{Binding SourceData}" />
-
+                              
+                                
                             </DataGrid.Columns>
                         </DataGrid>
                     </Grid>
