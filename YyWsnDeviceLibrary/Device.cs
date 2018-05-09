@@ -45,7 +45,7 @@ namespace YyWsnDeviceLibrary
         /// <summary>
         /// 
         /// </summary>
-        public string PrimaryMAC { get; set; }
+        public String PrimaryMAC { get; set; }
 
         /// <summary>
         /// 设备的新的8位MAC地址
@@ -66,7 +66,7 @@ namespace YyWsnDeviceLibrary
         /// 客户识别码
         /// </summary>
         public String ClientID { get; set; }
-
+        
         /// <summary>
         /// 协议版本
         /// </summary>
@@ -85,7 +85,13 @@ namespace YyWsnDeviceLibrary
         /// <summary>
         /// Debug
         /// </summary>
+       // public byte[] Debug { get; set; }
         public byte[] Debug { get; set; }
+
+        /// <summary>
+        /// Debug
+        /// </summary>
+        public UInt16 DebugT{ get; set; }
 
         /// <summary>
         /// 类
@@ -101,12 +107,14 @@ namespace YyWsnDeviceLibrary
         /// 
         /// </summary>
         public DateTime Calendar { get; set; }
-
+        
+        public byte Pattern { get; set; }
+        public byte Bps { get; set; }
         /// <summary>
         /// Sensor的工作模式
         /// </summary>
         public byte WorkFunction { get; set; } //Pattern in protocol
-
+        public byte STP { get; set; }
         /// <summary>
         /// 传输速率
         /// </summary>

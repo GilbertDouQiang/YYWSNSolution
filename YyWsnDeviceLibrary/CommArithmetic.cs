@@ -94,6 +94,25 @@ namespace YyWsnDeviceLibrary
         }
 
         /// <summary>
+        /// 将数组中的MAC地址解析出来，但只解析后2个Byte
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="start"></param>
+        /// <returns></returns>
+        public static string DecodeMAC_Last2B(byte[] source, int start) {
+
+            if (source == null || source.Length < start + 2) {
+                return null;
+            }
+
+            byte[] mac = new byte[2];
+            mac[0] = source[start];
+            mac[1] = source[start + 1];
+
+            return ToHexString(mac);
+        }
+
+        /// <summary>
         /// 将数组中的LastHistory解析出来
         /// </summary>
         /// <param name="source"></param>
@@ -107,7 +126,40 @@ namespace YyWsnDeviceLibrary
 
             return source[start];
         }
+        public static string DecodePrimaryMAC(byte[] source,int start) {
 
+            byte[] primaryMAC = new byte[4];
+            if(source != null && source.Length > start + 3) 
+                { primaryMAC[0] = source[start];
+                  primaryMAC[1] = source[start + 1];
+                  primaryMAC[2] = source[start + 2];
+                  primaryMAC[3] = source[start + 3];
+                 return ToHexString(primaryMAC);
+            }
+            return null;
+        }
+        public static string DecodeHardwareVersion(byte[] source, int start) {
+            byte[] hardwareVersion = new byte[4];
+            if (source != null && source.Length > start + 3) {
+                hardwareVersion[0] = source[start];
+                hardwareVersion[1] = source[start + 1];
+                hardwareVersion[2] = source[start + 2];
+                hardwareVersion[3] = source[start + 3];
+                return ToHexString(hardwareVersion);
+            }
+            return null;
+        }
+        public static string DecodeSoftwareVersion(byte[] source, int start) {
+            byte[] softwareVersion = new byte[2];
+            if (source != null && source.Length > start + 1) {
+                softwareVersion[0] = source[start];
+                softwareVersion[1] = source[start + 1];
+               
+                return ToHexString(softwareVersion);
+            }
+            return null;
+        }
+       
         public static string DecodeClientID(byte[] source, int start)
         {
             byte[] clientID = new byte[2];
@@ -124,6 +176,22 @@ namespace YyWsnDeviceLibrary
 
 
         }
+        public static string DecodeFlashID(byte[] source, int start) {
+            byte[] flashid = new byte[2];
+            if (source != null && source.Length > start + 1) {
+                flashid[0] = source[start];
+                flashid[1] = source[start + 1];
+
+                return ToHexString(flashid);
+
+            }
+
+            return null;
+
+
+        }
+
+
 
         public static string ToHexString(byte[] bytes) // 0xae00cf => "AE00CF "
         {

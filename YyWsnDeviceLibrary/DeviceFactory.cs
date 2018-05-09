@@ -125,42 +125,53 @@ namespace YyWsnDeviceLibrary
             try
             {
                 //1101 监控工具获得的数据
-                for (int i = 0; i < SourceData.Length; i++)
-                {
-                    if (SourceData[i] == 0xEA)
-                    {
+                for (int i = 0; i < SourceData.Length; i++) {
+                    if (SourceData[i] == 0xEA) {   // 起始位为0xEA
+
                         //首先进行有效性验证，不通过直接返回null
                         //01.长度校验
                         int LengthCheck = SourceData[i + 1] + i;
-                        if (SourceData.Length < LengthCheck + 4)
-                        {
+                        if (SourceData.Length < LengthCheck + 4) {
                             return null;
                         }
-                        if (SourceData[LengthCheck + 4] != 0xAE)
-                        {
+                        if (SourceData[LengthCheck + 4] != 0xAE) {
                             return null;
                         }
 
                         //02.根据产品类型进行判断
-                        switch (SourceData[i + 3])
-                        {
-                            case 0x51:
-                                {
+                        switch (SourceData[i + 3]) {
+                            case 0x51: {
                                     device = new M1(SourceData);
                                     return device;
                                 }
-                            case 0x53:
-                                {
+                            case 0x53: {
                                     device = new M1(SourceData);
                                     return device;
                                 }
-                            case 0x57:
-                                {
+                            case 0x57: {
                                     device = new M2(SourceData);
                                     return device;
                                 }
-                            default:
-                                {
+                            default: {
+                                    return null;
+                                }
+                        }
+                    } else if (SourceData[i] == 0xAE) {
+                        byte deviceType = SourceData[i + 3];
+                        switch (deviceType) {
+                            case 0x51: {
+                                    device = new M1(SourceData);
+                                    return device;
+                                }
+                            case 0x53: {
+                                    device = new M1(SourceData);
+                                    return device;
+                                }
+                            case 0x57: {
+                                    device = new M2(SourceData);
+                                    return device;
+                                }
+                            default: {
                                     return null;
                                 }
                         }
@@ -176,17 +187,17 @@ namespace YyWsnDeviceLibrary
                         //首先进行有效性验证，不通过直接返回null
                         //01.长度校验
                         int LengthCheck = SourceData[i + 2] + i;
-                        if (SourceData.Length < LengthCheck + 6)
+                        if (SourceData.Length < LengthCheck + 6) {
                             return null;
-                        if (SourceData[LengthCheck + 5] != 0xCA && SourceData[LengthCheck + 6] == 0xCA)
+                        }
+                        if (SourceData[LengthCheck + 5] != 0xCA && SourceData[LengthCheck + 6] == 0xCA) {
                             return null;
+                        }
                         //创建对应的对象
                         device = new UartGateway(SourceData);
-
                         return device;
                     }
                 }
-
             }
             catch (Exception)
             {
@@ -218,52 +229,76 @@ namespace YyWsnDeviceLibrary
                 return devices;
             }
 
-
             //仅适合新协议，不兼容Z协议
-            for (int i = 0; i < SourceData.Length; i++)
-            {
-                try
-                {
-                    if (SourceData[i] == 0xEA)
-                    {
-                        if (SourceData.Length <= i - 1)
-                        {
+            for (int i = 0; i < SourceData.Length; i++) {
+                try {
+                    if (SourceData[i] == 0xEA) {   // 起始位是0xEA
+                        if (SourceData.Length <= i - 1) {
                             continue;
                         }
 
                         int LengthCheck = SourceData[i + 1] + i;        // 数据包长度，单位：Byte
 
                         //缺少长度校验
-                        if (SourceData.Length >= LengthCheck + 4 && SourceData[LengthCheck + 4] == 0xAE)
-                        {
+                        if (SourceData.Length >= LengthCheck + 4 && SourceData[LengthCheck + 4] == 0xAE) {
                             //复制部分数字
                             //创建设备
                             byte[] deviceBytes = new byte[LengthCheck + 6 - i];
 
-                            for (int j = 0; j < deviceBytes.Length; j++)
-                            {
+                            for (int j = 0; j < deviceBytes.Length; j++) {
                                 //TODO: 这里有错误，数组越界
-                                if (SourceData.Length < i + j)
-                                {
+                                if (SourceData.Length < i + j) {
                                     break;
                                 }
                                 deviceBytes[j] = SourceData[i + j];
                             }
 
                             Device device = CreateDevice(deviceBytes);
-                            if (device != null)
-                            {
+                            if (device != null) {
                                 devices.Add(device);
-
                             }
                         }
+                    } else if (SourceData[i] == 0xAE) {
+                        // 起始位是0xAE
+                        UInt16 StartIndex = (UInt16)i;
+                        if (SourceData.Length - StartIndex < 6) {
+                            continue;           // 起始位、长度位、CRC16、结束位、RSSI共占据了6个Byte
+                        }
+
+                        byte Len = SourceData[StartIndex + 1];      // 长度位
+                        byte PktLen = (byte)(2 + Len + 2 + 2);      // 数据包的总长度，包含RSSI，单位：Byte
+                        if (SourceData.Length < StartIndex + PktLen) {
+                            continue;           // 长度位错误
+                        }
+
+                        UInt16 crc = (UInt16)(SourceData[StartIndex + 2 + Len] * 256 + SourceData[StartIndex + 2 + Len + 1]);
+                        byte End = SourceData[StartIndex + 2 + Len + 2];
+                        byte Rssi = SourceData[StartIndex + 2 + Len + 2 + 1];
+
+                        if (End != 0xEA) {
+                            continue;           // 结束位错误
+                        }
+
+                        // 单独摘出一个完整的数据包
+                        byte[] deviceBytes = new byte[PktLen];
+                        for (int j = 0; j < PktLen; j++) {
+                            deviceBytes[j] = SourceData[StartIndex + j];
+                        }
+
+                        // 根据接收到数据包来创建对象
+                        Device device = CreateDevice(deviceBytes);
+                        if (device == null) {
+                            continue;
+                        }
+
+                        // 已创建了对象，添加到Device数组里
+                        devices.Add(device);
                     }
                 }
-                catch (Exception)
-                {
-                   // throw;
+                catch (Exception) {
                 }
             }
+
             return devices;
         }
     }
