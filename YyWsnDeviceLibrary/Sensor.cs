@@ -9,10 +9,12 @@ namespace YyWsnDeviceLibrary
     {
         public int SensorSN { get; set; }
 
+        public byte Error { get; set; }
         public DateTime SensorCollectTime { get; set; }
        
         public DateTime SensorTransforTime { get; set; }
 
+        public DateTime GWTime { get; set; }
         public double RSSI { get; set; }
         public byte TXPower { get; set; }
 

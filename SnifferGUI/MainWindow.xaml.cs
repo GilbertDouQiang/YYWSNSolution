@@ -41,11 +41,13 @@ namespace SnifferGUI
     public partial class MainWindow : Window
     {
         ObservableCollection<M1> m1groups = new ObservableCollection<M1>(); //DataGrid 中对应M1的表格
-        ObservableCollection<M2> m2groups = new ObservableCollection<M2>(); //DataGrid 中对应M2的表格
+        ObservableCollection<M1> m2groups = new ObservableCollection<M1>(); //DataGrid 中对应M2的表格
+        ObservableCollection<M1> m3groups = new ObservableCollection<M1>(); //DataGrid 中对应M2的表格
 
         SerialPortHelper comport;
         int SerialNoM1 = 1;                 // M1表格的行编号              
         int SerialNoM2 = 1;                 // M2表格的行编号
+        int SerialNoM3 = 1;                 // 传感器数据包的反馈表格的行编号
 
         UInt32 ExSensorId = 0;              // 期望的Sensor ID
         UInt16 ExCustomer = 0;              // 期望的客户码
@@ -61,7 +63,7 @@ namespace SnifferGUI
 
             dgM1.ItemsSource = m1groups;
             dgM2.ItemsSource = m2groups;
-
+            dgM3.ItemsSource = m3groups;
 
             //M1 排序用
             ICollectionView v = CollectionViewSource.GetDefaultView(dgM1.ItemsSource);
@@ -76,6 +78,13 @@ namespace SnifferGUI
             ListSortDirection dM2 = ListSortDirection.Descending;
             vM2.SortDescriptions.Add(new SortDescription("DisplayID", dM2));
             vM2.Refresh();
+
+            //M3 排序用
+            ICollectionView vM3 = CollectionViewSource.GetDefaultView(dgM3.ItemsSource);
+            vM3.SortDescriptions.Clear();
+            ListSortDirection dM3 = ListSortDirection.Descending;
+            vM3.SortDescriptions.Add(new SortDescription("DisplayID", dM3));
+            vM3.Refresh();
         }
 
         /// <summary>
@@ -86,18 +95,31 @@ namespace SnifferGUI
         /// true:    符合要求，显示
         /// false： 不符合要求，丢弃
         /// </returns>
-        string selectItem1 = "";
-        string selectItem2 = "";
-        private bool isDesDeviceType(byte rxDeviceType)
-        {
-            selectItem1 = cbSensorType.SelectedItem.ToString();
-            selectItem2 = cbSensorType.SelectionBoxItem.ToString();
-            if (cbSensorType.SelectedItem.ToString() == "M1")
-            {
+        private bool isDesDeviceType(byte rxDeviceType) {
+
+            byte ExDeviceType = 0x00;
+
+            if (cbSensorType.SelectedIndex == 0) {   
+                // All
                 return true;
+            } else if (cbSensorType.SelectedIndex == 1) {
+                // M1
+                ExDeviceType = 0x51;
+            } else if (cbSensorType.SelectedIndex == 2) {
+                // M1_NTC
+                ExDeviceType = 0x5C;
+            } else if (cbSensorType.SelectedIndex == 3) {
+                // M1_Beetech
+                ExDeviceType = 0x5D;
+            }else {
+                return false;
             }
 
-            return false;
+            if(rxDeviceType != ExDeviceType) {
+                return false;
+            }
+
+            return true;
         }
 
 
@@ -185,6 +207,7 @@ namespace SnifferGUI
                 }
             }
 
+            /* TODO: 暂时注释掉，只为调试上电自检数据包
             if (tabData.SelectedIndex == 1)
             {
                 if (saveDlg.ShowDialog() == true)
@@ -192,7 +215,7 @@ namespace SnifferGUI
                     ExportXLS export = new ExportXLS();
                     export.ExportWPFDataGridM2(dgM2, saveDlg.FileName, m2groups);
                 }
-            }
+            }*/
         }
 
 
@@ -220,9 +243,20 @@ namespace SnifferGUI
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void btnSendCommand_Click(object sender, RoutedEventArgs e)
-        {
-            comport.SendCommand(txtSendCommand.Text);
+        private void btnSendCommand_Click(object sender, RoutedEventArgs e) {
+            // bps
+            byte bps = (byte)cbBps.SelectedIndex;
+
+            // freq
+            UInt32 freq = Convert.ToUInt32(tbxFreq.Text);
+
+            // Expect Number
+            byte expNum = Convert.ToByte(tbxNum.Text);
+
+            // Cmd
+            string Cmd = "CE 09 A0 01" + bps.ToString("X2") + freq.ToString("X8") + expNum.ToString("X2") + "01 00 00 EC";
+
+            comport.SendCommand(Cmd);
         }
 
         /// <summary>
@@ -264,87 +298,80 @@ namespace SnifferGUI
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>       
-        private Int16 HandleSensorData(Device device)
-        {
+        private Int16 HandleSensorData(Device device) {
+            if (isDesDeviceType(device.DeviceTypeB) == false) {
+                return -1;
+            }
+
             // 更新期望的客户码
-            if (txtFilterClientID.Text.Length > 0)
-            {
+            if (txtFilterClientID.Text.Length > 0) {
                 byte[] ExCustomerByte = CommArithmetic.HexStringToByteArray(txtFilterClientID.Text);
-                if (ExCustomerByte != null && ExCustomerByte.Length >= 2)
-                {
+                if (ExCustomerByte != null && ExCustomerByte.Length >= 2) {
                     ExCustomer = (UInt16)(ExCustomerByte[0] * 256 + ExCustomerByte[1]);
                 }
-            }
-            else
-            {
+            } else {
                 ExCustomer = 0x0000;
             }
 
             // 更新期望的Sensor ID
-            if (txtDestMac.Text.Length > 0)
-            {
+            if (txtDestMac.Text.Length > 0) {
                 byte[] ExSensorIdByte = CommArithmetic.HexStringToByteArray(txtDestMac.Text);
-                if (ExSensorIdByte != null && ExSensorIdByte.Length >= 4)
-                {
+                if (ExSensorIdByte != null && ExSensorIdByte.Length >= 4) {
                     ExSensorId = (UInt32)(ExSensorIdByte[0] * 256 * 256 * 256 + ExSensorIdByte[1] * 256 * 256 + ExSensorIdByte[2] * 256 + ExSensorIdByte[3]);
                 }
-            }
-            else
-            {
+            } else {
                 ExSensorId = 0x00000000;
-            }  
-            
-            // 接收到数据的设备类型
-            Type deviceType = device.GetType();
+            }
 
-            if (deviceType == typeof(M1))
-            {
+            // 接收到数据的设备类型
+            byte Cmd = device.WorkFunction;
+            byte STP1 = device.STP;
+
+            if (Cmd == 0x01) {
                 // 接收到数据的Sensor ID
                 byte[] RxSensorIdByte = CommArithmetic.HexStringToByteArray(device.DeviceMac);
                 UInt32 RxSensorId = (UInt32)(RxSensorIdByte[0] * 256 * 256 * 256 + RxSensorIdByte[1] * 256 * 256 + RxSensorIdByte[2] * 256 + RxSensorIdByte[3]);
-                if (ExSensorId != 0 && ExSensorId != RxSensorId)
-                {
+                if (ExSensorId != 0 && ExSensorId != RxSensorId) {
                     return -1;
                 }
 
                 // 接收到数据的客户码
                 byte[] RxCustomerByte = CommArithmetic.HexStringToByteArray(device.ClientID);
                 UInt16 RxCustomer = (UInt16)(RxCustomerByte[0] * 256 + RxCustomerByte[1]);
-                if (ExCustomer != 0 && ExCustomer != RxCustomer)
-                {
+                if (ExCustomer != 0 && ExCustomer != RxCustomer && RxCustomer != 0) {
                     return -2;
-                }                
+                }
+                if (STP1 == 0xEA) {
+                    //显示数据
+                    device.DisplayID = SerialNoM1++;
+                    m1groups.Add((M1)device);
+                } else if (STP1 == 0xAE) {
+                    device.DisplayID = SerialNoM3++;
+                    m3groups.Add((M1)device);
+                }
 
-                // 显示数据
-                device.DisplayID = SerialNoM1++;
-                m1groups.Add((M1)device);
-            }
-            else if (deviceType == typeof(M2))
-            {
+            } else if (Cmd == 0x00) {
                 // 接收到数据的Sensor ID
                 byte[] RxSensorIdByte = CommArithmetic.HexStringToByteArray(device.DeviceMac);
                 UInt32 RxSensorId = (UInt32)(RxSensorIdByte[0] * 256 * 256 * 256 + RxSensorIdByte[1] * 256 * 256 + RxSensorIdByte[2] * 256 + RxSensorIdByte[3]);
-                if (ExSensorId != 0 && ExSensorId != RxSensorId)
-                {
+                if (ExSensorId != 0 && ExSensorId != RxSensorId) {
                     return -3;
                 }
 
                 // 接收到数据的客户码
                 byte[] RxCustomerByte = CommArithmetic.HexStringToByteArray(device.ClientID);
                 UInt16 RxCustomer = (UInt16)(RxCustomerByte[0] * 256 + RxCustomerByte[1]);
-                if (ExCustomer != 0 && ExCustomer != RxCustomer)
-                {
+                if (ExCustomer != 0 && ExCustomer != RxCustomer) {
                     return -4;
                 }
 
                 // 显示数据
                 device.DisplayID = SerialNoM2++;
-                m2groups.Add((M2)device);                
+                m2groups.Add((M1)device);
             }
 
             return 0;
         }
-
 
         private void Comport_SerialPortReceived(object sender, SerialPortEventArgs e)
         {
