@@ -8,8 +8,11 @@ namespace YyWsnDeviceLibrary
     public class Sensor:Device
     {
         public int SensorSN { get; set; }
-
+         public int PSensorSN { get; set; }
+         public int Serial { get; set; }
+        public int CSensorSN { get; set; }
         public byte Error { get; set; }
+        public byte SendOK { get; set; }
         public DateTime SensorCollectTime { get; set; }
        
         public DateTime SensorTransforTime { get; set; }
@@ -17,7 +20,8 @@ namespace YyWsnDeviceLibrary
         public DateTime GWTime { get; set; }
         public double RSSI { get; set; }
         public byte TXPower { get; set; }
-
+        public DateTime  StartTime { get; set; }
+        public DateTime  FinishTime { get; set; }
         /// <summary>
         /// 采集和发送的倍数，最小为1，最大为8
         /// </summary>

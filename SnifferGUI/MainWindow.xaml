@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SnifferGUI"
         mc:Ignorable="d"
-        Title="Hyper WSN Sniffer GUI v1.5" Height="660" Width="1024" WindowStartupLocation="CenterScreen">
+        Title="Hyper WSN Sniffer GUI v1.8" Height="660" Width="1024" WindowStartupLocation="CenterScreen">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
@@ -97,6 +97,8 @@
                                 <DataGridTextColumn Header="客户码" Binding="{Binding ClientID}" />
                                 <DataGridTextColumn Header="MAC" Binding="{Binding DeviceMac}" />
                                 <DataGridTextColumn Header="L/H" Binding="{Binding LastHistory,StringFormat='{}{0:X2}'}" />
+                                <DataGridTextColumn Header="状态" Binding="{Binding State,StringFormat='{}{0:X2}'}" />
+                                <DataGridTextColumn Header="报警项" Binding="{Binding AlarmItem,StringFormat='{}{0:X2}'}" />
                                 <DataGridTextColumn Header="采集序列号" Binding="{Binding SensorSN}" />
                                 <DataGridTextColumn Header="采集时间" Binding="{Binding SensorCollectTime,StringFormat='{}{0:MM-dd HH:mm:ss}'}" />
                                 <DataGridTextColumn Header="IC温度" Binding="{Binding ICTemperature,StringFormat='{}{0:F0}'}" />

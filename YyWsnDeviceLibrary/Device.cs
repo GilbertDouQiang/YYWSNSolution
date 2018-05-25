@@ -32,6 +32,7 @@ namespace YyWsnDeviceLibrary
         /// </summary>
         public byte DeviceTypeB { get; set; }
 
+        public byte Progrom { get; set; }
         /// <summary>
         /// 设备类型，如M1 代号为51
         /// </summary>
@@ -129,5 +130,10 @@ namespace YyWsnDeviceLibrary
         /// 最新数据/历史数据
         /// </summary>
         public byte LastHistory { get; set; }
+        //状态
+        public byte State { get; set; }
+        //报警项
+        public byte AlarmItem { get; set; }
+
     }
 }

@@ -116,6 +116,23 @@ namespace YyWsnDeviceLibrary
                         }
                     }
                 }
+                //beetch
+                if (SourceData[0] == 0xAC && SourceData[2] == 0x17 && SourceData[4] == 0x01) {
+                    
+                    M11 sensorM1 = new M11(SourceData);
+                    if (sensorM1 != null) {
+                        return sensorM1;
+                    }
+
+                }
+                if (SourceData[0] == 0xAC &&( SourceData[2] == 0x09|| SourceData[2] == 0x20) && SourceData[4] == 0x01) {
+
+                    M11 sensorM1 = new M11(SourceData);
+                    if (sensorM1 != null) {
+                        return sensorM1;
+                    }
+
+                }
             }
             catch (Exception)
             {
@@ -125,7 +142,8 @@ namespace YyWsnDeviceLibrary
             try
             {
                 //1101 监控工具获得的数据
-                for (int i = 0; i < SourceData.Length; i++) {
+                for (int i = 0; i < SourceData.Length; i++)
+                    {
                     if (SourceData[i] == 0xEA) {   // 起始位为0xEA
 
                         //首先进行有效性验证，不通过直接返回null
@@ -156,7 +174,8 @@ namespace YyWsnDeviceLibrary
                                     return null;
                                 }
                         }
-                    } else if (SourceData[i] == 0xAE) {
+                    }
+                    else if (SourceData[i] == 0xAE) {
                         byte deviceType = SourceData[i + 3];
                         switch (deviceType) {
                             case 0x51: {
@@ -176,7 +195,10 @@ namespace YyWsnDeviceLibrary
                                 }
                         }
                     }
+
+                    
                 }
+
 
                 // UartGateway 从Uart获得的数据
                 for (int i = 0; i < SourceData.Length; i++)
@@ -228,9 +250,9 @@ namespace YyWsnDeviceLibrary
                 devices.Add(device);
                 return devices;
             }
-
+            
             //仅适合新协议，不兼容Z协议
-            for (int i = 0; i < SourceData.Length; i++) {
+           /*for (int i = 0; i < SourceData.Length; i++) {
                 try {
                     if (SourceData[i] == 0xEA) {   // 起始位是0xEA
                         if (SourceData.Length <= i - 1) {
@@ -297,8 +319,45 @@ namespace YyWsnDeviceLibrary
                 }
                 catch (Exception) {
                 }
-            }
+            }*/
+            for (int i = 0; i < SourceData.Length; i++) {
+                try {
+                    if (SourceData[i] == 0xAC &&( SourceData[2]==0x20 || SourceData[2] == 0x09|| SourceData[2] == 0x17))
+                 {  
+                        if (SourceData.Length <= i - 1) {
+                            continue;
+                        }
 
+                        int LengthCheck = SourceData[i + 2] + i;        // 数据包长度，单位：Byte
+
+                        //缺少长度校验
+                        if (SourceData.Length >= LengthCheck + 4 && SourceData[LengthCheck + 5] == 0xCA) 
+                            {
+                            //复制部分数字
+                            //创建设备
+                            byte[] deviceBytes = new byte[LengthCheck + 7 - i];
+
+                            for (int j = 0; j < deviceBytes.Length; j++) {
+                                //TODO: 这里有错误，数组越界
+                                if (SourceData.Length < i + j) {
+                                    break;
+                                }
+                                deviceBytes[j] = SourceData[i + j];
+                            }
+
+                            Device device = CreateDevice(deviceBytes);
+                            if (device != null) {
+                                devices.Add(device);
+                                
+                            }
+                        }
+                    }
+                    
+                }
+
+                catch (Exception) {
+                }
+            }
             return devices;
         }
     }
