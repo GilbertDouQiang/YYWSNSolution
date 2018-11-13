@@ -54,7 +54,7 @@ namespace YyWsnDeviceLibrary
                 }
 
                 // 处理监测工具监听到的M1发出的温湿度数据包
-                if (SourceData[0] == 0xEA && SourceData[1] == 0x22 && (SourceData[3] == 0x51 || SourceData[3] == 0x5C || SourceData[3] == 0x5D) && SourceData.Length == 40)
+                if (SourceData[0] == 0xEA && SourceData[1] == 0x22 && SourceData.Length == 40)
                 {
                     M1 sensorM1 = new M1(SourceData);
                     if (sensorM1 != null)
@@ -116,6 +116,7 @@ namespace YyWsnDeviceLibrary
                         }
                     }
                 }
+
                 //beetch
                 if (SourceData[0] == 0xAC && SourceData[2] == 0x17 && SourceData[4] == 0x01) {
                     
@@ -125,6 +126,8 @@ namespace YyWsnDeviceLibrary
                     }
 
                 }
+
+                //
                 if (SourceData[0] == 0xAC &&( SourceData[2] == 0x09|| SourceData[2] == 0x20) && SourceData[4] == 0x01) {
 
                     M11 sensorM1 = new M11(SourceData);
@@ -252,7 +255,7 @@ namespace YyWsnDeviceLibrary
             }
             
             //仅适合新协议，不兼容Z协议
-           /*for (int i = 0; i < SourceData.Length; i++) {
+           for (int i = 0; i < SourceData.Length; i++) {
                 try {
                     if (SourceData[i] == 0xEA) {   // 起始位是0xEA
                         if (SourceData.Length <= i - 1) {
@@ -319,7 +322,8 @@ namespace YyWsnDeviceLibrary
                 }
                 catch (Exception) {
                 }
-            }*/
+            }
+
             for (int i = 0; i < SourceData.Length; i++) {
                 try {
                     if (SourceData[i] == 0xAC &&( SourceData[2]==0x20 || SourceData[2] == 0x09|| SourceData[2] == 0x17))

@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SnifferGUI"
         mc:Ignorable="d"
-        Title="Hyper WSN Sniffer GUI v1.8" Height="660" Width="1024" WindowStartupLocation="CenterScreen">
+        Title="Hyper WSN Sniffer GUI v1.9" Height="660" Width="1024" WindowStartupLocation="CenterScreen">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
@@ -96,24 +96,26 @@
                                 <DataGridTextColumn Header="协议版本" Binding="{Binding ProtocolVersion}" />
                                 <DataGridTextColumn Header="客户码" Binding="{Binding ClientID}" />
                                 <DataGridTextColumn Header="MAC" Binding="{Binding DeviceMac}" />
-                                <DataGridTextColumn Header="L/H" Binding="{Binding LastHistory,StringFormat='{}{0:X2}'}" />
+                                <DataGridTextColumn Header="L/H" Binding="{Binding LastHistory, StringFormat='{}{0:X2}'}" />
                                 <DataGridTextColumn Header="状态" Binding="{Binding State,StringFormat='{}{0:X2}'}" />
                                 <DataGridTextColumn Header="报警项" Binding="{Binding AlarmItem,StringFormat='{}{0:X2}'}" />
                                 <DataGridTextColumn Header="采集序列号" Binding="{Binding SensorSN}" />
                                 <DataGridTextColumn Header="采集时间" Binding="{Binding SensorCollectTime,StringFormat='{}{0:MM-dd HH:mm:ss}'}" />
                                 <DataGridTextColumn Header="IC温度" Binding="{Binding ICTemperature,StringFormat='{}{0:F0}'}" />
                                 <DataGridTextColumn Header="电压V" Binding="{Binding Volt,StringFormat='{}{0:F3}'}" />
+                                <DataGridTextColumn Header="小采" Binding="{Binding AltSerial}"/>
                                 <DataGridTextColumn Header="温度℃" Binding="{Binding Temperature,StringFormat='{}{0:F2}'}" />
-                                <DataGridTextColumn Header="湿度%" Binding="{Binding Humidity,StringFormat='{}{0:F2}'}" />
-                                <DataGridTextColumn Header="信号强度" Binding="{Binding RSSI}" />
-                                <DataGridTextColumn Header="传输时间" Binding="{Binding SensorTransforTime,StringFormat='{}{0:MM-dd HH:mm:ss}'}" />
+                                <DataGridTextColumn Header="湿度%" Binding="{Binding Humidity, StringFormat='{}{0:F2}'}" />
+                                <DataGridTextColumn Header="RAM" Binding="{Binding ToSendRam}" />
+                                <DataGridTextColumn Header="FLASH" Binding="{Binding ToSendFlash}" />
+                                <DataGridTextColumn Header="RSSI" Binding="{Binding RSSI}" />
+                                <DataGridTextColumn Header="传输时间" Binding="{Binding SensorTransforTime,StringFormat='{}{0:MM-dd HH:mm:ss.fff}'}" />
                                 <DataGridTextColumn Header="元数据" Binding="{Binding SourceData}" />
-
 
                             </DataGrid.Columns>
                         </DataGrid>
                     </Grid>
-
+                    
                 </TabItem>
 
                 <TabItem x:Name="tabM2" Header="上电自检">
@@ -164,13 +166,13 @@
                     </Grid>
 
                 </TabItem>
-                <TabItem x:Name="M3" Header="传感器数据包的反馈">
+                <TabItem x:Name="TabFeedBack" Header="传感器数据包的反馈">
                     <Grid>
                         <DataGrid  x:Name="dgM3" AutoGenerateColumns="False"  AlternatingRowBackground="#F4F4F4">
                             
                                 <DataGrid.Columns>
                                 
-                                    <DataGridTextColumn Header="序号" Binding="{Binding DisplayID}" />
+                                <DataGridTextColumn Header="序号" Binding="{Binding DisplayID}" />
                                 <DataGridTextColumn Header="Cmd" Binding="{Binding WorkFunction,StringFormat='{}{0:X2}'}" />
                                 <DataGridTextColumn Header="设备类型" Binding="{Binding DeviceType}" />
                                 <DataGridTextColumn Header="协议版本" Binding="{Binding ProtocolVersion}" />
@@ -178,6 +180,7 @@
                                 <DataGridTextColumn Header="采集序列号" Binding="{Binding SensorSN}" />
                                 <DataGridTextColumn Header="Error" Binding="{Binding Error}" />
                                 <DataGridTextColumn Header="GW的日期和时间" Binding="{Binding GWTime,StringFormat='{}{0:MM-dd HH:mm:ss}'}" />
+                                <DataGridTextColumn Header="系统时间" Binding="{Binding SensorTransforTime,StringFormat='{}{0:MM-dd HH:mm:ss.fff}'}" />    
                             </DataGrid.Columns>
                             
                         </DataGrid>

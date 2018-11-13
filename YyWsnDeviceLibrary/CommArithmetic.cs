@@ -231,7 +231,7 @@ namespace YyWsnDeviceLibrary
 
 
 
-
+  
             try
             {
                 dt = DateTime.ParseExact(strDate, "yy MM dd HH mm ss ", System.Globalization.CultureInfo.CurrentCulture);

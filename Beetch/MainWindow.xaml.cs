@@ -159,11 +159,11 @@ namespace Beetch {
             if (tabData.SelectedIndex == 0) {
                 if (saveDlg.ShowDialog() == true) {
                     ExportXLS export = new ExportXLS();
-                  //  export.ExportWPFDataGrid(dgM1, saveDlg.FileName, m1groups);
+                    //  export.ExportWPFDataGrid(dgM1, saveDlg.FileName, m1groups);
                 }
             }
         }
-             private void FindComport() {
+        private void FindComport() {
             cbSerialPort.Items.Clear();
             string[] spis = SerialPortHelper.GetSerialPorts();
             foreach (var portname in spis) {
@@ -213,10 +213,9 @@ namespace Beetch {
                 btnResersh.IsEnabled = true;
             }
         }
-private void btnSendData_Click(object sender, RoutedEventArgs e)
-            {
+        private void btnSendData_Click(object sender, RoutedEventArgs e) {
             string Cmd = Order.Text;
-           // string Cmd = "CA CA 02 0D 01 00 00 AC AC";
+            // string Cmd = "CA CA 02 0D 01 00 00 AC AC";
 
             comport.SendCommand(Cmd);
         }
@@ -258,20 +257,19 @@ private void btnSendData_Click(object sender, RoutedEventArgs e)
                 }
 
                 // 接收到数据的客户码
-               // byte[] RxCustomerByte = CommArithmetic.HexStringToByteArray(device.ClientID);
-               // UInt16 RxCustomer = (UInt16)(RxCustomerByte[0] * 256 + RxCustomerByte[1]);
+                // byte[] RxCustomerByte = CommArithmetic.HexStringToByteArray(device.ClientID);
+                // UInt16 RxCustomer = (UInt16)(RxCustomerByte[0] * 256 + RxCustomerByte[1]);
                 //if (ExCustomer != 0 && ExCustomer != RxCustomer && RxCustomer != 0) {
-               //     return -2;
-              //  }
+                //     return -2;
+                //  }
                 if (STP1 == 0xAC) {
                     //显示数据
                     device.DisplayID = SerialNoM1++;
                     m1groups.Add((M11)device);
-                } 
+                }
 
 
-            } 
-            else if (Cmd == 0x0E) {
+            } else if (Cmd == 0x0E) {
                 // 接收到数据的Sensor ID
                 byte[] RxSensorIdByte = CommArithmetic.HexStringToByteArray(device.DeviceMac);
                 UInt32 RxSensorId = (UInt32)(RxSensorIdByte[0] * 256 * 256 * 256 + RxSensorIdByte[1] * 256 * 256 + RxSensorIdByte[2] * 256 + RxSensorIdByte[3]);
@@ -282,12 +280,12 @@ private void btnSendData_Click(object sender, RoutedEventArgs e)
                 // 接收到数据的客户码
                 //byte[] RxCustomerByte = CommArithmetic.HexStringToByteArray(device.ClientID);
                 //UInt16 RxCustomer = (UInt16)(RxCustomerByte[0] * 256 + RxCustomerByte[1]);
-               // if (ExCustomer != 0 && ExCustomer != RxCustomer) {
-               //     return -4;
-               // }
+                // if (ExCustomer != 0 && ExCustomer != RxCustomer) {
+                //     return -4;
+                // }
 
                 //显示数据
-               device.DisplayID = SerialNoM2++;
+                device.DisplayID = SerialNoM2++;
                 m2groups.Add((M11)device);
             }
 
@@ -313,13 +311,24 @@ private void btnSendData_Click(object sender, RoutedEventArgs e)
                 }
             }));
         }
-
+        public DateTime STM { get; set; }
+        public DateTime FIM { get; set; }
         private void btnReadData_Click(object sender, RoutedEventArgs e) {
             string Cmd = Read.Text;
             // string Cmd = "CA CA 02 0D 01 00 00 AC AC";
-
             comport.SendCommand(Cmd);
-        }
+            byte[] Time = CommArithmetic.HexStringToByteArray(Read.Text);
+            STM = CommArithmetic.DecodeDateTime(Time, 5);
+            FIM = CommArithmetic.DecodeDateTime(Time, 11);
+
+            //DateTime dt = DateTime.Now;
+            StartTime .Text=STM.ToString("yyyy/MM/dd HH:mm:ss");
+            FinishTime.Text = FIM.ToString("yyyy/MM/dd HH:mm:ss");//"yyyyMMddHHmmss"
+            
+
+        }    
+
     }
+}
     
-    }
+ 

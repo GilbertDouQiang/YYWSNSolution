@@ -63,6 +63,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HyperWSN_Gateway_Alert", "H
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beetch", "Beetch\Beetch.csproj", "{B0CF792D-049A-4E5F-BE12-849410FCC700}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CRC_Tool", "CRC_Tool\CRC_Tool.csproj", "{83CBC99F-754A-4CF1-891F-CA7A9882B008}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -141,6 +143,10 @@ Global
 		{B0CF792D-049A-4E5F-BE12-849410FCC700}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B0CF792D-049A-4E5F-BE12-849410FCC700}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B0CF792D-049A-4E5F-BE12-849410FCC700}.Release|Any CPU.Build.0 = Release|Any CPU
+		{83CBC99F-754A-4CF1-891F-CA7A9882B008}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{83CBC99F-754A-4CF1-891F-CA7A9882B008}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{83CBC99F-754A-4CF1-891F-CA7A9882B008}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{83CBC99F-754A-4CF1-891F-CA7A9882B008}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -36,7 +36,7 @@ namespace YyWsnDeviceLibrary
         /// <summary>
         /// 设备类型，如M1 代号为51
         /// </summary>
-        public String DeviceType { get; set; }        
+        public String DeviceType { get; set; }
 
         /// <summary>
         /// 设备的8位MAC地址
@@ -67,7 +67,7 @@ namespace YyWsnDeviceLibrary
         /// 客户识别码
         /// </summary>
         public String ClientID { get; set; }
-        
+
         /// <summary>
         /// 协议版本
         /// </summary>
@@ -92,7 +92,7 @@ namespace YyWsnDeviceLibrary
         /// <summary>
         /// Debug
         /// </summary>
-        public UInt16 DebugT{ get; set; }
+        public UInt16 DebugT { get; set; }
 
         /// <summary>
         /// 类
@@ -108,14 +108,27 @@ namespace YyWsnDeviceLibrary
         /// 
         /// </summary>
         public DateTime Calendar { get; set; }
-        
+
+        /// <summary>
+        /// 工作模式
+        /// </summary>
         public byte Pattern { get; set; }
+
+        /// <summary>
+        /// 传输速率
+        /// </summary>
         public byte Bps { get; set; }
+
         /// <summary>
         /// Sensor的工作模式
         /// </summary>
         public byte WorkFunction { get; set; } //Pattern in protocol
+
+        /// <summary>
+        /// 
+        /// </summary>
         public byte STP { get; set; }
+
         /// <summary>
         /// 传输速率
         /// </summary>
@@ -130,10 +143,30 @@ namespace YyWsnDeviceLibrary
         /// 最新数据/历史数据
         /// </summary>
         public byte LastHistory { get; set; }
-        //状态
+
+        /// <summary>
+        /// 状态
+        /// </summary>
         public byte State { get; set; }
-        //报警项
+
+        /// <summary>
+        /// 报警项
+        /// </summary>
         public byte AlarmItem { get; set; }
 
+        /// <summary>
+        /// 小采
+        /// </summary>
+        public byte AltSerial { get; set; }
+
+        /// <summary>
+        /// RAM队列中的待发数据的数量
+        /// </summary>
+        public byte ToSendRam{ get; set; }
+
+        /// <summary>
+        /// Flash队列中的待发数据的数量
+        /// </summary>
+        public UInt16 ToSendFlash { get; set; }
     }
 }

@@ -14,7 +14,6 @@ namespace YyWsnDeviceLibrary
         public byte Error { get; set; }
         public byte SendOK { get; set; }
         public DateTime SensorCollectTime { get; set; }
-       
         public DateTime SensorTransforTime { get; set; }
 
         public DateTime GWTime { get; set; }

@@ -15,13 +15,9 @@ namespace YyWsnDeviceLibrary
         }
 
         public M2(byte[] SourceData)
-        {
-
-
+        {        
             //2017版协议 v3.5
             //判断第三位 ，01 代表从传感器发出的正常数据，长度不是固定值
-
-
 
             //上电自检数据
             if (SourceData.Length == 0x46)
@@ -48,7 +44,6 @@ namespace YyWsnDeviceLibrary
                 Category = SourceData[24];
                 Interval = SourceData[25] * 256 + SourceData[26];
                 Calendar = CommArithmetic.DecodeDateTime(SourceData, 27);
-
 
                 WorkFunction = SourceData[33];
                 SymbolRate = SourceData[34];
@@ -85,8 +80,6 @@ namespace YyWsnDeviceLibrary
                 FlashFront = SourceData[54] * 256 * 256 + SourceData[55] * 256 + SourceData[56];
                 FlashRear = SourceData[57] * 256 * 256 + SourceData[58] * 256 + SourceData[59];
                 FlashQueueLength = SourceData[60] * 256 * 256 + SourceData[61] * 256 + SourceData[62];
-
-
             }
 
 
@@ -101,15 +94,13 @@ namespace YyWsnDeviceLibrary
                 ProtocolVersion = 0x00;
 
                 SensorSN = SourceData[12] * 256 + SourceData[13];
+
                 //传感器信息
                 ICTemperature = 0; //老协议中没有IC 温度
 
-
                 Volt = CommArithmetic.SHT20Voltage(SourceData[24], SourceData[25]);
 
-
                 //Temperature = CommArithmetic.SHT20Temperature(SourceData[16], SourceData[17]);
-
 
                 //Humidity = CommArithmetic.SHT20Humidity(SourceData[20], SourceData[21]);
                 //广播模式，补充采集和传输时间
@@ -122,15 +113,12 @@ namespace YyWsnDeviceLibrary
                     RSSI = SourceData[27] - 256;
                 }
                 this.SourceData = CommArithmetic.ToHexString(SourceData);
-
-
             }
 
 
             //模式1 正常传输的数据，
             if (SourceData.Length == 28)
             {
-
                 //将收到的数据填充到属性
                 Name = "M2";
                 DeviceType = SourceData[3].ToString("X2");
@@ -163,13 +151,7 @@ namespace YyWsnDeviceLibrary
                     RSSI = SourceData[27] - 256;
                 }
                 this.SourceData = CommArithmetic.ToHexString(SourceData);
-
-
             }
-
-
-
-
         }
         /// <summary>
         /// 温度预警上限

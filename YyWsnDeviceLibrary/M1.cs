@@ -87,7 +87,8 @@ namespace YyWsnDeviceLibrary
 
             // 处理监测工具监听到的M1发出的温湿度数据包
             STP = SourceData[0];
-            if (SourceData[0] == 0xEA && SourceData[1] == 0x22 && (SourceData[3] == 0x51 || SourceData[3] == 0x5C || SourceData[3] == 0x5D)) {
+            if (SourceData[0] == 0xEA && SourceData[1] == 0x22 && SourceData.Length >= 40)
+            {
                 // 将收到的数据填充到属性
 
                 // Cmd
@@ -96,14 +97,21 @@ namespace YyWsnDeviceLibrary
                 // Device type                
                 DeviceTypeB = SourceData[3];
                 DeviceType = DeviceTypeB.ToString("X2");
-                if (DeviceTypeB == 0x51) {
+                if (DeviceTypeB == 0x51)
+                {
                     Name = "M1";
-                } else if (DeviceTypeB == 0x5C) {
+                }
+                else if (DeviceTypeB == 0x5C)
+                {
                     Name = "M1_NTC";
-                } else if (DeviceTypeB == 0x5D) {
+                }
+                else if (DeviceTypeB == 0x5D)
+                {
                     Name = "M1_Beetech";
-                } else {
-                    Name = "M1";
+                }
+                else
+                {
+                    Name = "Other";
                 }
 
                 // protocol
@@ -132,16 +140,21 @@ namespace YyWsnDeviceLibrary
 
                 // IC temp
                 ICTemperature = SourceData[22];
-                if (ICTemperature >= 128) {
+                if (ICTemperature >= 128)
+                {
                     ICTemperature -= 256;
                 }
 
                 // voltage
                 Volt = Math.Round(Convert.ToDouble((SourceData[23] * 256 + SourceData[24])) / 1000, 2);
 
+                // AltSerial
+                AltSerial = SourceData[25];
+
                 // temp
                 int tempCalc = SourceData[28] * 256 + SourceData[29];
-                if (tempCalc >= 0x8000) {
+                if (tempCalc >= 0x8000)
+                {
                     tempCalc -= 65536;
                 }
                 Temperature = Math.Round((Convert.ToDouble(tempCalc) / 100), 2);
@@ -149,13 +162,25 @@ namespace YyWsnDeviceLibrary
                 // hum
                 Humidity = Math.Round(Convert.ToDouble((SourceData[31] * 256 + SourceData[32])) / 100, 2);
 
+                // To Send Ram
+                ToSendRam = SourceData[33];
+
+                // To Send Flash
+                ToSendFlash = (UInt16)(SourceData[34] * 256 + SourceData[35]);
+
+                // RSSI
+                byte rssi = SourceData[39];
+                if (rssi >= 0x80)
+                {
+                    RSSI = (double)(rssi - 0x100);
+                }
+                else
+                {
+                    RSSI = (double)rssi;
+                }
+
                 // 传输时间                
                 SensorTransforTime = System.DateTime.Now;
-
-                //可能收到没有RSSI的数据
-                if (SourceData.Length >= SourceData[1] + 6) {
-                    RSSI = SourceData[39] - 256;
-                }
 
                 this.SourceData = CommArithmetic.ToHexString(SourceData);
             }
@@ -274,21 +299,29 @@ namespace YyWsnDeviceLibrary
                 this.SourceData = CommArithmetic.ToHexString(SourceData);
             }
 
-            if (SourceData[0] == 0xAE && (SourceData[1] == 0x0E || SourceData[1] == 0x08) && (SourceData[3] == 0x51 || SourceData[3] == 0x5C || SourceData[3] == 0x5D)) {
-                
+            if (SourceData[0] == 0xAE && (SourceData[1] == 0x0E || SourceData[1] == 0x08) && (SourceData[3] == 0x51 || SourceData[3] == 0x5C || SourceData[3] == 0x5D))
+            {
+
                 // Cmd
                 WorkFunction = SourceData[2];
 
                 // Device type                
                 DeviceTypeB = SourceData[3];
                 DeviceType = DeviceTypeB.ToString("X2");
-                if (DeviceTypeB == 0x51) {
+                if (DeviceTypeB == 0x51)
+                {
                     Name = "M1";
-                } else if (DeviceTypeB == 0x5C) {
+                }
+                else if (DeviceTypeB == 0x5C)
+                {
                     Name = "M1_NTC";
-                } else if (DeviceTypeB == 0x5D) {
+                }
+                else if (DeviceTypeB == 0x5D)
+                {
                     Name = "M1_Beetech";
-                } else {
+                }
+                else
+                {
                     Name = "M1";
                 }
 
@@ -307,13 +340,15 @@ namespace YyWsnDeviceLibrary
                 //Error
                 Error = SourceData[9];
                 byte error = Error;
-                if (error == 1) {//GW的日期和时间
+                if (error == 1)
+                {   //GW的日期和时间
                     GWTime = CommArithmetic.DecodeDateTime(SourceData, 10);
-                }else {
-                    byte[] GwCalendar = { 0, 0, 0, 0, 0, 0};
+                }
+                else
+                {
+                    byte[] GwCalendar = { 0x18, 0x04, 0x01, 0x23, 0x59, 0x59 };
                     GWTime = CommArithmetic.DecodeDateTime(GwCalendar, 0);
                 }
-
             }
 
             //兼容模式，兼容Z模式

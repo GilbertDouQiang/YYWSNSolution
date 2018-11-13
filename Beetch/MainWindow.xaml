@@ -12,7 +12,7 @@
             <RowDefinition Height="6*"/>
         </Grid.RowDefinitions>
         <Border Padding="5" Grid.Row="0" Margin="-77,-1,77.333,522.667" Grid.RowSpan="2">
-            <StackPanel Margin="91.667,7.667,-82.333,-23">
+            <StackPanel Margin="91.667,7.667,-82.333,-87">
                 <Grid Margin="0 0 0 5">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -50,7 +50,7 @@
                     <TextBox Grid.Column="7" x:Name="tbxNum" Margin="5,0,2,0" Text="0" MaxLength="3"/>
                     <TextBlock Grid.Column="8" Margin="0,3,0,0" HorizontalAlignment="Left" Text="Byte" />
                     <!-- CE 09 A0 01 00 19 CF 0E 40 00 01 00 00 EC -->
-                    <Button Grid.Column="9" Margin="0,0,20,0" Content="Send" x:Name="btnSendCommand" Click="btnSendCommand_Click"  />
+                    <Button Grid.Column="9" Margin="0,0,20,0.333" Content="Send" x:Name="btnSendCommand" Click="btnSendCommand_Click" Height="21" VerticalAlignment="Bottom"  />
 
                 </Grid>
 
@@ -81,7 +81,7 @@
                     <TextBlock Grid.Column="6" Margin="0,3,5,-0.667" HorizontalAlignment="Right" Text="客户码" />
                     <TextBox Grid.Column="7" Margin="0,0,19.333,-0.667" x:Name="txtFilterClientID" Grid.ColumnSpan="2"  />
                 </Grid>
-                <Grid Margin="0,15,0,5">
+                <Grid Margin="0,15,0,5" Height="52">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="358*"/>
                         <ColumnDefinition Width="141*"/>
@@ -90,17 +90,36 @@
                     <Button Grid.Column="0" Margin="20,3,608,18.333" x:Name="发送命令" Content="Send Data" Click="btnSendData_Click" />
                     <TextBox x:Name="Order" Margin="114,3,407,13.333" Text="CA CA 02 0D 01 00 00 AC AC" MaxLength="9" />
                     <Button Grid.Column="0" Margin="484,3,144,18.667" x:Name="读取" Content="Read Data" Click="btnReadData_Click" />
-                    <TextBox x:Name="Read" Margin="587,3,16,13.667" Text="CA CA 0E 0E 01 18 05 18 14 00 00 18 05 18 15 00 00 00 00 AC AC" MaxLength="9" Grid.ColumnSpan="2" />
+                    <TextBox x:Name="Read" Margin="587,3,16,13.667" Text="CA CA 0E 0E 01 18 05 18 14 14 00 18 05 18 15 00 00 00 00 AC AC" MaxLength="9" Grid.ColumnSpan="2" />
                 </Grid>
+
+                <Grid Margin="0,15,0,5" Height="52">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="185*"/>
+                        <ColumnDefinition Width="28*"/>
+                        <ColumnDefinition Width="38*"/>
+                        <ColumnDefinition Width="22*"/>
+                        <ColumnDefinition Width="27*"/>
+                        <ColumnDefinition Width="417*"/>
+                        <ColumnDefinition Width="210*"/>
+                        <ColumnDefinition Width="71*"/>
+
+                    </Grid.ColumnDefinitions>
+                    <TextBlock  Margin="0,-21,90.333,47" HorizontalAlignment="Right" Text="开始时间" Width="56" />
+                    <TextBox x:Name="StartTime" Margin="116,-26,407.333,51" Text="" MaxLength="9" Grid.ColumnSpan="6" />
+                    <TextBlock x:Name="TextBlock1"  Margin="0,-23,158.333,49" HorizontalAlignment="Right" Text="结束时间" Width="56" Grid.Column="5" />
+                    <TextBox x:Name="FinishTime" Margin="288.334,-27,161.333,53" Text=" " MaxLength="9" Grid.Column="5" Grid.ColumnSpan="2" />
+                </Grid>
+                <DatePicker/>
 
             </StackPanel>
 
         </Border>
-        <Border Padding="5" Grid.Row="1" Margin="0,34,0.333,-0.333">
-            <TabControl x:Name="tabData" Margin="20,20,20,10" >
+        <Border Padding="5" Grid.Row="1" Margin="-4,88,4.333,-54.333">
+            <TabControl x:Name="tabData" Margin="19.667,-6.333,19.667,10" >
                 <TabItem x:Name="tabM1" Header="传感器数据包的上传">
                     <Grid Margin="0,0,0,0">
-                        <DataGrid Margin="0,0,0,0" x:Name="dgM1" AutoGenerateColumns="False"  AlternatingRowBackground="#F4F4F4">
+                        <DataGrid Margin="1,1,-1,-0.667" x:Name="dgM1" AutoGenerateColumns="False"  AlternatingRowBackground="#F4F4F4">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="序号" Binding="{Binding DisplayID}" />
                                 <DataGridTextColumn Header="长度" Binding="{Binding LastHistory,StringFormat='{}{0:X2}'}" />
@@ -116,11 +135,12 @@
 
                             </DataGrid.Columns>
                         </DataGrid>
+                        <Canvas HorizontalAlignment="Left" Height="100" Margin="572,153,0,0" VerticalAlignment="Top" Width="100"/>
                     </Grid>
                 </TabItem>
                 <TabItem x:Name="tabM2" Header="读取历史数据">
                     <Grid Margin="0,0,0,0">
-                        <DataGrid Margin="0,0,0,0" x:Name="dgM2" AutoGenerateColumns="False"  AlternatingRowBackground="#F4F4F4">
+                        <DataGrid Margin="0,-1,0,0.333" x:Name="dgM2" AutoGenerateColumns="False"  AlternatingRowBackground="#F4F4F4">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="序号" Binding="{Binding DisplayID}" />
                                 <DataGridTextColumn Header="长度" Binding="{Binding LastHistory,StringFormat='{}{0:X2}'}" />
