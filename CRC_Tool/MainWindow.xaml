@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="计算CRC" HorizontalAlignment="Left" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" WindowStartupLocation="CenterScreen" Margin="50,0" Width="600" Height="371" Padding="0" VerticalAlignment="Top">
     <Grid Width="590" Height="341">
-        <TextBox x:Name="tbx_Buf" HorizontalAlignment="Center" Height="168" Margin="0,42,0,0" TextWrapping="Wrap" Width="480" MaxLength="1024" MaxLines="128" HorizontalScrollBarVisibility="Auto" VerticalAlignment="Top"/>
+        <TextBox x:Name="tbx_Buf" HorizontalAlignment="Center" Height="168" Margin="0,42,0,0" Width="480" MaxLength="4096" MaxLines="32" HorizontalScrollBarVisibility="Auto" VerticalAlignment="Top" TextWrapping="Wrap" AutoWordSelection="True" CharacterCasing="Upper" AcceptsReturn="True" ScrollViewer.CanContentScroll="True" VerticalScrollBarVisibility="Auto" IsUndoEnabled="False"/>
         <TextBox x:Name="tbx_Seed" HorizontalAlignment="Left" Height="20" Margin="55,0,0,40" TextWrapping="Wrap" VerticalAlignment="Bottom" Width="60" MaxLines="1" MaxLength="4" Text="0000" IsUndoEnabled="True" TextAlignment="Center" FontSize="14"/>
         <TextBox x:Name="tbx_Polynomial" HorizontalAlignment="Left" Height="20" Margin="145,0,0,40" TextWrapping="Wrap" VerticalAlignment="Bottom" Width="60" MaxLines="1" MaxLength="4" Text="1021" TextAlignment="Center" FontSize="14"/>
         <TextBox x:Name="tbx_Crc" HorizontalAlignment="Right" Height="20" Margin="0,0,55,40" TextWrapping="Wrap" VerticalAlignment="Bottom" Width="60" MaxLines="1" MaxLength="4" TextAlignment="Center" FontSize="14" IsReadOnly="True"/>
