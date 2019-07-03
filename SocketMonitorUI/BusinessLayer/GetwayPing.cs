@@ -33,9 +33,8 @@ namespace SocketMonitorUI.BusinessLayer
             //The logic of saving GPS position data
             //var response = session.AppServer.DefaultResponse;
             //byte[] response = new byte[] { 0xEB, 0xEB, 0x01, 0x03, 0x00, 0x00, 0xBE, 0xBE };
-            if (ServiceStatus.ResponsePing==true && requestInfo.Body.Length == 11)
+            if (ServiceStatus.ResponsePing == true && requestInfo.Body.Length == 11)
             {
-
                 byte[] response = new byte[11];
                 response[0] = 0xEB;
                 response[1] = 0xEB;
@@ -49,19 +48,11 @@ namespace SocketMonitorUI.BusinessLayer
                 response[9] = 0xBE;
                 response[10] = 0xBE;
 
-                session.Send(response, 0, response.Length); ;
-
-               
+                session.Send(response, 0, response.Length);
 
                 Logger.AddLog(DateTime.Now.ToString("HH:mm:ss.fff") + " :SendData:" + session.RemoteEndPoint.Address.ToString() + " :\t"
                    + CommArithmetic.ToHexString(response) + " ");
-
             }
-
-
-
         }
-
-
     }
 }

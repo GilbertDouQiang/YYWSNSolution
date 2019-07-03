@@ -21,9 +21,6 @@ namespace HyperWSN_Gateway_Alert
     public partial class MainWindow : Window
     {
         SerialPortHelper comport;
-        String UartCommand;
-
-        bool continueFlag = false; //是否需要继续监听的控制位
 
         public MainWindow()
         {

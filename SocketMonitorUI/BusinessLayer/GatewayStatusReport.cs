@@ -46,10 +46,10 @@ namespace SocketMonitorUI.BusinessLayer
             //var response = session.AppServer.DefaultResponse;
             //byte[] response = new byte[] { 0xEB, 0xEB, 0x01, 0x03, 0x00, 0x00, 0xBE, 0xBE };
 
-            
+
             //识别出不同的网关
             Device gateway = DeviceFactory.CreateDevice(requestInfo.Body);
-            if (gateway!=null && gateway.GetType()==typeof(AlarmGateway1))
+            if (gateway != null && gateway.GetType() == typeof(AlarmGateway1))
             {
                 if (ServiceStatus.ResponseGatewayReport == true)
                 {
@@ -81,20 +81,20 @@ namespace SocketMonitorUI.BusinessLayer
                             //授时响应
                             SqlCommand command = new SqlCommand();
                             command.Connection = session.SQLConn;
-                            command.CommandText = "INSERT INTO [dbo].[GatewayStatus]([DeviceMac],[ProtocolVersion],[SerialNo],[DeviceType],[GatewayTransDateTime]" +
-                                ",[GatewayVoltage],[SoftwareVersion] ,[ClientID],[RamCount],[RomCount],[GSMSignal],[BindingNumber],[TransforNumber],[SimNumber]" +
-                                ",[LastSuccessNumber],[LastStatus],[TransStrategy],[ACPower],[SourceData],[SendData]) VALUES(@DeviceMac,@ProtocolVersion,@SerialNo,@DeviceType,@GatewayTransDateTime, " +
-                                "@GatewayVoltage,@SoftwareVersion,@ClientID,@RamCount,@RomCount,@GSMSignal,@BindingNumber,@TransforNumber,@SimNumber," +
+                            command.CommandText = "INSERT INTO [dbo].[GatewayStatus]([DeviceMacS],[ProtocolVersion],[SerialNo],[DeviceTypeS],[GatewayTransDateTime]" +
+                                ",[GatewayVoltage],[SwVersionS] ,[CustomerS],[RamCount],[RomCount],[GSMSignal],[BindingNumber],[TransforNumber],[SimNumber]" +
+                                ",[LastSuccessNumber],[LastStatus],[TransStrategy],[ACPower],[SourceData],[SendData]) VALUES(@DeviceMacS,@ProtocolVersion,@SerialNo,@DeviceTypeS,@GatewayTransDateTime, " +
+                                "@GatewayVoltage,@SwVersionS,@CustomerS,@RamCount,@RomCount,@GSMSignal,@BindingNumber,@TransforNumber,@SimNumber," +
                                 "@LastSuccessNumber,@LastStatus,@TransStrategy,@ACPower,@SourceData,@SendData)";
 
                             command.Parameters.Add("@DeviceMAC", SqlDbType.NVarChar);
                             command.Parameters.Add("@ProtocolVersion", SqlDbType.NVarChar);
                             command.Parameters.Add("@SerialNo", SqlDbType.Int);
-                            command.Parameters.Add("@DeviceType", SqlDbType.NVarChar);
+                            command.Parameters.Add("@DeviceTypeS", SqlDbType.NVarChar);
                             command.Parameters.Add("@GatewayTransDateTime", SqlDbType.DateTime);
                             command.Parameters.Add("@GatewayVoltage", SqlDbType.Decimal);
-                            command.Parameters.Add("@SoftwareVersion", SqlDbType.NVarChar);
-                            command.Parameters.Add("@ClientID", SqlDbType.NVarChar);
+                            command.Parameters.Add("@SwVersionS", SqlDbType.NVarChar);
+                            command.Parameters.Add("@CustomerS", SqlDbType.NVarChar);
                             command.Parameters.Add("@RamCount", SqlDbType.Int);
                             command.Parameters.Add("@RomCount", SqlDbType.Int);
                             command.Parameters.Add("@GSMSignal", SqlDbType.Int);
@@ -112,11 +112,11 @@ namespace SocketMonitorUI.BusinessLayer
                             command.Parameters["@DeviceMAC"].Value = CommArithmetic.DecodeMAC(requestInfo.Body, 8); //协议起始位置-1
                             command.Parameters["@ProtocolVersion"].Value = requestInfo.Body[4].ToString("X2");
                             command.Parameters["@SerialNo"].Value = CommArithmetic.Byte2Int(requestInfo.Body, 5, 2);
-                            command.Parameters["@DeviceType"].Value = requestInfo.Body[7].ToString("X2");
+                            command.Parameters["@DeviceTypeS"].Value = requestInfo.Body[7].ToString("X2");
                             command.Parameters["@GatewayTransDateTime"].Value = CommArithmetic.DecodeDateTime(requestInfo.Body, 12);
                             command.Parameters["@GatewayVoltage"].Value = CommArithmetic.DecodeVoltage(requestInfo.Body, 18);
-                            command.Parameters["@SoftwareVersion"].Value = CommArithmetic.DecodeClientID(requestInfo.Body, 20);
-                            command.Parameters["@ClientID"].Value = CommArithmetic.DecodeClientID(requestInfo.Body, 22);
+                            command.Parameters["@SwVersionS"].Value = CommArithmetic.DecodeClientID(requestInfo.Body, 20);
+                            command.Parameters["@CustomerS"].Value = CommArithmetic.DecodeClientID(requestInfo.Body, 22);
                             //新增：TransStrategy
                             command.Parameters["@TransStrategy"].Value = requestInfo.Body[24];
 
@@ -132,25 +132,20 @@ namespace SocketMonitorUI.BusinessLayer
                             command.Parameters["@SourceData"].Value = CommArithmetic.ToHexString(requestInfo.Body);
                             command.Parameters["@SendData"].Value = CommArithmetic.ToHexString(response);
 
-
                             try
                             {
                                 command.ExecuteNonQuery();
                             }
-                            catch (Exception ex)
+                            catch (Exception)
                             {
-
 
                             }
                         }
-
                     }
                     catch (Exception)
                     {
-
                         throw;
                     }
-
 
                     try
                     {
@@ -158,25 +153,16 @@ namespace SocketMonitorUI.BusinessLayer
                         {
                             //session.SaveToQueue(requestInfo.Body);
                         }
-
                     }
                     catch (Exception)
                     {
-
 
                     }
 
                     Logger.AddLog(DateTime.Now.ToString("HH:mm:ss.fff") + " :SendData:" + session.RemoteEndPoint.Address.ToString() + " :\t"
                        + CommArithmetic.ToHexString(response) + " ");
                 }
-                
-
-
             }
-                
-
-
         }
-
     }
 }

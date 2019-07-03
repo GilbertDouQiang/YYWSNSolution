@@ -24,7 +24,7 @@ namespace YyWsnDeviceLibrary.Tests
 
             Device device = DeviceFactory.CreateDevice(SourceByte);
             Assert.AreEqual(typeof(M1), device.GetType());
-            Assert.AreEqual(((M1)device).DeviceMac , "11 11 11 11 ");
+            Assert.AreEqual(((M1)device).DeviceMacS , "11 11 11 11 ");
 
 
             //上电自检发出的数据
@@ -51,7 +51,7 @@ namespace YyWsnDeviceLibrary.Tests
 
             Device device = DeviceFactory.CreateDevice(SourceByte);
             Assert.AreEqual(typeof(M1), device.GetType());
-            Assert.AreEqual(((M1)device).DeviceMac, "11 11 11 11 ");
+            Assert.AreEqual(((M1)device).DeviceMacS, "11 11 11 11 ");
 
 
             //上电自检发出的数据

@@ -36,7 +36,7 @@ namespace SocketMonitorUI.BusinessLayer
             //byte[] response = new byte[] { 0xEB, 0xEB, 0x01, 0x03, 0x00, 0x00, 0xBE, 0xBE };
             if (ServiceStatus.ResponseSensorData == true)
             {
-                if ( requestInfo.Body.Length == 63 || requestInfo.Body.Length == 60 || requestInfo.Body.Length == 68 || requestInfo.Body.Length == 65)
+                if (requestInfo.Body.Length == 63 || requestInfo.Body.Length == 60 || requestInfo.Body.Length == 68 || requestInfo.Body.Length == 65)
                 {
                     byte[] response = new byte[12];
                     response[0] = 0xEB;  //开始位
@@ -87,9 +87,9 @@ namespace SocketMonitorUI.BusinessLayer
 
                                 //TODO 是否需要RSSI
 
-                                command.CommandText = "INSERT INTO[dbo].[M1Data] ([DeviceMac],[DeviceSN],[DeviceTransDate],[DeviceVolt],[SensorMac] ,[SensorStatic] ,[SensorFuntction] ,[SensorType]" +
+                                command.CommandText = "INSERT INTO[dbo].[M1Data] ([DeviceMacS],[DeviceSN],[DeviceTransDate],[DeviceVolt],[SensorMac] ,[SensorStatic] ,[SensorFuntction] ,[SensorType]" +
                                     ",[ProtocolVersion],[ICTemperature],[SensorSN],[SensorVolt],[SensorCollectDatetime] ,[SensorTransforDatetime] ,[SensorRSSI]" +
-                                    ",[SensorTemperature] ,[SensorHumidity] ,[SourceData]  ,[SendData],[SensorInstant],[SensorRAMCount],[SensorROMCount],[DeviceCSQ]) VALUES(@DeviceMac,@DeviceSN,@DeviceTransDate,@DeviceVolt,@SensorMac ,@SensorStatic ,@SensorFuntction ,@SensorType" +
+                                    ",[SensorTemperature] ,[SensorHumidity] ,[SourceData]  ,[SendData],[SensorInstant],[SensorRAMCount],[SensorROMCount],[DeviceCSQ]) VALUES(@DeviceMacS,@DeviceSN,@DeviceTransDate,@DeviceVolt,@SensorMac ,@SensorStatic ,@SensorFuntction ,@SensorType" +
                                     ",@ProtocolVersion,@ICTemperature,@SensorSN,@SensorVolt,@SensorCollectDatetime ,@SensorTransforDatetime ,@SensorRSSI" +
                                     ",@SensorTemperature ,@SensorHumidity ,@SourceData  ,@SendData,@SensorInstant,@SensorRAMCount,@SensorROMCount,@DeviceCSQ)";
 
@@ -166,7 +166,7 @@ namespace SocketMonitorUI.BusinessLayer
                                 }
                                 catch (Exception)
                                 {
-                                    
+
                                 }
                             }
 
@@ -178,9 +178,9 @@ namespace SocketMonitorUI.BusinessLayer
 
                                 //TODO 是否需要RSSI
 
-                                command.CommandText = "INSERT INTO[dbo].[M2Data] ([DeviceMac],[DeviceSN],[DeviceTransDate],[DeviceVolt],[SensorMac] ,[SensorStatic] ,[SensorFuntction] ,[SensorType]" +
+                                command.CommandText = "INSERT INTO[dbo].[M2Data] ([DeviceMacS],[DeviceSN],[DeviceTransDate],[DeviceVolt],[SensorMac] ,[SensorStatic] ,[SensorFuntction] ,[SensorType]" +
                                     ",[ProtocolVersion],[ICTemperature],[SensorSN],[SensorVolt],[SensorCollectDatetime] ,[SensorTransforDatetime] ,[SensorRSSI]" +
-                                    ",[SensorTemperature] ,[SourceData]  ,[SendData],[SensorInstant],[SensorRAMCount],[SensorROMCount],[DeviceCSQ]) VALUES(@DeviceMac,@DeviceSN,@DeviceTransDate,@DeviceVolt,@SensorMac ,@SensorStatic ,@SensorFuntction ,@SensorType" +
+                                    ",[SensorTemperature] ,[SourceData]  ,[SendData],[SensorInstant],[SensorRAMCount],[SensorROMCount],[DeviceCSQ]) VALUES(@DeviceMacS,@DeviceSN,@DeviceTransDate,@DeviceVolt,@SensorMac ,@SensorStatic ,@SensorFuntction ,@SensorType" +
                                     ",@ProtocolVersion,@ICTemperature,@SensorSN,@SensorVolt,@SensorCollectDatetime ,@SensorTransforDatetime ,@SensorRSSI" +
                                     ",@SensorTemperature  ,@SourceData  ,@SendData,@SensorInstant,@SensorRAMCount,@SensorROMCount,@DeviceCSQ)";
 
@@ -204,7 +204,7 @@ namespace SocketMonitorUI.BusinessLayer
 
                                 //line 3
                                 command.Parameters.Add("@SensorTemperature", SqlDbType.Decimal);
-                                
+
                                 command.Parameters.Add("@SourceData", SqlDbType.NVarChar);
                                 command.Parameters.Add("@SendData", SqlDbType.NVarChar);
 
@@ -249,42 +249,26 @@ namespace SocketMonitorUI.BusinessLayer
                                 command.Parameters["@SensorROMCount"].Value = CommArithmetic.Byte2Int(requestInfo.Body, 58, 2);
                                 command.Parameters["@DeviceCSQ"].Value = requestInfo.Body[60];
 
-
-
                                 try
                                 {
                                     command.ExecuteNonQuery();
                                 }
-                                catch (Exception ex)
+                                catch (Exception)
                                 {
-
 
                                 }
                             }
                         }
-
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
 
-                        
                     }
-
 
                     Logger.AddLog(DateTime.Now.ToString("HH:mm:ss.fff") + " :SendData:" + session.RemoteEndPoint.Address.ToString() + " :\t"
                        + CommArithmetic.ToHexString(response) + " ");
                 }
-
-               
-
-
-
-               
-
             }
-
-
-
         }
     }
 }

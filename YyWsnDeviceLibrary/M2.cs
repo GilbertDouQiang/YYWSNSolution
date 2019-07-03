@@ -5,7 +5,7 @@ using System.Text;
 
 namespace YyWsnDeviceLibrary
 {
-    public class M2 : Sensor
+    public class M2: Sensor
     {
         public double Temperature { get; set; }
 
@@ -14,143 +14,130 @@ namespace YyWsnDeviceLibrary
 
         }
 
-        public M2(byte[] SourceData)
+        public M2(byte[] SrcData)
         {        
             //2017版协议 v3.5
             //判断第三位 ，01 代表从传感器发出的正常数据，长度不是固定值
 
             //上电自检数据
-            if (SourceData.Length == 0x46)
+            if (SrcData.Length == 0x46)
             {
-                if (SourceData[4] == 0x57)
-                {
-                    Name = "M2";
-                }
-               
-                DeviceType = SourceData[4].ToString("X2");
-                ProtocolVersion = SourceData[5];
-                PrimaryMAC = CommArithmetic.DecodeMAC(SourceData, 6);
-                DeviceMac = CommArithmetic.DecodeMAC(SourceData, 10);
-                HardwareVersion = CommArithmetic.DecodeMAC(SourceData, 14);
-                SoftwareVersion = CommArithmetic.DecodeClientID(SourceData, 18);
-                ClientID = CommArithmetic.DecodeClientID(SourceData, 20);
-                byte[] debugBytes = new byte[2];
-                debugBytes[0] = SourceData[22];
-                debugBytes[1] = SourceData[23];
+                SetDeviceName(SrcData[4]);
+                ProtocolVersion = SrcData[5];
+                SetDevicePrimaryMac(SrcData, 6);
+                SetDeviceMac(SrcData, 10);
+                HwVersionS = CommArithmetic.DecodeMAC(SrcData, 14);
+                SwVersionS = CommArithmetic.DecodeClientID(SrcData, 18);
+                CustomerS = CommArithmetic.DecodeClientID(SrcData, 20);
+                DebugV = (UInt16)(SrcData[22] * 256 + SrcData[23]);
+                Category = SrcData[24];
+                Interval = SrcData[25] * 256 + SrcData[26];
+                Calendar = CommArithmetic.DecodeDateTime(SrcData, 27);
 
-                DebugString = CommArithmetic.DecodeClientID(SourceData, 22);
+                WorkFunction = SrcData[33];
+                SymbolRate = SrcData[34];
+                TxPower = SrcData[35];
+                SampleSend = SrcData[36];
+                Channel = SrcData[37];
 
-                Debug = debugBytes;
-                Category = SourceData[24];
-                Interval = SourceData[25] * 256 + SourceData[26];
-                Calendar = CommArithmetic.DecodeDateTime(SourceData, 27);
+                TemperatureInfoHigh = CommArithmetic.DecodeTemperature(SrcData, 38);
+                TemperatureInfoLow = CommArithmetic.DecodeTemperature(SrcData, 40);
 
-                WorkFunction = SourceData[33];
-                SymbolRate = SourceData[34];
-                TXPower = SourceData[35];
-                TXTimers = SourceData[36];
-                Frequency = SourceData[37];
+                //HumidityInfoHigh = CommArithmetic.DecodeHumidity(SrcData, 42);
+                //HumidityInfoLow = CommArithmetic.DecodeHumidity(SrcData, 44);
 
-                TemperatureInfoHigh = CommArithmetic.DecodeTemperature(SourceData, 38);
-                TemperatureInfoLow = CommArithmetic.DecodeTemperature(SourceData, 40);
+                TemperatureWarnHigh = CommArithmetic.DecodeTemperature(SrcData, 42);
+                TemperatureWarnLow = CommArithmetic.DecodeTemperature(SrcData, 44);
 
-                //HumidityInfoHigh = CommArithmetic.DecodeHumidity(SourceData, 42);
-                //HumidityInfoLow = CommArithmetic.DecodeHumidity(SourceData, 44);
+                //HumidityWarnHigh = CommArithmetic.DecodeHumidity(SrcData, 50);
+                //HumidityWarnLow = CommArithmetic.DecodeHumidity(SrcData, 52);
 
-                TemperatureWarnHigh = CommArithmetic.DecodeTemperature(SourceData, 42);
-                TemperatureWarnLow = CommArithmetic.DecodeTemperature(SourceData, 44);
+                TemperatureCompensation = CommArithmetic.DecodeTemperature(SrcData, 46);
+                //HumidityCompensation = CommArithmetic.DecodeHumidity(SrcData, 56);
 
-                //HumidityWarnHigh = CommArithmetic.DecodeHumidity(SourceData, 50);
-                //HumidityWarnLow = CommArithmetic.DecodeHumidity(SourceData, 52);
+                ICTemperature = SrcData[48];
+                voltF = Math.Round(Convert.ToDouble((SrcData[49] * 256 + SrcData[50])) / 1000, 2);
 
-                TemperatureCompensation = CommArithmetic.DecodeTemperature(SourceData, 46);
-                //HumidityCompensation = CommArithmetic.DecodeHumidity(SourceData, 56);
+                MaxLength = SrcData[53];
 
-                ICTemperature = SourceData[48];
-                Volt = Math.Round(Convert.ToDouble((SourceData[49] * 256 + SourceData[50])) / 1000, 2);
-
-                MaxLength = SourceData[53];
-
-                //Temperature = CommArithmetic.DecodeTemperature(SourceData, 73);
-                //Humidity = CommArithmetic.DecodeHumidity(SourceData, 75);
-                RSSI = SourceData[66] - 256;
+                //Temperature = CommArithmetic.DecodeTemperature(SrcData, 73);
+                //Humidity = CommArithmetic.DecodeHumidity(SrcData, 75);
+                RSSI = SrcData[66] - 256;
 
                 //Falsh
-                FlashID = CommArithmetic.DecodeClientID(SourceData, 51);
-                FlashFront = SourceData[54] * 256 * 256 + SourceData[55] * 256 + SourceData[56];
-                FlashRear = SourceData[57] * 256 * 256 + SourceData[58] * 256 + SourceData[59];
-                FlashQueueLength = SourceData[60] * 256 * 256 + SourceData[61] * 256 + SourceData[62];
+                FlashID = CommArithmetic.DecodeClientID(SrcData, 51);
+                FlashFront = SrcData[54] * 256 * 256 + SrcData[55] * 256 + SrcData[56];
+                FlashRear = SrcData[57] * 256 * 256 + SrcData[58] * 256 + SrcData[59];
+                FlashQueueLength = SrcData[60] * 256 * 256 + SrcData[61] * 256 + SrcData[62];
             }
 
 
             //兼容模式，兼容Z模式
-            if (SourceData.Length == 29)
+            if (SrcData.Length == 29)
             {
-                Name = "M2";
-                DeviceType = "57";
-                DeviceMac = CommArithmetic.DecodeMAC(SourceData, 5);
-                ClientID = CommArithmetic.DecodeClientID(SourceData, 3);
-                WorkFunction = SourceData[2];
+                SetDeviceName(0x57);
+                SetDeviceMac(SrcData, 5);
+                CustomerS = CommArithmetic.DecodeClientID(SrcData, 3);
+                WorkFunction = SrcData[2];
                 ProtocolVersion = 0x00;
 
-                SensorSN = SourceData[12] * 256 + SourceData[13];
+                SensorSN = SrcData[12] * 256 + SrcData[13];
 
                 //传感器信息
                 ICTemperature = 0; //老协议中没有IC 温度
 
-                Volt = CommArithmetic.SHT20Voltage(SourceData[24], SourceData[25]);
+                voltF = CommArithmetic.SHT20Voltage(SrcData[24], SrcData[25]);
 
-                //Temperature = CommArithmetic.SHT20Temperature(SourceData[16], SourceData[17]);
+                //Temperature = CommArithmetic.SHT20Temperature(SrcData[16], SrcData[17]);
 
-                //Humidity = CommArithmetic.SHT20Humidity(SourceData[20], SourceData[21]);
+                //Humidity = CommArithmetic.SHT20Humidity(SrcData[20], SrcData[21]);
                 //广播模式，补充采集和传输时间
                 SensorCollectTime = System.DateTime.Now;
                 SensorTransforTime = System.DateTime.Now;
-                //RSSI = SourceData[30] / 2 - 138; //1101 方案
+                //RSSI = SrcData[30] / 2 - 138; //1101 方案
                 //可能收到没有RSSI的数据
-                if (SourceData.Length == 28)
+                if (SrcData.Length == 28)
                 {
-                    RSSI = SourceData[27] - 256;
+                    RSSI = SrcData[27] - 256;
                 }
-                this.SourceData = CommArithmetic.ToHexString(SourceData);
+                this.SourceData = CommArithmetic.ToHexString(SrcData);
             }
 
 
             //模式1 正常传输的数据，
-            if (SourceData.Length == 28)
+            if (SrcData.Length == 28)
             {
                 //将收到的数据填充到属性
-                Name = "M2";
-                DeviceType = SourceData[3].ToString("X2");
-                DeviceMac = CommArithmetic.DecodeMAC(SourceData, 7);
-                ClientID = CommArithmetic.DecodeClientID(SourceData, 5);
-                WorkFunction = SourceData[2];
-                ProtocolVersion = SourceData[4];
+                SetDeviceName(SrcData[3]);
+                SetDeviceMac(SrcData, 7);
+                CustomerS = CommArithmetic.DecodeClientID(SrcData, 5);
+                WorkFunction = SrcData[2];
+                ProtocolVersion = SrcData[4];
 
-                SensorSN = SourceData[13] * 256 + SourceData[14];
+                SensorSN = SrcData[13] * 256 + SrcData[14];
                 //传感器信息
-                ICTemperature = SourceData[16]; //todo : 有符号整形数
+                ICTemperature = SrcData[16]; //todo : 有符号整形数
                 if (ICTemperature >= 128)
                     ICTemperature -= 256;
 
-                Volt = Math.Round(Convert.ToDouble((SourceData[18] * 256 + SourceData[19])) / 1000, 2);
-                int tempCalc = SourceData[21] * 256 + SourceData[22];
+                voltF = Math.Round(Convert.ToDouble((SrcData[18] * 256 + SrcData[19])) / 1000, 2);
+                int tempCalc = SrcData[21] * 256 + SrcData[22];
                 if (tempCalc >= 0x8000)
                     tempCalc -= 65536;
                 Temperature = Math.Round((Convert.ToDouble(tempCalc) / 100), 2);
 
 
-                //Humidity = Math.Round(Convert.ToDouble((SourceData[24] * 256 + SourceData[25])) / 100, 2);
+                //Humidity = Math.Round(Convert.ToDouble((SrcData[24] * 256 + SrcData[25])) / 100, 2);
                 //广播模式，补充采集和传输时间
                 SensorCollectTime = System.DateTime.Now;
                 SensorTransforTime = System.DateTime.Now;
-                //RSSI = SourceData[30] / 2 - 138; //1101 方案
+                //RSSI = SrcData[30] / 2 - 138; //1101 方案
                 //可能收到没有RSSI的数据
-                if (SourceData.Length == 28)
+                if (SrcData.Length == 28)
                 {
-                    RSSI = SourceData[27] - 256;
+                    RSSI = SrcData[27] - 256;
                 }
-                this.SourceData = CommArithmetic.ToHexString(SourceData);
+                this.SourceData = CommArithmetic.ToHexString(SrcData);
             }
         }
         /// <summary>

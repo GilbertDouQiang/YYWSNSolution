@@ -14,15 +14,13 @@ namespace HyperWSN.Socket
         private readonly static byte[] BeginMark = new byte[] { 0xBE, 0xBE };
         private readonly static byte[] EndMark = new byte[] { 0xEB, 0xEB };
 
-        public HyperWSNReceiveFilter()
-            : base(BeginMark, EndMark)
+        public HyperWSNReceiveFilter() : base(BeginMark, EndMark)
         {
 
         }
 
         protected override BinaryRequestInfo ProcessMatchedRequest(byte[] readBuffer, int offset, int length)
         {
-
             return new BinaryRequestInfo(BitConverter.ToString(readBuffer, offset + 3, 1), readBuffer.CloneRange(offset, length));
         }
     }

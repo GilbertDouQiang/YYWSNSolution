@@ -131,14 +131,14 @@ namespace Beetch {
 
                     if (txtFilterClientID.Text.Length > 0) {
                         //符合过滤调价的才加入
-                        byte[] checkClientID = CommArithmetic.HexStringToByteArray(item.ClientID);
+                        byte[] checkClientID = CommArithmetic.HexStringToByteArray(item.CustomerS);
                         byte[] byteFilterClientID = CommArithmetic.HexStringToByteArray(txtFilterClientID.Text);
                         if (checkClientID[0] == byteFilterClientID[0] && checkClientID[1] == byteFilterClientID[1]) {
                             item.DisplayID = i;
                             i++;
                             m1groups.Add(item);
                         }
-                        //if (item.ClientID)
+                        //if (item.CustomerS)
                     } else {
                         item.DisplayID = i;
                         i++;
@@ -220,7 +220,7 @@ namespace Beetch {
             comport.SendCommand(Cmd);
         }
         private Int16 HandleSensorData(Device device) {
-            if (isDesDeviceType(device.DeviceTypeB) == false) {
+            if (isDesDeviceType(device.DeviceTypeV) == false) {
                 return -1;
             }
 
@@ -250,14 +250,14 @@ namespace Beetch {
 
             if (Cmd == 0x01 || Cmd == 0x02 || Cmd == 0x03 || Cmd == 0x04 || Cmd == 0x0d) {
                 // 接收到数据的Sensor ID
-                byte[] RxSensorIdByte = CommArithmetic.HexStringToByteArray(device.DeviceMac);
+                byte[] RxSensorIdByte = CommArithmetic.HexStringToByteArray(device.DeviceMacS);
                 UInt32 RxSensorId = (UInt32)(RxSensorIdByte[0] * 256 * 256 * 256 + RxSensorIdByte[1] * 256 * 256 + RxSensorIdByte[2] * 256 + RxSensorIdByte[3]);
                 if (ExSensorId != 0 && ExSensorId != RxSensorId) {
                     return -1;
                 }
 
                 // 接收到数据的客户码
-                // byte[] RxCustomerByte = CommArithmetic.HexStringToByteArray(device.ClientID);
+                // byte[] RxCustomerByte = CommArithmetic.HexStringToByteArray(device.CustomerS);
                 // UInt16 RxCustomer = (UInt16)(RxCustomerByte[0] * 256 + RxCustomerByte[1]);
                 //if (ExCustomer != 0 && ExCustomer != RxCustomer && RxCustomer != 0) {
                 //     return -2;
@@ -271,14 +271,14 @@ namespace Beetch {
 
             } else if (Cmd == 0x0E) {
                 // 接收到数据的Sensor ID
-                byte[] RxSensorIdByte = CommArithmetic.HexStringToByteArray(device.DeviceMac);
+                byte[] RxSensorIdByte = CommArithmetic.HexStringToByteArray(device.DeviceMacS);
                 UInt32 RxSensorId = (UInt32)(RxSensorIdByte[0] * 256 * 256 * 256 + RxSensorIdByte[1] * 256 * 256 + RxSensorIdByte[2] * 256 + RxSensorIdByte[3]);
                 if (ExSensorId != 0 && ExSensorId != RxSensorId) {
                     return -3;
                 }
 
                 // 接收到数据的客户码
-                //byte[] RxCustomerByte = CommArithmetic.HexStringToByteArray(device.ClientID);
+                //byte[] RxCustomerByte = CommArithmetic.HexStringToByteArray(device.CustomerS);
                 //UInt16 RxCustomer = (UInt16)(RxCustomerByte[0] * 256 + RxCustomerByte[1]);
                 // if (ExCustomer != 0 && ExCustomer != RxCustomer) {
                 //     return -4;
@@ -303,7 +303,7 @@ namespace Beetch {
                 for (int i = 0; i < devices.Count; i++) {
                     //通用有效性验证
 
-                    if (devices[i].DeviceMac == null) {
+                    if (devices[i].DeviceMacS == null) {
                         continue;
                     }
 

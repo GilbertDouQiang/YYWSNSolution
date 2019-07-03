@@ -48,9 +48,9 @@ public class queryservice : System.Web.Services.WebService
         cmd.Connection = connection;
 
         cmd.CommandType = CommandType.Text;
-        //cmd.CommandText = "select * from ntpstatus where DeviceMac=@DeviceMac ";
+        //cmd.CommandText = "select * from ntpstatus where DeviceMacS=@DeviceMacS ";
 
-        cmd.CommandText = "select * from ntpstatus where DeviceMac=@DeviceMac and SystemDate>=@startDate and SystemDate<=@endDate order by SystemDate Desc";
+        cmd.CommandText = "select * from ntpstatus where DeviceMacS=@DeviceMacS and SystemDate>=@startDate and SystemDate<=@endDate order by SystemDate Desc";
 
         cmd.Parameters.Add("@DeviceMAC", SqlDbType.VarChar);
         cmd.Parameters.Add("@startDate", SqlDbType.DateTime);
@@ -90,9 +90,9 @@ public class queryservice : System.Web.Services.WebService
         cmd.Connection = connection;
 
         cmd.CommandType = CommandType.Text;
-        //cmd.CommandText = "select * from ntpstatus where DeviceMac=@DeviceMac ";
+        //cmd.CommandText = "select * from ntpstatus where DeviceMacS=@DeviceMacS ";
 
-        cmd.CommandText = "select * from GatewayStatus where DeviceMac=@DeviceMac and SystemDate>=@startDate and SystemDate<=@endDate order by SystemDate Desc";
+        cmd.CommandText = "select * from GatewayStatus where DeviceMacS=@DeviceMacS and SystemDate>=@startDate and SystemDate<=@endDate order by SystemDate Desc";
 
         cmd.Parameters.Add("@DeviceMAC", SqlDbType.VarChar);
         cmd.Parameters.Add("@startDate", SqlDbType.DateTime);
@@ -139,9 +139,9 @@ public class queryservice : System.Web.Services.WebService
         cmd.Connection = connection;
 
         cmd.CommandType = CommandType.Text;
-        //cmd.CommandText = "select * from ntpstatus where DeviceMac=@DeviceMac ";
+        //cmd.CommandText = "select * from ntpstatus where DeviceMacS=@DeviceMacS ";
 
-        cmd.CommandText = "select * from M1Data where SensorMac=@DeviceMac and SystemDate>=@startDate and SystemDate<=@endDate order by SystemDate Desc";
+        cmd.CommandText = "select * from M1Data where SensorMac=@DeviceMacS and SystemDate>=@startDate and SystemDate<=@endDate order by SystemDate Desc";
 
         cmd.Parameters.Add("@DeviceMAC", SqlDbType.VarChar);
         cmd.Parameters.Add("@startDate", SqlDbType.DateTime);
@@ -180,9 +180,9 @@ public class queryservice : System.Web.Services.WebService
         cmd.Connection = connection;
 
         cmd.CommandType = CommandType.Text;
-        //cmd.CommandText = "select * from ntpstatus where DeviceMac=@DeviceMac ";
+        //cmd.CommandText = "select * from ntpstatus where DeviceMacS=@DeviceMacS ";
 
-        cmd.CommandText = "select * from M1Data where SensorMac=@DeviceMac and SensorCollectDatetime>=@startDate and SensorCollectDatetime<=@endDate order by SensorCollectDatetime Desc";
+        cmd.CommandText = "select * from M1Data where SensorMac=@DeviceMacS and SensorCollectDatetime>=@startDate and SensorCollectDatetime<=@endDate order by SensorCollectDatetime Desc";
 
         cmd.Parameters.Add("@DeviceMAC", SqlDbType.VarChar);
         cmd.Parameters.Add("@startDate", SqlDbType.DateTime);
@@ -221,9 +221,9 @@ public class queryservice : System.Web.Services.WebService
         cmd.Connection = connection;
 
         cmd.CommandType = CommandType.Text;
-        //cmd.CommandText = "select * from ntpstatus where DeviceMac=@DeviceMac ";
+        //cmd.CommandText = "select * from ntpstatus where DeviceMacS=@DeviceMacS ";
 
-        cmd.CommandText = "select * from M2Data where SensorMac=@DeviceMac and SystemDate>=@startDate and SystemDate<=@endDate order by SystemDate Desc";
+        cmd.CommandText = "select * from M2Data where SensorMac=@DeviceMacS and SystemDate>=@startDate and SystemDate<=@endDate order by SystemDate Desc";
 
         cmd.Parameters.Add("@DeviceMAC", SqlDbType.VarChar);
         cmd.Parameters.Add("@startDate", SqlDbType.DateTime);
@@ -262,9 +262,9 @@ public class queryservice : System.Web.Services.WebService
         cmd.Connection = connection;
 
         cmd.CommandType = CommandType.Text;
-        //cmd.CommandText = "select * from ntpstatus where DeviceMac=@DeviceMac ";
+        //cmd.CommandText = "select * from ntpstatus where DeviceMacS=@DeviceMacS ";
 
-        cmd.CommandText = "select * from M2Data where SensorMac=@DeviceMac and SensorCollectDatetime>=@startDate and SensorCollectDatetime<=@endDate order by SensorCollectDatetime Desc";
+        cmd.CommandText = "select * from M2Data where SensorMac=@DeviceMacS and SensorCollectDatetime>=@startDate and SensorCollectDatetime<=@endDate order by SensorCollectDatetime Desc";
 
         cmd.Parameters.Add("@DeviceMAC", SqlDbType.VarChar);
         cmd.Parameters.Add("@startDate", SqlDbType.DateTime);

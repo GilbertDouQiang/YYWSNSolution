@@ -39,11 +39,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AO2.cs" />
+    <Compile Include="SK.cs" />
     <Compile Include="AlarmGateway1.cs" />
     <Compile Include="CommArithmetic.cs" />
+    <Compile Include="ACO2.cs" />
+    <Compile Include="MyCustomFxn.cs" />
     <Compile Include="Device.cs" />
     <Compile Include="DeviceFactory.cs" />
     <Compile Include="Gateway.cs" />
+    <Compile Include="M9.cs" />
     <Compile Include="M1.cs" />
     <Compile Include="M11.cs" />
     <Compile Include="M2.cs" />

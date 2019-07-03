@@ -39,11 +39,8 @@ namespace HyperWSN.Socket
             }
             catch (Exception)
             {
-
                 mymq = null;
             }
-
-
         }
 
         public void DisconnectQueue()
@@ -66,8 +63,6 @@ namespace HyperWSN.Socket
             }
             catch (Exception)
             {
-
-
             }
         }
 
@@ -79,11 +74,9 @@ namespace HyperWSN.Socket
                 SQLConn = new SqlConnection(conn);
                 SQLConn.Open();
                 SQLStatic = true;
-
             }
             catch (Exception ex)
             {
-
                 SQLStatic = false;
                 throw ex;
             }
@@ -105,11 +98,9 @@ namespace HyperWSN.Socket
                 }
 
                 SQLStatic = false;
-
             }
             catch (Exception)
             {
-
                 SQLStatic = false;
             }
         }
@@ -117,6 +108,5 @@ namespace HyperWSN.Socket
         public bool QueueStatic { get; set; }
 
         public bool SQLStatic { get; set; }
-
     }
 }

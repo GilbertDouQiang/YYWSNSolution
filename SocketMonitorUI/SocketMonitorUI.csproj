@@ -42,6 +42,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\YyWsnCommunicatonLibrary\Apache.NMS.ActiveMQ.dll</HintPath>
     </Reference>
+    <Reference Include="log4net">
+      <HintPath>.\log4net.dll</HintPath>
+    </Reference>
     <Reference Include="SuperSocket.Common">
       <HintPath>..\..\..\15.SuperSocketSolution\SuperSocketLibrary\SuperSocket.Common.dll</HintPath>
     </Reference>

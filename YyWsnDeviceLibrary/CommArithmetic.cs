@@ -7,7 +7,6 @@ namespace YyWsnDeviceLibrary
 {
     public class CommArithmetic
     {
-
         public static int Byte2Int(byte[] Sourcebytes,int Position,int Length)
         {
             try
@@ -40,14 +39,18 @@ namespace YyWsnDeviceLibrary
             try
             {
                 s = s.Replace(" ", "");
+
                 byte[] buffer = new byte[s.Length / 2];
+
                 for (int i = 0; i < s.Length; i += 2)
+                {
                     buffer[i / 2] = (byte)Convert.ToByte(s.Substring(i, 2), 16);
+                }
+
                 return buffer;
             }
             catch (Exception)
             {
-
                 return null;
             }
             
@@ -169,13 +172,11 @@ namespace YyWsnDeviceLibrary
                 clientID[1] = source[start + 1];
                 
                 return ToHexString(clientID);
-
             }
 
             return null;
-
-
         }
+
         public static string DecodeFlashID(byte[] source, int start) {
             byte[] flashid = new byte[2];
             if (source != null && source.Length > start + 1) {
@@ -183,15 +184,10 @@ namespace YyWsnDeviceLibrary
                 flashid[1] = source[start + 1];
 
                 return ToHexString(flashid);
-
             }
 
             return null;
-
-
         }
-
-
 
         public static string ToHexString(byte[] bytes) // 0xae00cf => "AE00CF "
         {
@@ -209,8 +205,44 @@ namespace YyWsnDeviceLibrary
             return hexString;
         }
 
+        /// <summary>
+        /// 计算CRC
+        /// </summary>
+        /// <param name="polynomial"></param>
+        /// <param name="seed"></param>
+        /// <param name="input"></param>
+        /// <param name="nbrOfBytes"></param>
+        /// <returns></returns>
+        public static UInt16 CRC16(UInt16 polynomial, UInt16 seed, byte[] input, UInt16 nbrOfBytes)
+        {
+            UInt16 crc = seed, bit = 0, byteCtr = 0;
 
+            for (byteCtr = 0; byteCtr < nbrOfBytes; byteCtr++)
+            {
+                crc ^= (UInt16)(input[byteCtr] << 8);
 
+                for (bit = 8; bit > 0; bit--)
+                {
+                    if ((crc & 0x8000) == 0)
+                    {
+                        crc <<= 1;
+                    }
+                    else
+                    {
+                        crc = (UInt16)((crc << 1) ^ polynomial);
+                    }
+                }
+            }
+
+            return crc;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="start"></param>
+        /// <returns></returns>
         public static DateTime DecodeDateTime(byte[] source, int start)
         {
             DateTime dt;
@@ -226,25 +258,18 @@ namespace YyWsnDeviceLibrary
                 tempDate[5] = source[start + 5];
             }
 
-
             string strDate = ToHexString(tempDate);
 
-
-
-  
             try
             {
                 dt = DateTime.ParseExact(strDate, "yy MM dd HH mm ss ", System.Globalization.CultureInfo.CurrentCulture);
-
             }
             catch (Exception)
             {
                 dt = DateTime.ParseExact("20010101", "yyyyMMdd", System.Globalization.CultureInfo.CurrentCulture);
             }
 
-
             return dt;
-
         }
 
         /// <summary>
@@ -265,9 +290,7 @@ namespace YyWsnDeviceLibrary
             {
                 result[0] = (byte)(source / 256);
                 result[1] =  (byte)(source-result[0]*256);
-
             }
-
 
             return result;
         }
@@ -351,13 +374,11 @@ namespace YyWsnDeviceLibrary
 
         }
         public static  byte[] EncodeDateTime(DateTime dateTime)
-        {
-            
+        {            
             string dateString = (dateTime.Year - 2000).ToString() ;
             if (dateTime.Month < 10)
             {
                 dateString += " 0" + dateTime.Month;
-
             }
             else
             {
@@ -367,7 +388,6 @@ namespace YyWsnDeviceLibrary
             if (dateTime.Day < 10)
             {
                 dateString += " 0" + dateTime.Day;
-
             }
             else
             {
@@ -378,7 +398,6 @@ namespace YyWsnDeviceLibrary
             if (dateTime.Hour < 10)
             {
                 dateString += " 0" + dateTime.Hour;
-
             }
             else
             {
@@ -388,7 +407,6 @@ namespace YyWsnDeviceLibrary
             if (dateTime.Minute < 10)
             {
                 dateString += " 0" + dateTime.Minute;
-
             }
             else
             {
@@ -398,15 +416,11 @@ namespace YyWsnDeviceLibrary
             if (dateTime.Second < 10)
             {
                 dateString += " 0" + dateTime.Second;
-
             }
             else
             {
                 dateString += " " + dateTime.Second;
             }
-
-
-
 
             byte[] datetimeByte = CommArithmetic.HexStringToByteArray(dateString);
             
@@ -420,7 +434,6 @@ namespace YyWsnDeviceLibrary
             double c = Math.Round(( -46.85 + 175.72 * (a * 256 + b) / 65536),2);
 
             return c;
-
         }
 
 

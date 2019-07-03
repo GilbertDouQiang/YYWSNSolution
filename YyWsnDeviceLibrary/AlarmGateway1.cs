@@ -18,13 +18,13 @@ namespace YyWsnDeviceLibrary
         public AlarmGateway1(byte[] SourceData)
         {
             //有效性验证，确定是合理的数据包
-            DeviceType = "59";
+            DeviceTypeS = "59";
             Name = "AlarmGateway-1";
-            DeviceMac = CommArithmetic.DecodeMAC(SourceData, 8);
+            DeviceMacS = CommArithmetic.DecodeMAC(SourceData, 8);
             LastTransforDate = CommArithmetic.DecodeDateTime(SourceData, 12);
-            Volt = CommArithmetic.DecodeVoltage(SourceData, 18);
-            SoftwareVersion = CommArithmetic.DecodeClientID(SourceData, 20);
-            ClientID = CommArithmetic.DecodeClientID(SourceData, 22);
+            voltF = CommArithmetic.DecodeVoltage(SourceData, 18);
+            SwVersionS = CommArithmetic.DecodeClientID(SourceData, 20);
+            CustomerS = CommArithmetic.DecodeClientID(SourceData, 22);
             TransStrategy = SourceData[24];
             RAMCoutnt = SourceData[25];
             ROMCount = SourceData[26] * 65536 + SourceData[27] * 256 + SourceData[28];

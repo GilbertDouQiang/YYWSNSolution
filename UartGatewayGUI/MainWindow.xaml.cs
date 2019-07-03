@@ -91,18 +91,17 @@ namespace UartGatewayGUI
 
             //System.Threading.Thread.Sleep(500);
 
-
             UartGatewayCommand command = new UartGatewayCommand();
             byte[] resultBytes = comport.SendCommand(command.ReadInfo(), 500);
 
             device = (UartGateway)DeviceFactory.CreateDevice(resultBytes);
             if (device !=null)
             {
-                txtOldMac.Text = device.DeviceMac;
-                txtNewMac.Text = device.DeviceMac;
-                txtHarewareVersion.Text = device.HardwareVersion;
-                txtSoftwareVersion.Text = device.SoftwareVersion;
-                txtClientID.Text = device.ClientID;
+                txtOldMac.Text = device.DeviceMacS;
+                txtNewMac.Text = device.DeviceMacS;
+                txtHarewareVersion.Text = device.HwVersionS;
+                txtSoftwareVersion.Text = device.SwVersionS;
+                txtClientID.Text = device.CustomerS;
                 txtDebug.Text = CommArithmetic.DecodeClientID(device.Debug,0);
                 txtCategory.Text = device.Category.ToString("X2");
                 txtInterval.Text = device.Interval.ToString();
@@ -153,8 +152,8 @@ namespace UartGatewayGUI
             }
 
             device.DeviceNewMAC = txtNewMac.Text;
-            device.HardwareVersion = txtHarewareVersion.Text;
-            device.ClientID = txtClientID.Text;
+            device.HwVersionS = txtHarewareVersion.Text;
+            device.CustomerS = txtClientID.Text;
             device.Category = Convert.ToByte(txtCategory.Text);
             device.Debug = CommArithmetic.HexStringToByteArray(txtDebug.Text);
             device.Interval = Convert.ToInt32(txtInterval.Text);

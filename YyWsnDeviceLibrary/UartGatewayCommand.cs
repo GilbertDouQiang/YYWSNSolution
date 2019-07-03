@@ -22,7 +22,7 @@ namespace YyWsnDeviceLibrary
             command[2] = 0x16;
             command[3] = 0x02;
 
-            byte[] oldmac = CommArithmetic.HexStringToByteArray(device.DeviceMac);
+            byte[] oldmac = CommArithmetic.HexStringToByteArray(device.DeviceMacS);
             command[4] = oldmac[0];
             command[5] = oldmac[1];
             command[6] = oldmac[2];
@@ -34,18 +34,18 @@ namespace YyWsnDeviceLibrary
             command[10] = newmac[2];
             command[11] = newmac[3];
 
-            byte[] hardVersion = CommArithmetic.HexStringToByteArray(device.HardwareVersion);
+            byte[] hardVersion = CommArithmetic.HexStringToByteArray(device.HwVersionS);
             command[12] = hardVersion[0];
             command[13] = hardVersion[1];
             command[14] = hardVersion[2];
             command[15] = hardVersion[3];
 
-            byte[] clientid = CommArithmetic.HexStringToByteArray(device.ClientID);
+            byte[] clientid = CommArithmetic.HexStringToByteArray(device.CustomerS);
             command[16] = clientid[0];
             command[17] = clientid[1];
 
-            command[18] = device.Debug[0];
-            command[19] = device.Debug[1];
+            command[18] = (byte)(device.DebugV / 256);
+            command[19] = (byte)(device.DebugV % 256);
 
             command[20] = device.Category;
 
@@ -75,7 +75,7 @@ namespace YyWsnDeviceLibrary
             command[2] = 0x0E;
             command[3] = 0x04;
 
-            //byte[] oldmac = CommArithmetic.HexStringToByteArray(device.DeviceMac);
+            //byte[] oldmac = CommArithmetic.HexStringToByteArray(device.DeviceMacS);
             command[4] = 0x00;
             command[5] = 0x00;
             command[6] = 0x00;

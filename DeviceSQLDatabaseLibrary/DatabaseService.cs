@@ -147,20 +147,20 @@ namespace DeviceSQLDatabaseLibrary
                     //授时响应
                     SqlCommand command = new SqlCommand();
                     command.Connection = myConn;
-                    command.CommandText = "INSERT INTO [dbo].[GatewayStatus]([DeviceMac],[ProtocolVersion],[SerialNo],[DeviceType],[GatewayTransDateTime]" +
-                        ",[GatewayVoltage],[SoftwareVersion] ,[ClientID],[RamCount],[RomCount],[GSMSignal],[BindingNumber],[TransforNumber],[SimNumber]" +
-                        ",[LastSuccessNumber],[LastStatus]) VALUES(@DeviceMac,@ProtocolVersion,@SerialNo,@DeviceType,@GatewayTransDateTime, " +
-                        "@GatewayVoltage,@SoftwareVersion,@ClientID,@RamCount,@RomCount,@GSMSignal,@BindingNumber,@TransforNumber,@SimNumber," +
+                    command.CommandText = "INSERT INTO [dbo].[GatewayStatus]([DeviceMacS],[ProtocolVersion],[SerialNo],[DeviceTypeS],[GatewayTransDateTime]" +
+                        ",[GatewayVoltage],[SwVersionS] ,[CustomerS],[RamCount],[RomCount],[GSMSignal],[BindingNumber],[TransforNumber],[SimNumber]" +
+                        ",[LastSuccessNumber],[LastStatus]) VALUES(@DeviceMacS,@ProtocolVersion,@SerialNo,@DeviceTypeS,@GatewayTransDateTime, " +
+                        "@GatewayVoltage,@SwVersionS,@CustomerS,@RamCount,@RomCount,@GSMSignal,@BindingNumber,@TransforNumber,@SimNumber," +
                         "@LastSuccessNumber,@LastStatus)";
 
                     command.Parameters.Add("@DeviceMAC", SqlDbType.NVarChar);
                     command.Parameters.Add("@ProtocolVersion", SqlDbType.NVarChar);
                     command.Parameters.Add("@SerialNo", SqlDbType.Int);
-                    command.Parameters.Add("@DeviceType", SqlDbType.NVarChar);
+                    command.Parameters.Add("@DeviceTypeS", SqlDbType.NVarChar);
                     command.Parameters.Add("@GatewayTransDateTime", SqlDbType.DateTime);
                     command.Parameters.Add("@GatewayVoltage", SqlDbType.Decimal);
-                    command.Parameters.Add("@SoftwareVersion", SqlDbType.NVarChar);
-                    command.Parameters.Add("@ClientID", SqlDbType.NVarChar);
+                    command.Parameters.Add("@SwVersionS", SqlDbType.NVarChar);
+                    command.Parameters.Add("@CustomerS", SqlDbType.NVarChar);
                     command.Parameters.Add("@RamCount", SqlDbType.Int);
                     command.Parameters.Add("@RomCount", SqlDbType.Int);
                     command.Parameters.Add("@GSMSignal", SqlDbType.Int);
@@ -174,11 +174,11 @@ namespace DeviceSQLDatabaseLibrary
                     command.Parameters["@DeviceMAC"].Value = CommArithmetic.DecodeMAC(result, 8); //协议起始位置-1
                     command.Parameters["@ProtocolVersion"].Value = result[4].ToString("X2");
                     command.Parameters["@SerialNo"].Value = CommArithmetic.Byte2Int(result, 5, 2);
-                    command.Parameters["@DeviceType"].Value = result[7].ToString("X2");
+                    command.Parameters["@DeviceTypeS"].Value = result[7].ToString("X2");
                     command.Parameters["@GatewayTransDateTime"].Value = CommArithmetic.DecodeDateTime(result, 12);
                     command.Parameters["@GatewayVoltage"].Value = CommArithmetic.DecodeVoltage(result, 18);
-                    command.Parameters["@SoftwareVersion"].Value = CommArithmetic.DecodeClientID(result, 20);
-                    command.Parameters["@ClientID"].Value = CommArithmetic.DecodeClientID(result, 22);
+                    command.Parameters["@SwVersionS"].Value = CommArithmetic.DecodeClientID(result, 20);
+                    command.Parameters["@CustomerS"].Value = CommArithmetic.DecodeClientID(result, 22);
                     command.Parameters["@RamCount"].Value = result[24];
                     command.Parameters["@RomCount"].Value = CommArithmetic.Byte2Int(result, 25, 3);
                     command.Parameters["@GSMSignal"].Value = result[30];

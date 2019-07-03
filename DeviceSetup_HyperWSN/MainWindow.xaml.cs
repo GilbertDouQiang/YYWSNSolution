@@ -87,9 +87,6 @@ namespace DeviceSetup_HyperWSN
                     btnOpenComport.Content = "Close";
                     EnableControls();
                 }
-
-
-
             }
             else
             {
@@ -100,7 +97,6 @@ namespace DeviceSetup_HyperWSN
                     DisableControl();
                 }
             }
-
         }
 
         private void DisableControl()
@@ -109,9 +105,6 @@ namespace DeviceSetup_HyperWSN
             btnStartMonitor.IsEnabled = false;
             btnStopMonitor.IsEnabled = false;
             CBLoop.IsEnabled = false;
-
-
-
         }
 
         private void EnableControls()
@@ -119,15 +112,12 @@ namespace DeviceSetup_HyperWSN
             //throw new NotImplementedException();
             btnStartMonitor.IsEnabled = true;
             CBLoop.IsEnabled = true;
-
-
         }
 
         private void Comport_SerialPortReceived(object sender, SerialPortEventArgs e)
         {
             Dispatcher.BeginInvoke(new Action(delegate
             {
-
                 //收到数据后的处理,临时用这个方法处理多线程问题,后续严格参考绑定
                 //收到数据后的几种情况
                 // 未收到任何反馈
@@ -136,12 +126,10 @@ namespace DeviceSetup_HyperWSN
                     if (CBLoop.IsChecked == true)
                     {
                         continueFlag = true;
-
                     }
                     return;
                 }
 
-                //
                 if (e.ReceivedBytes.Length == 8)
                 {
                     //收到更新反馈报
@@ -149,14 +137,12 @@ namespace DeviceSetup_HyperWSN
                     || e.ReceivedBytes[2] == 0xA3 || e.ReceivedBytes[2] == 0xA4)
                     {
                         //立即进入读取状态
-                        btnStartMonitor_Click(this,null);
-                        
+                        btnStartMonitor_Click(this,null);                        
                     }
 
                     if (CBLoop.IsChecked == true)
                     {
                         continueFlag = true;
-
                     }
                     return;
                 }
@@ -183,14 +169,9 @@ namespace DeviceSetup_HyperWSN
                         StackSocket1.DataContext = socket1Device;
                     }
 
-
-
                     //enable monitor
-                    btnStopMonitor_Click(this, null);
-
-                   
+                    btnStopMonitor_Click(this, null);                   
                 }));
-
             }
 
 
@@ -319,22 +300,21 @@ namespace DeviceSetup_HyperWSN
             M1 updateDevice = new M1();
             try
             {
-                updateDevice.DeviceMac = txtDeviceMAC.Text;
+                updateDevice.DeviceMacS = txtDeviceMAC.Text;
                 updateDevice.DeviceNewMAC = txtNewDeviceMAC.Text;
-                updateDevice.HardwareVersion = txtNewHardwareVersion.Text;
+                updateDevice.HwVersionS = txtNewHardwareVersion.Text;
                 //兼容M1 and M1P
                 if (txtDeviceName.Text== "M1")
                 {
-                    updateDevice.DeviceType = "51";
-
+                    updateDevice.DeviceTypeS = "51";
                 }
                 else if (txtDeviceName.Text == "M1P")
                 {
-                    updateDevice.DeviceType = "53";
+                    updateDevice.DeviceTypeS = "53";
                 }
                 else if (txtDeviceName.Text == "M2")
                 {
-                    updateDevice.DeviceType = "57";
+                    updateDevice.DeviceTypeS = "57";
                 }
 
                 //
@@ -342,8 +322,7 @@ namespace DeviceSetup_HyperWSN
                 byte[] updateCommand = updateDevice.UpdateFactory();
                 string updateString = CommArithmetic.ToHexString(updateCommand);
                 comport.SendCommand(updateCommand);
-                System.Threading.Thread.Sleep(200); //界面会卡
- 
+                System.Threading.Thread.Sleep(200); //界面会卡 
             }
             catch (Exception ex)
             {
@@ -395,36 +374,35 @@ namespace DeviceSetup_HyperWSN
             M1 updateDevice = new M1();
             try
             {
-                updateDevice.DeviceMac = txtDeviceMAC.Text;
+                updateDevice.DeviceMacS = txtDeviceMAC.Text;
                 //兼容M1 and M1P
                 if (txtDeviceName.Text == "M1")
                 {
-                    updateDevice.DeviceType = "51";
+                    updateDevice.DeviceTypeS = "51";
 
                 }
                 else if (txtDeviceName.Text == "M1P")
                 {
-                    updateDevice.DeviceType = "53";
+                    updateDevice.DeviceTypeS = "53";
                 }
 
                 else if (txtDeviceName.Text == "M2")
                 {
-                    updateDevice.DeviceType = "57";
+                    updateDevice.DeviceTypeS = "57";
                 }
-                updateDevice.ClientID = txtNewClientID.Text;
-                updateDevice.DebugString = txtNewDebug.Text;
+                updateDevice.CustomerS = txtNewClientID.Text;
+                updateDevice.DebugS = txtNewDebug.Text;
                 updateDevice.Category = Convert.ToByte(txtNewCategory.Text);
                 updateDevice.WorkFunction = Convert.ToByte(txtNewWorkFunction.Text);
                 updateDevice.SymbolRate = Convert.ToByte(txtNewBPS.Text);
-                updateDevice.TXPower = Convert.ToByte(txtNewTXPower.Text);
-                updateDevice.Frequency = Convert.ToByte(txtNewFrequency.Text);
+                updateDevice.TxPower = Convert.ToByte(txtNewTXPower.Text);
+                updateDevice.Channel = Convert.ToByte(txtNewFrequency.Text);
                 updateDevice.TemperatureCompensation = Convert.ToDouble(txtNewTemperatureCompensation.Text);
-                if (updateDevice.DeviceType !="57")
+                if (updateDevice.DeviceTypeS !="57")
                 {
                     updateDevice.HumidityCompensation = Convert.ToDouble(txtNewHumidityCompensation.Text);
 
                 }
-               
 
                 updateDevice.MaxLength = Convert.ToByte(txtNewMaxLength.Text);
 
@@ -465,23 +443,22 @@ namespace DeviceSetup_HyperWSN
 
             try
             {
-                updateDevice.DeviceMac = txtDeviceMAC.Text;
+                updateDevice.DeviceMacS = txtDeviceMAC.Text;
                 //兼容M1 and M1P
                 if (txtDeviceName.Text == "M1")
                 {
-                    updateDevice.DeviceType = "51";
-
+                    updateDevice.DeviceTypeS = "51";
                 }
                 else if (txtDeviceName.Text == "M1P")
                 {
-                    updateDevice.DeviceType = "53";
+                    updateDevice.DeviceTypeS = "53";
                 }
                 else if (txtDeviceName.Text == "M2")
                 {
-                    updateDevice.DeviceType = "57";
+                    updateDevice.DeviceTypeS = "57";
                 }
                 updateDevice.Interval = Convert.ToInt32(txtNewInterval.Text);
-                updateDevice.TXTimers = Convert.ToByte(txtNewTXTimers.Text);
+                updateDevice.SampleSend = Convert.ToByte(txtNewTXTimers.Text);
                 txtCalendar.Text = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
                 updateDevice.Calendar = Convert.ToDateTime(txtCalendar.Text);
 
@@ -494,9 +471,6 @@ namespace DeviceSetup_HyperWSN
                 updateDevice.HumidityInfoHigh = Convert.ToDouble(txtHumidityInfoHigh.Text);
                 updateDevice.HumidityWarnLow = Convert.ToDouble(txtHumidityWarnLow.Text);
                 updateDevice.HumidityWarnHigh = Convert.ToDouble(txtHumidityWarnHigh.Text);
-
-
-
 
                 byte[] updateCommand = updateDevice.UpdateApplicationConfig();
                 string updateString = CommArithmetic.ToHexString(updateCommand);
@@ -550,20 +524,20 @@ namespace DeviceSetup_HyperWSN
 
             try
             {
-                updateDevice.DeviceMac = txtDeviceMAC.Text;
+                updateDevice.DeviceMacS = txtDeviceMAC.Text;
                 //兼容M1 and M1P
                 if (txtDeviceName.Text == "M1")
                 {
-                    updateDevice.DeviceType = "51";
+                    updateDevice.DeviceTypeS = "51";
 
                 }
                 else if (txtDeviceName.Text == "M1P")
                 {
-                    updateDevice.DeviceType = "53";
+                    updateDevice.DeviceTypeS = "53";
                 }
                 else if (txtDeviceName.Text == "M2")
                 {
-                    updateDevice.DeviceType = "57";
+                    updateDevice.DeviceTypeS = "57";
                 }
 
                 byte[] updateCommand = updateDevice.DeleteData();
@@ -609,9 +583,9 @@ namespace DeviceSetup_HyperWSN
             Socket1 updateDevice = new Socket1();
             try
             {
-                updateDevice.DeviceMac = txtDeviceMACSocket1.Text;
+                updateDevice.DeviceMacS = txtDeviceMACSocket1.Text;
                 updateDevice.DeviceNewMAC = txtNewDeviceMACSocket1.Text;
-                updateDevice.HardwareVersion = txtNewHardwareVersionSocket1.Text;
+                updateDevice.HwVersionS = txtNewHardwareVersionSocket1.Text;
 
                 byte[] updateCommand = updateDevice.UpdateFactory();
                 string updateString = CommArithmetic.ToHexString(updateCommand);
@@ -655,15 +629,15 @@ namespace DeviceSetup_HyperWSN
             Socket1 updateDevice = new Socket1();
             try
             {
-                updateDevice.DeviceMac = txtDeviceMACSocket1.Text;
+                updateDevice.DeviceMacS = txtDeviceMACSocket1.Text;
 
-                updateDevice.ClientID = txtNewClientIDSocket1.Text;
-                updateDevice.DebugString = txtNewDebugSocket1.Text;
+                updateDevice.CustomerS = txtNewClientIDSocket1.Text;
+                updateDevice.DebugS = txtNewDebugSocket1.Text;
                 updateDevice.Category = Convert.ToByte(txtNewCategorySocket1.Text);
                 updateDevice.WorkFunction = Convert.ToByte(txtNewWorkFunctionSocket1.Text);
                 updateDevice.SymbolRate = Convert.ToByte(txtNewBPSSocket1.Text);
-                updateDevice.TXPower = Convert.ToByte(txtNewTXPowerSocket1.Text);
-                updateDevice.Frequency = Convert.ToByte(txtNewFrequencySocket1.Text);
+                updateDevice.TxPower = Convert.ToByte(txtNewTXPowerSocket1.Text);
+                updateDevice.Channel = Convert.ToByte(txtNewFrequencySocket1.Text);
                 //updateDevice.TemperatureCompensation = Convert.ToDouble(txtNewTemperatureCompensation.Text);
                 //updateDevice.HumidityCompensation = Convert.ToDouble(txtNewHumidityCompensation.Text);
                 updateDevice.MaxLength = Convert.ToByte(txtNewMaxLengthSocket1.Text);
@@ -738,10 +712,10 @@ namespace DeviceSetup_HyperWSN
 
             try
             {
-                updateDevice.DeviceMac = txtDeviceMACSocket1.Text;
+                updateDevice.DeviceMacS = txtDeviceMACSocket1.Text;
                 
                 updateDevice.Interval = Convert.ToInt32(txtNewIntervalSocket1.Text);
-                updateDevice.TXTimers = Convert.ToByte(txtNewTXTimersSocket1.Text);
+                updateDevice.SampleSend = Convert.ToByte(txtNewTXTimersSocket1.Text);
                 txtCalendarSocket1.Text = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
                 updateDevice.Calendar = Convert.ToDateTime(txtCalendarSocket1.Text);
 
@@ -755,9 +729,6 @@ namespace DeviceSetup_HyperWSN
                 updateDevice.VoltageMeasureWarnLow = Convert.ToInt16(txtVoltageMeasureWarnLow.Text);
                 updateDevice.VoltageMeasureWarnHigh = Convert.ToInt16(txtVoltageMeasureWarnHigh.Text);
 
-
-
-
                 byte[] updateCommand = updateDevice.UpdateApplicationConfig();
                 string updateString = CommArithmetic.ToHexString(updateCommand);
 
@@ -770,14 +741,9 @@ namespace DeviceSetup_HyperWSN
                 System.Threading.Thread.Sleep(250); //界面会卡
 
                 btnStartMonitor_Click(this, null);
-
-
-
-
             }
             catch (Exception ex)
-            {
-
+            {           
                 MessageBox.Show("参数错误：" + ex.Message);
             }
 

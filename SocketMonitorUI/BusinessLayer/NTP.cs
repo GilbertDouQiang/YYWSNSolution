@@ -65,8 +65,6 @@ namespace SocketMonitorUI.BusinessLayer
                 response[19] = 0xBE;
                 response[20] = 0xBE;
 
-
-
                 session.Send(response, 0, response.Length); ;
 
                 //Save to Database
@@ -86,10 +84,8 @@ namespace SocketMonitorUI.BusinessLayer
                     command.Parameters.Add("@SourceData", SqlDbType.VarChar);
                     command.Parameters.Add("@SendData", SqlDbType.VarChar);
 
-
-
                     command.Parameters["@DeviceMAC"].Value = CommArithmetic.DecodeMAC(requestInfo.Body, 7);//协议起始位置-1
-                    command.Parameters["@SerialNo"].Value = CommArithmetic.Byte2Int(requestInfo.Body,5,2);
+                    command.Parameters["@SerialNo"].Value = CommArithmetic.Byte2Int(requestInfo.Body, 5, 2);
                     command.Parameters["@ProtocolVersion"].Value = requestInfo.Body[4].ToString("X2");
                     command.Parameters["@NTPStatus"].Value = requestInfo.Body[17];
                     command.Parameters["@RequestDateTime"].Value = CommArithmetic.DecodeDateTime(requestInfo.Body, 11);
@@ -106,8 +102,6 @@ namespace SocketMonitorUI.BusinessLayer
                     }
                 }
 
-               
-
                 //Save to Queue
                 try
                 {
@@ -115,25 +109,18 @@ namespace SocketMonitorUI.BusinessLayer
                     {
                         session.SaveToQueue(requestInfo.Body);
                     }
-
                 }
                 catch (Exception)
                 {
 
-                    
                 }
 
                 //save to database
 
-                
+
                 Logger.AddLog(DateTime.Now.ToString("HH:mm:ss.fff") + " :SendData:" + session.RemoteEndPoint.Address.ToString() + " :\t"
                    + CommArithmetic.ToHexString(response) + " ");
-
             }
-
-
-
         }
-
     }
 }

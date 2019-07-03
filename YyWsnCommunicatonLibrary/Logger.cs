@@ -9,21 +9,18 @@ namespace YyWsnCommunicatonLibrary
 {
     public class Logger
     {
-
         private static StringBuilder LogStringBuilder = new StringBuilder();
         private static Timer writeTimer;
 
-
         private static object ob = "lock";
+
         /// <summary>
-        /// 
+        /// 添加Log
         /// </summary>
-        /// <param name="strFunctionName"></param>
-        /// <param name="strErrorNum"></param>
-        /// <param name="strErrorDescription"></param>
+        /// <param name="LogText"></param>
         public static void AddLog(string LogText)
         {
-            if (writeTimer==null)
+            if (writeTimer == null)
             {
                 writeTimer = new Timer();
                 writeTimer.Interval = 5000;
@@ -35,17 +32,12 @@ namespace YyWsnCommunicatonLibrary
             {
                 LogStringBuilder.Append(LogText + "\r\n");
             }
-
-
-
-
-            
         }
 
         private static void WriteTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
             //定期写入,去掉没有必要的写入操作
-            if (LogStringBuilder.Length==0)
+            if (LogStringBuilder.Length == 0)
             {
                 return;
             }
@@ -54,21 +46,19 @@ namespace YyWsnCommunicatonLibrary
             string strPath; //错误文件的路径
             DateTime dt = DateTime.Now;
             string fileName;
+
             try
             {
-
                 fileName = "YYWSN_" + dt.ToString("yyyyMMdd") + ".log";
                 strPath = Directory.GetCurrentDirectory() + "\\Log";
-
 
                 if (Directory.Exists(strPath) == false)  //工程目录下 Log目录 '目录是否存在,为true则没有此目录
                 {
                     Directory.CreateDirectory(strPath); //建立目录　Directory为目录对象
                 }
                 strPath = strPath + "\\" + fileName;
-                
-                //TODO: 去掉末尾的\r\n
 
+                //TODO: 去掉末尾的\r\n
 
                 lock (ob)
                 {
@@ -76,13 +66,10 @@ namespace YyWsnCommunicatonLibrary
                     strMatter = LogStringBuilder.ToString();
                     LogStringBuilder.Clear();
                     FileWriter.WriteLine(strMatter);
-                    
+
                     FileWriter.Close(); //关闭StreamWriter对象
                     FileWriter = null;
-
                 }
-
-
             }
             catch (Exception ex)
             {
@@ -93,19 +80,11 @@ namespace YyWsnCommunicatonLibrary
 
         public static void AddLogAutoTime(string LogText)
         {
-           
-
-
-
-            AddLog(GetTimeString ()+ "\t" + LogText);
-
-
+            AddLog(GetTimeString() + "\t" + LogText);
         }
 
         public static String GetTimeString()
         {
-           
-
             string timeString = "";
             DateTime dt = DateTime.Now;
             if (dt.Hour < 10)
@@ -113,7 +92,6 @@ namespace YyWsnCommunicatonLibrary
                 timeString += "0" + dt.Hour;
             }
             else
-
             {
                 timeString += dt.Hour;
             }
@@ -130,7 +108,6 @@ namespace YyWsnCommunicatonLibrary
             if (dt.Second < 10)
             {
                 timeString += ":0" + dt.Second;
-
             }
             else
             {
@@ -151,9 +128,6 @@ namespace YyWsnCommunicatonLibrary
             }
 
             return timeString;
-
         }
-
-
     }
 }

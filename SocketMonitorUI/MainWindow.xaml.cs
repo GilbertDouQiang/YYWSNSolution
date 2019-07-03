@@ -30,12 +30,9 @@ namespace SocketMonitorUI
     /// </summary>
     public partial class MainWindow : Window
     {
-
         HyperWSNSocketServer server;
 
         IServerConfig m_Config;
-
-        
 
         public MainWindow()
         {
@@ -50,12 +47,13 @@ namespace SocketMonitorUI
                 {
                     Port = Convert.ToInt16(txtPort.Text.ToString()),
                     Ip = "Any",
+                    //Ip = "192.168.2.196",
                     MaxConnectionNumber = 200,
                     Mode = SocketMode.Tcp,
                     Name = "HyperWSNSocketServer",
                     IdleSessionTimeOut = 120,
-                    ClearIdleSession= true,
-                    ClearIdleSessionInterval=5
+                    ClearIdleSession = true,
+                    ClearIdleSessionInterval = 5
                     //ReceiveBufferSize
                 };
 
@@ -74,6 +72,8 @@ namespace SocketMonitorUI
 
                 //如果执行2次Setup , 会抛出错误
                 server.Setup(new RootConfig(), m_Config);
+                //server.Setup("192.168.2.196", 11030);
+
                 //AppServer对象的基础设置
 
 
@@ -88,8 +88,7 @@ namespace SocketMonitorUI
                 server.Start();
                 if (server.State == ServerState.Running)
                 {
-                    txtConsole.Text = DateTime.Now.ToString("HH:mm:ss.fff")+ " :\tService Started \r\n" +txtConsole.Text;
-                    
+                    txtConsole.Text = DateTime.Now.ToString("HH:mm:ss.fff") + " :\tService Started \r\n" + txtConsole.Text;
 
                     btnStartService.Content = "Stop Service";
 
@@ -97,13 +96,11 @@ namespace SocketMonitorUI
                     {
                         Logger.AddLog(DateTime.Now.ToString("HH:mm:ss.fff") + " :\tService Started ");
                     }
-
                 }
-
             }
             else
             {
-                if(server !=null)
+                if (server != null)
                 {
                     server.Stop();
                     server.Dispose();
@@ -117,15 +114,16 @@ namespace SocketMonitorUI
                 }
                 else
                 {
-                    //
                     btnStartService.Content = "Start Service";
                 }
-
             }
-
-            
         }
 
+        /// <summary>
+        /// 断开连接
+        /// </summary>
+        /// <param name="session"></param>
+        /// <param name="value"></param>
         private void Server_SessionClosed(HyperWSNSession session, CloseReason value)
         {
             Dispatcher.BeginInvoke(new Action(delegate
@@ -134,14 +132,12 @@ namespace SocketMonitorUI
                 {
                     session.DisconnectQueue();
                     session.DisConnectSQLServer();
-
-
                 }
                 catch (Exception)
                 {
-
                     throw;
                 }
+
                 if (chkShowTextBox.IsChecked == true)
                 {
                     txtConsole.Text = DateTime.Now.ToString("HH:mm:ss.fff") + " :\tClient Disconnect:\t " + session.RemoteEndPoint.Address.ToString() + " :"
@@ -162,21 +158,18 @@ namespace SocketMonitorUI
             //客户端连接成功
             Dispatcher.BeginInvoke(new Action(delegate
             {
-              
                 session.Send(requestInfo.Body, 0, requestInfo.Body.Length);
                 if (chkShowTextBox.IsChecked == true)
                 {
                     txtConsole.Text = DateTime.Now.ToString("HH:mm:ss.fff") + " :\tReceived:" + session.RemoteEndPoint.Address.ToString() + " :\t"
                + CommArithmetic.ToHexString(requestInfo.Body) + " \r\n" + txtConsole.Text;
-
                 }
-               
+
                 if (chkLog.IsChecked == true)
                 {
                     Logger.AddLog(DateTime.Now.ToString("HH:mm:ss.fff") + " :\tReceived:" + session.RemoteEndPoint.Address.ToString() + " :\t"
                 + CommArithmetic.ToHexString(requestInfo.Body) + " ");
                 }
-
             }));
         }
 
@@ -186,26 +179,19 @@ namespace SocketMonitorUI
             //客户端连接成功
             Dispatcher.BeginInvoke(new Action(delegate
             {
-
                 //MQ 相关操作
                 try
-                {
+                { 
                     //session.ConnectQueue("HyperWSNQueue",session.RemoteEndPoint.Address.ToString()+"."+session.RemoteEndPoint.Port.ToString());
-
                 }
                 catch (Exception)
                 {
 
-
                 }
+
                 //connection to database
 
-
-
-
-
                 //MQ 相关操作结束
-
 
                 if (chkShowTextBox.IsChecked == true)
                 {
@@ -213,20 +199,17 @@ namespace SocketMonitorUI
                 }
                 if (chkLog.IsChecked == true)
                 {
-                    Logger.AddLog(DateTime.Now.ToString("HH:mm:ss.fff") + " :\tClient Connect:      \t" + session.RemoteEndPoint.Address.ToString() + " :" + session.RemoteEndPoint.Port.ToString() );
+                    Logger.AddLog(DateTime.Now.ToString("HH:mm:ss.fff") + " :\tClient Connect:      \t" + session.RemoteEndPoint.Address.ToString() + " :" + session.RemoteEndPoint.Port.ToString());
                 }
 
                 try
                 {
                     session.ConnectSQLServer();
-                    
                 }
                 catch (Exception ex)
                 {
                     Logger.AddLog(DateTime.Now.ToString("HH:mm:ss.fff") + " :\tConnect Database Error" + ex.Message);
-
                 }
-
             }));
         }
 
@@ -262,13 +245,11 @@ namespace SocketMonitorUI
             {
                 string portStr = ConfigurationManager.AppSettings["port"];
                 txtPort.Text = portStr;
-
             }
-            catch(Exception)
+            catch (Exception)
             {
 
             }
-            
         }
 
         private void Window_Closed(object sender, EventArgs e)
@@ -276,7 +257,6 @@ namespace SocketMonitorUI
             System.Configuration.Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
             config.AppSettings.Settings["port"].Value = txtPort.Text;
             config.Save(ConfigurationSaveMode.Modified);
-
         }
     }
 }

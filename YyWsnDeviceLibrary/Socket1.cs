@@ -22,20 +22,14 @@ namespace YyWsnDeviceLibrary
             if (SourceData.Length == 82)
             {
                 Name = "Socket1";
-                DeviceType = SourceData[4].ToString("X2");
+                DeviceTypeS = SourceData[4].ToString("X2");
                 ProtocolVersion = SourceData[5];
-                PrimaryMAC = CommArithmetic.DecodeMAC(SourceData, 6);
-                DeviceMac = CommArithmetic.DecodeMAC(SourceData, 10);
-                HardwareVersion = CommArithmetic.DecodeMAC(SourceData, 14);
-                SoftwareVersion = CommArithmetic.DecodeClientID(SourceData, 18);
-                ClientID = CommArithmetic.DecodeClientID(SourceData, 20);
-                byte[] debugBytes = new byte[2];
-                debugBytes[0] = SourceData[22];
-                debugBytes[1] = SourceData[23];
-
-                DebugString = CommArithmetic.DecodeClientID(SourceData, 22);
-
-                Debug = debugBytes;
+                PrimaryMacS = CommArithmetic.DecodeMAC(SourceData, 6);
+                DeviceMacS = CommArithmetic.DecodeMAC(SourceData, 10);
+                HwVersionS = CommArithmetic.DecodeMAC(SourceData, 14);
+                SwVersionS = CommArithmetic.DecodeClientID(SourceData, 18);
+                CustomerS = CommArithmetic.DecodeClientID(SourceData, 20);
+                DebugV = (UInt16)(SourceData[22] * 256 + SourceData[23]);
                 Category = SourceData[24];
                 Interval = SourceData[25] * 256 + SourceData[26];
                 Calendar = CommArithmetic.DecodeDateTime(SourceData, 27);
@@ -43,9 +37,9 @@ namespace YyWsnDeviceLibrary
 
                 WorkFunction = SourceData[33];
                 SymbolRate = SourceData[34];
-                TXPower = SourceData[35];
-                TXTimers = SourceData[36];
-                Frequency = SourceData[37];
+                TxPower = SourceData[35];
+                SampleSend = SourceData[36];
+                Channel = SourceData[37];
 
 
 
@@ -65,7 +59,7 @@ namespace YyWsnDeviceLibrary
                 VoltageMeasureCompensation = SourceData[56] * 256 + SourceData[57];
 
                 ICTemperature = SourceData[58];
-                Volt = Math.Round(Convert.ToDouble((SourceData[59] * 256 + SourceData[60])) / 1000, 2);
+                voltF = Math.Round(Convert.ToDouble((SourceData[59] * 256 + SourceData[60])) / 1000, 2);
 
                 MaxLength = SourceData[63];
 
@@ -92,9 +86,9 @@ namespace YyWsnDeviceLibrary
 
                 //将收到的数据填充到属性
                 Name = "Socket1";
-                DeviceType = SourceData[3].ToString("X2");
-                DeviceMac = CommArithmetic.DecodeMAC(SourceData, 7);
-                ClientID = CommArithmetic.DecodeClientID(SourceData, 5);
+                DeviceTypeS = SourceData[3].ToString("X2");
+                DeviceMacS = CommArithmetic.DecodeMAC(SourceData, 7);
+                CustomerS = CommArithmetic.DecodeClientID(SourceData, 5);
                 WorkFunction = SourceData[2];
                 ProtocolVersion = SourceData[4];
 
@@ -104,7 +98,7 @@ namespace YyWsnDeviceLibrary
                 if (ICTemperature >= 128)
                     ICTemperature -= 256;
 
-                Volt = Math.Round(Convert.ToDouble((SourceData[18] * 256 + SourceData[19])) / 1000, 2);
+                voltF = Math.Round(Convert.ToDouble((SourceData[18] * 256 + SourceData[19])) / 1000, 2);
                 int tempCalc = SourceData[21] * 256 + SourceData[22];
                 if (tempCalc >= 0x8000)
                     tempCalc -= 65536;
@@ -140,7 +134,7 @@ namespace YyWsnDeviceLibrary
             updateBytes[4] = 0x58;
             updateBytes[5] = 0x02;
 
-            byte[] deviceMacBytes = CommArithmetic.HexStringToByteArray(DeviceMac);
+            byte[] deviceMacBytes = CommArithmetic.HexStringToByteArray(DeviceMacS);
             updateBytes[6] = deviceMacBytes[0];
             updateBytes[7] = deviceMacBytes[1];
             updateBytes[8] = deviceMacBytes[2];
@@ -152,7 +146,7 @@ namespace YyWsnDeviceLibrary
             updateBytes[12] = deviceMacBytes[2];
             updateBytes[13] = deviceMacBytes[3];
 
-            deviceMacBytes = CommArithmetic.HexStringToByteArray(HardwareVersion);
+            deviceMacBytes = CommArithmetic.HexStringToByteArray(HwVersionS);
             updateBytes[14] = deviceMacBytes[0];
             updateBytes[15] = deviceMacBytes[1];
             updateBytes[16] = deviceMacBytes[2];
@@ -180,21 +174,20 @@ namespace YyWsnDeviceLibrary
             updateBytes[3] = 0x01;
             updateBytes[4] = 0x58;
             updateBytes[5] = 0x02;
-            //Mac
-            byte[] deviceMacBytes = CommArithmetic.HexStringToByteArray(DeviceMac);
+            //DeviceMacV
+            byte[] deviceMacBytes = CommArithmetic.HexStringToByteArray(DeviceMacS);
             updateBytes[6] = deviceMacBytes[0];
             updateBytes[7] = deviceMacBytes[1];
             updateBytes[8] = deviceMacBytes[2];
             updateBytes[9] = deviceMacBytes[3];
             //clientID
-            deviceMacBytes = CommArithmetic.HexStringToByteArray(ClientID);
+            deviceMacBytes = CommArithmetic.HexStringToByteArray(CustomerS);
             updateBytes[10] = deviceMacBytes[0];
             updateBytes[11] = deviceMacBytes[1];
 
             //Debug
-            deviceMacBytes = CommArithmetic.HexStringToByteArray(DebugString);
-            updateBytes[12] = deviceMacBytes[0];
-            updateBytes[13] = deviceMacBytes[1];
+            updateBytes[12] = (byte)(DebugV / 256);
+            updateBytes[13] = (byte)(DebugV % 256);
 
             //category
             updateBytes[14] = Category;
@@ -202,10 +195,10 @@ namespace YyWsnDeviceLibrary
             updateBytes[15] = WorkFunction;
             //SymbolRate
             updateBytes[16] = SymbolRate;
-            //TXPower
-            updateBytes[17] = TXPower;
-            //Frequency
-            updateBytes[18] = Frequency;
+            //TxPower
+            updateBytes[17] = TxPower;
+            //Channel
+            updateBytes[18] = Channel;
 
             //温度补偿：TODO 暂未实现
             updateBytes[19] = 0x00;
@@ -242,8 +235,8 @@ namespace YyWsnDeviceLibrary
             updateBytes[3] = 0x01;
             updateBytes[4] = 0x58;
             updateBytes[5] = 0x02;
-            //Mac
-            byte[] deviceMacBytes = CommArithmetic.HexStringToByteArray(DeviceMac);
+            //DeviceMacV
+            byte[] deviceMacBytes = CommArithmetic.HexStringToByteArray(DeviceMacS);
             updateBytes[6] = deviceMacBytes[0];
             updateBytes[7] = deviceMacBytes[1];
             updateBytes[8] = deviceMacBytes[2];
@@ -262,7 +255,7 @@ namespace YyWsnDeviceLibrary
             updateBytes[16] = deviceMacBytes[4];
             updateBytes[17] = deviceMacBytes[5];
 
-            updateBytes[18] = TXTimers;
+            updateBytes[18] = SampleSend;
 
             deviceMacBytes = CommArithmetic.Int16_2Bytes(PowerMeasureInfoHigh);
             updateBytes[19] = deviceMacBytes[0];
@@ -324,7 +317,7 @@ namespace YyWsnDeviceLibrary
             updateBytes[4] = 0x58;
             updateBytes[5] = 0x02;
 
-            byte[] deviceMacBytes = CommArithmetic.HexStringToByteArray(DeviceMac);
+            byte[] deviceMacBytes = CommArithmetic.HexStringToByteArray(DeviceMacS);
             updateBytes[6] = deviceMacBytes[0];
             updateBytes[7] = deviceMacBytes[1];
             updateBytes[8] = deviceMacBytes[2];

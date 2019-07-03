@@ -25,7 +25,7 @@ namespace YyWsnDeviceLibrary.Tests
 
             UartGateway device = (UartGateway)DeviceFactory.CreateDevice(resultBytes);
 
-            Assert.AreEqual("F1 76 D7 DB ", device.DeviceMac);
+            Assert.AreEqual("F1 76 D7 DB ", device.DeviceMacS);
             serial.ClosePort();
 
 

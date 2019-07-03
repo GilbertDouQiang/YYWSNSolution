@@ -51,6 +51,7 @@
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
       <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -88,6 +89,16 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\YyWsnCommunicatonLibrary\YyWsnCommunicatonLibrary.csproj">
+      <Project>{c8166677-f261-400c-ab3a-06831d858cb6}</Project>
+      <Name>YyWsnCommunicatonLibrary</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\YyWsnDeviceLibrary\YyWsnDeviceLibrary.csproj">
+      <Project>{4bcf8ea3-f5c3-4788-b5a4-2143ffc3e0b0}</Project>
+      <Name>YyWsnDeviceLibrary</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

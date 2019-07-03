@@ -22,7 +22,6 @@ namespace YyWsnCommunicatonLibrary
         public string ClientID = "clientid";
         private const string Selector = "filter='demo'";
         private bool sendSuccess = true;
-        private bool receiveSuccess = true;
 
         public ActiveMQHelper(bool isLocalMachine, string remoteAddress)
         {
@@ -50,7 +49,6 @@ namespace YyWsnCommunicatonLibrary
             catch (System.Exception e)
             {
                 sendSuccess = false;
-                receiveSuccess = false;
                 Console.WriteLine("Exception:{0}", e.Message);
                 Console.ReadLine();
                 throw e;
@@ -99,7 +97,6 @@ namespace YyWsnCommunicatonLibrary
             catch (System.Exception e)
             {
                 sendSuccess = false;
-                receiveSuccess = false;
                 Console.WriteLine("Exception:{0}", e.Message);
                 Console.ReadLine();
                 throw e;
@@ -156,7 +153,6 @@ namespace YyWsnCommunicatonLibrary
             }
             catch (System.Exception e)
             {
-                receiveSuccess = false;
                 Console.WriteLine("Exception:{0}", e.Message);
                 Console.ReadLine();
                 throw e;

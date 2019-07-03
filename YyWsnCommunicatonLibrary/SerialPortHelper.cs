@@ -17,7 +17,6 @@ namespace YyWsnCommunicatonLibrary
 
         SerialPort port1;
 
-
         System.Timers.Timer timer;
         bool isGetResult = false;
         bool isTimeout = false;
@@ -48,6 +47,7 @@ namespace YyWsnCommunicatonLibrary
             {
 
             }
+
             if (port1.IsOpen)
             {
                 return true;
@@ -56,6 +56,11 @@ namespace YyWsnCommunicatonLibrary
             {
                 return false;
             }
+        }
+
+        public bool IsOpen()
+        {
+            return port1.IsOpen;
         }
 
         //关闭串口的方法
@@ -88,7 +93,6 @@ namespace YyWsnCommunicatonLibrary
                 return null; 
             }
 
-
             timer = new System.Timers.Timer();
             timer.Interval = Timeout;
             timer.Enabled = true;
@@ -105,11 +109,8 @@ namespace YyWsnCommunicatonLibrary
                     return commandResult;
                 }
 
-                Thread.Sleep(10);
-
-
+                Thread.Sleep(10);                
             }
-
            
             return null;
         }
@@ -129,19 +130,37 @@ namespace YyWsnCommunicatonLibrary
             }
             catch (Exception)
             {
+                return -2;
+            }            
+            
+            return 0;
+        }
 
+        public int SendCommandByLength(byte[] Input, UInt16 IndexOfStart, UInt16 nbrOfBytes)
+        {
+            //操作端口前，确保端口已经打开
+            if (!port1.IsOpen)
+            {
+                return -1;
+            }
+
+            try
+            {
+                port1.Write(Input, (int)IndexOfStart, (int)nbrOfBytes);
+                // TODO: 2019-07-01 需要写日志
+                // Logger.AddLogAutoTime("Send:\t\t" + CommArithmetic.ToHexString(CommandBytes));
+            }
+            catch (Exception)
+            {
                 return -2;
             }
 
-            
-            
             return 0;
         }
 
         private void Timer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            isTimeout = true;
-            
+            isTimeout = true;            
         }
 
         private void Port1_DataReceived(object sender, SerialDataReceivedEventArgs e)
@@ -155,43 +174,28 @@ namespace YyWsnCommunicatonLibrary
                 {
                     byte ch =(byte) port1.ReadByte();
                     currentline.Append(ch.ToString("X2"));
-
                 }
                 args.ReceivedBytes = CommArithmetic.HexStringToByteArray(currentline.ToString());
                 commandResult = args.ReceivedBytes;
                 Logger.AddLogAutoTime("Received:\t" + CommArithmetic.ToHexString(args.ReceivedBytes));
 
-                isGetResult = true;
-
-                
-
+                isGetResult = true;            
             }
             catch (Exception)
             {
-
                 return;
             }
 
-
-
             SerialPortReceived?.Invoke(this, args);
-
-
-
         }
 
         public static String[] GetSerialPorts()
         {
-
-            //String[] Portname = SerialPort.GetPortNames();
-            String[] ss = MulGetHardwareInfo(HardwareEnum.Win32_PnPEntity, "Name");//调用方式通过WMI获取COM端口 
-            return ss;
+            return  MulGetHardwareInfo(HardwareEnum.Win32_PnPEntity, "Name");   // 调用方式通过WMI获取COM端口 
         }
-
 
         public static string[] MulGetHardwareInfo(HardwareEnum hardType, string propKey)
         {
-
             List<string> strs = new List<string>();
             try
             {
@@ -204,7 +208,6 @@ namespace YyWsnCommunicatonLibrary
                         {
                             strs.Add(hardInfo.Properties[propKey].Value.ToString());
                         }
-
                     }
                     searcher.Dispose();
                 }
@@ -220,12 +223,10 @@ namespace YyWsnCommunicatonLibrary
 
         public static string GetSerialPortName(string DeviceName)
         {
-            
             //临时测试
             int first = DeviceName.IndexOf('(');
             int last = DeviceName.IndexOf(')');
             return DeviceName.Substring(first + 1, last - first - 1);
         }
-
     }
 }
