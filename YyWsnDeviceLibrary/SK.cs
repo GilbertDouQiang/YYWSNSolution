@@ -27,6 +27,55 @@ namespace YyWsnDeviceLibrary
         /// </summary>
         public UInt16 supplyVolt { get; set; }
 
+        /// <summary>
+        /// 负载功率补偿，单位：W；
+        /// </summary>
+        public Int16 PowerCompensation { get; set; }
+
+        /// <summary>
+        /// 市电电压补偿，单位：V；
+        /// </summary>
+        public Int16 VoltageCompensation { get; set; }
+
+        /// <summary>
+        /// 市电电压预警上限，单位：V；
+        /// </summary>
+        public UInt16 VoltageWarnHigh { get; set; }
+        /// <summary>
+        /// 市电电压预警下限，单位：V；
+        /// </summary>
+        public UInt16 VoltageWarnLow { get; set; }
+
+        /// <summary>
+        /// 市电电压报警上限，单位：V；
+        /// </summary>
+        public UInt16 VoltageAlertHigh { get; set; }
+
+        /// <summary>
+        /// 市电电压报警下限，单位：V；
+        /// </summary>
+        public UInt16 VoltageAlertLow { get; set; }
+
+        /// <summary>
+        /// 负载功率预警上限，单位：W；
+        /// </summary>
+        public UInt16 PowerWarnHigh { get; set; }
+
+        /// <summary>
+        /// 负载功率预警下限，单位：W；
+        /// </summary>
+        public UInt16 PowerWarnLow { get; set; }
+
+        /// <summary>
+        /// 负载功率报警上限，单位：W；
+        /// </summary>
+        public UInt16 PowerAlertHigh { get; set; }
+
+        /// <summary>
+        /// 负载功率报警下限，单位：W；
+        /// </summary>
+        public UInt16 PowerAlertLow { get; set; }
+
         /**************************************
          * 方法
          * ************************************/
@@ -74,21 +123,162 @@ namespace YyWsnDeviceLibrary
         /// <param name="SrcData"></param>
         public SK(byte[] SrcData, UInt16 IndexOfStart)
         {
-            if (isSensorDataV2(SrcData, IndexOfStart, true) >= 0)
+            if (isSensorDataV2_and_V3(SrcData, IndexOfStart, true) >= 0)
             {
-                ReadSensorDataV2(SrcData, IndexOfStart, true);
+                ReadSensorDataV2_and_V3(SrcData, IndexOfStart, true);
             }
 
             return;
         }
 
         /// <summary>
-        /// 判断是不是监测工具监测到的SK发出的传感器数据包（V2版本）
+        /// 构造函数
+        /// </summary>
+        /// <param name="SrcData"></param>
+        public SK(byte[] SrcData, UInt16 IndexOfStart, DataPktType dataPktType)
+        {
+            if (dataPktType == DataPktType.SelfTestFromUsbToPc)
+            {
+                if ((byte)Device.IsPowerOnSelfTestPktFromUsbToPc(SrcData, IndexOfStart) == GetDeviceType())
+                {
+                    byte protocol = SrcData[IndexOfStart + 5];
+
+                    if (protocol == 2)
+                    {
+                        SetDeviceName(SrcData[IndexOfStart + 4]);
+                        ProtocolVersion = protocol;
+                        SetDevicePrimaryMac(SrcData, (UInt16)(IndexOfStart + 6));
+                        SetDeviceMac(SrcData, (UInt16)(IndexOfStart + 10));
+                        SetHardwareRevision(SrcData, (UInt16)(IndexOfStart + 14));
+                        SetSoftwareRevision(SrcData, (UInt16)(IndexOfStart + 18));
+                        SetDeviceCustomer(SrcData, (UInt16)(IndexOfStart + 20));
+                        SetDeviceDebug(SrcData, (UInt16)(IndexOfStart + 22));
+
+                        Category = SrcData[IndexOfStart + 24];
+                        Interval = (UInt16)(SrcData[IndexOfStart+25] * 256 + SrcData[IndexOfStart+26]);
+                        Calendar = CommArithmetic.DecodeDateTime(SrcData, (UInt16)(IndexOfStart + 27));
+
+                        Pattern = SrcData[IndexOfStart + 33];
+                        Bps = SrcData[IndexOfStart + 34];
+                        SetTxPower(SrcData[IndexOfStart + 35]);
+                        SampleSend = SrcData[IndexOfStart + 36];
+                        Channel = SrcData[IndexOfStart + 37];
+
+                        PowerWarnHigh = (UInt16)(SrcData[IndexOfStart + 38] * 256 + SrcData[IndexOfStart + 39]);
+                        PowerWarnLow = (UInt16)(SrcData[IndexOfStart + 40] * 256 + SrcData[IndexOfStart + 41]);
+
+                        VoltageWarnHigh = (UInt16)(SrcData[IndexOfStart + 42] * 256 + SrcData[IndexOfStart + 43]);
+                        VoltageWarnLow = (UInt16)(SrcData[IndexOfStart + 44] * 256 + SrcData[IndexOfStart + 45]);
+
+                        PowerAlertHigh = (UInt16)(SrcData[IndexOfStart + 46] * 256 + SrcData[IndexOfStart + 47]);
+                        PowerAlertLow = (UInt16)(SrcData[IndexOfStart + 48] * 256 + SrcData[IndexOfStart + 49]);
+
+                        VoltageAlertHigh = (UInt16)(SrcData[IndexOfStart + 50] * 256 + SrcData[IndexOfStart + 51]);
+                        VoltageAlertLow = (UInt16)(SrcData[IndexOfStart + 52] * 256 + SrcData[IndexOfStart + 53]);
+
+                        PowerCompensation = (Int16)(SrcData[IndexOfStart + 54] * 256 + SrcData[IndexOfStart + 55]);
+                        VoltageCompensation = (Int16)(SrcData[IndexOfStart + 56] * 256 + SrcData[IndexOfStart + 57]);
+
+                        ICTemperature = SrcData[IndexOfStart + 58];
+                        voltF = Math.Round(Convert.ToDouble((SrcData[IndexOfStart + 59] * 256 + SrcData[IndexOfStart + 60])) / 1000, 2);
+
+                        FlashID = CommArithmetic.DecodeClientID(SrcData, IndexOfStart + 61);
+                        MaxLength = SrcData[IndexOfStart + 63];
+
+                        FlashFront = SrcData[IndexOfStart + 64] * 256 * 256 + SrcData[IndexOfStart + 65] * 256 + SrcData[IndexOfStart + 66];
+                        FlashRear = SrcData[IndexOfStart + 67] * 256 * 256 + SrcData[IndexOfStart + 68] * 256 + SrcData[IndexOfStart + 69];
+                        FlashQueueLength = SrcData[IndexOfStart + 70] * 256 * 256 + SrcData[IndexOfStart + 71] * 256 + SrcData[IndexOfStart + 72];
+
+                        loadPower = (UInt16)(SrcData[IndexOfStart + 73] * 256 + SrcData[IndexOfStart + 74]);
+                        supplyVolt = (UInt16)(SrcData[IndexOfStart + 75] * 256 + SrcData[IndexOfStart + 76]);
+
+                        byte rssi = SrcData[IndexOfStart + 78];
+                        if (rssi >= 0x80)
+                        {
+                            RSSI = (double)(rssi - 0x100);
+                        }
+                        else
+                        {
+                            RSSI = (double)rssi;
+                        }
+                    }
+                    else if (protocol == 3)
+                    {
+                        SetDeviceName(SrcData[IndexOfStart + 4]);
+                        ProtocolVersion = protocol;
+                        SetDevicePrimaryMac(SrcData, (UInt16)(IndexOfStart + 6));
+                        SetDeviceMac(SrcData, (UInt16)(IndexOfStart + 10));
+                        SetHardwareRevision(SrcData, (UInt16)(IndexOfStart + 14));
+                        SetSoftwareRevision(SrcData, (UInt16)(IndexOfStart + 18));
+                        SetDeviceCustomer(SrcData, (UInt16)(IndexOfStart + 20));
+                        SetDeviceDebug(SrcData, (UInt16)(IndexOfStart + 22));
+
+                        Category = SrcData[IndexOfStart + 24];
+                        Interval = (UInt16)(SrcData[IndexOfStart + 25] * 256 + SrcData[IndexOfStart + 26]);
+                        Calendar = CommArithmetic.DecodeDateTime(SrcData, (UInt16)(IndexOfStart + 27));
+
+                        Pattern = SrcData[IndexOfStart + 33];
+                        Bps = SrcData[IndexOfStart + 34];
+                        SetTxPower(SrcData[IndexOfStart + 35]);
+                        SampleSend = SrcData[IndexOfStart + 36];
+                        Channel = SrcData[IndexOfStart + 37];
+
+                        PowerWarnHigh = (UInt16)(SrcData[IndexOfStart + 38] * 256 + SrcData[IndexOfStart + 39]);
+                        PowerWarnLow = (UInt16)(SrcData[IndexOfStart + 40] * 256 + SrcData[IndexOfStart + 41]);
+
+                        VoltageWarnHigh = (UInt16)(SrcData[IndexOfStart + 42] * 256 + SrcData[IndexOfStart + 43]);
+                        VoltageWarnLow = (UInt16)(SrcData[IndexOfStart + 44] * 256 + SrcData[IndexOfStart + 45]);
+
+                        PowerAlertHigh = (UInt16)(SrcData[IndexOfStart + 46] * 256 + SrcData[IndexOfStart + 47]);
+                        PowerAlertLow = (UInt16)(SrcData[IndexOfStart + 48] * 256 + SrcData[IndexOfStart + 49]);
+
+                        VoltageAlertHigh = (UInt16)(SrcData[IndexOfStart + 50] * 256 + SrcData[IndexOfStart + 51]);
+                        VoltageAlertLow = (UInt16)(SrcData[IndexOfStart + 52] * 256 + SrcData[IndexOfStart + 53]);
+
+                        PowerCompensation = (Int16)(SrcData[IndexOfStart + 54] * 256 + SrcData[IndexOfStart + 55]);
+                        VoltageCompensation = (Int16)(SrcData[IndexOfStart + 56] * 256 + SrcData[IndexOfStart + 57]);
+
+                        ICTemperature = SrcData[IndexOfStart + 58];
+                        voltF = Math.Round(Convert.ToDouble((SrcData[IndexOfStart + 59] * 256 + SrcData[IndexOfStart + 60])) / 1000, 2);
+
+                        FlashID = CommArithmetic.DecodeClientID(SrcData, IndexOfStart + 61);
+                        MaxLength = SrcData[IndexOfStart + 63];
+
+                        FlashFront = SrcData[IndexOfStart + 64] * 256 * 256 + SrcData[IndexOfStart + 65] * 256 + SrcData[IndexOfStart + 66];
+                        FlashRear = SrcData[IndexOfStart + 67] * 256 * 256 + SrcData[IndexOfStart + 68] * 256 + SrcData[IndexOfStart + 69];
+                        FlashQueueLength = SrcData[IndexOfStart + 70] * 256 * 256 + SrcData[IndexOfStart + 71] * 256 + SrcData[IndexOfStart + 72];
+
+                        loadPower = (UInt16)(SrcData[IndexOfStart + 73] * 256 + SrcData[IndexOfStart + 74]);
+                        supplyVolt = (UInt16)(SrcData[IndexOfStart + 75] * 256 + SrcData[IndexOfStart + 76]);
+
+                        NormalInterval = (UInt16)(SrcData[IndexOfStart + 77] * 256 + SrcData[IndexOfStart + 78]);
+                        WarnInterval = (UInt16)(SrcData[IndexOfStart + 79] * 256 + SrcData[IndexOfStart + 80]);
+                        AlertInterval = (UInt16)(SrcData[IndexOfStart + 81] * 256 + SrcData[IndexOfStart + 82]);
+
+                        byte rssi = SrcData[IndexOfStart + 86];
+                        if (rssi >= 0x80)
+                        {
+                            RSSI = (double)(rssi - 0x100);
+                        }
+                        else
+                        {
+                            RSSI = (double)rssi;
+                        }
+                    }
+                    
+                }
+            }
+
+            return;
+        }
+
+        /// <summary>
+        /// 判断是不是监测工具监测到的SK发出的传感器数据包（V2和V3版本）
         /// </summary>
         /// <param name="SrcBuf"></param>
         /// <param name="ExistRssi">true = 包含RSSI； false = 不包含RSSI；</param>
         /// <returns></returns>
-        static public Int16 isSensorDataV2(byte[] SrcData, UInt16 IndexOfStart, bool ExistRssi)
+        static public Int16 isSensorDataV2_and_V3(byte[] SrcData, UInt16 IndexOfStart, bool ExistRssi)
         {
             UInt16 AppendLen = 0;
             if (ExistRssi == true)
@@ -145,7 +335,7 @@ namespace YyWsnDeviceLibrary
 
             // 协议版本
             byte protocol = SrcData[IndexOfStart + 4];
-            if (protocol != 2)
+            if (protocol != 2 && protocol != 3)
             {
                 return -8;
             }
@@ -173,7 +363,7 @@ namespace YyWsnDeviceLibrary
         /// <param name="IndexOfStart"></param>
         /// <param name="ExistRssi"></param>
         /// <returns></returns>
-        public Int16 ReadSensorDataV2(byte[] SrcData, UInt16 IndexOfStart, bool ExistRssi)
+        public Int16 ReadSensorDataV2_and_V3(byte[] SrcData, UInt16 IndexOfStart, bool ExistRssi)
         {
             // 数据包类型
             dataPktType = DataPktType.SensorFromSsToGw;
@@ -182,7 +372,7 @@ namespace YyWsnDeviceLibrary
             STP = SrcData[IndexOfStart + 0];
 
             // Cmd
-            WorkFunction = SrcData[IndexOfStart + 2];
+            Pattern = SrcData[IndexOfStart + 2];
 
             // Device Type
             SetDeviceName(SrcData[IndexOfStart + 3]);

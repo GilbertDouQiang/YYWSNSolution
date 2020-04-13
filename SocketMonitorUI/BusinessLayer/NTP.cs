@@ -33,12 +33,13 @@ namespace SocketMonitorUI.BusinessLayer
             //记录到日志,收到数据
             Logger.AddLog(DateTime.Now.ToString("HH:mm:ss.fff") + " :Received:" + session.RemoteEndPoint.Address.ToString() + " :\t"
                 + CommArithmetic.ToHexString(requestInfo.Body) + " ");
+
             //The logic of saving GPS position data
             //var response = session.AppServer.DefaultResponse;
             //byte[] response = new byte[] { 0xEB, 0xEB, 0x01, 0x03, 0x00, 0x00, 0xBE, 0xBE };
+
             if (ServiceStatus.ResponseNTP == true && requestInfo.Body.Length == 22)
             {
-
                 byte[] response = new byte[21];
                 response[0] = 0xEB;  //开始位
                 response[1] = 0xEB;  //开始位
@@ -84,7 +85,7 @@ namespace SocketMonitorUI.BusinessLayer
                     command.Parameters.Add("@SourceData", SqlDbType.VarChar);
                     command.Parameters.Add("@SendData", SqlDbType.VarChar);
 
-                    command.Parameters["@DeviceMAC"].Value = CommArithmetic.DecodeMAC(requestInfo.Body, 7);//协议起始位置-1
+                    command.Parameters["@DeviceMAC"].Value = CommArithmetic.DecodeMAC(requestInfo.Body, 7);     // 协议起始位置-1
                     command.Parameters["@SerialNo"].Value = CommArithmetic.Byte2Int(requestInfo.Body, 5, 2);
                     command.Parameters["@ProtocolVersion"].Value = requestInfo.Body[4].ToString("X2");
                     command.Parameters["@NTPStatus"].Value = requestInfo.Body[17];
@@ -99,10 +100,11 @@ namespace SocketMonitorUI.BusinessLayer
                     }
                     catch (Exception)
                     {
+
                     }
                 }
 
-                //Save to Queue
+                // Save to Queue
                 try
                 {
                     if (session.QueueStatic == true)
@@ -115,8 +117,7 @@ namespace SocketMonitorUI.BusinessLayer
 
                 }
 
-                //save to database
-
+                // Save to database
 
                 Logger.AddLog(DateTime.Now.ToString("HH:mm:ss.fff") + " :SendData:" + session.RemoteEndPoint.Address.ToString() + " :\t"
                    + CommArithmetic.ToHexString(response) + " ");

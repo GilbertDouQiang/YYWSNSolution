@@ -37,6 +37,19 @@ namespace YyWsnCommunicatonLibrary
             port1.DataReceived += Port1_DataReceived;//DataReceived事件委托
         }
 
+        public void InitCOM(string PortName, int BaudRate)
+        {
+            port1 = new SerialPort(PortName);
+            port1.BaudRate = BaudRate;                  //波特率
+            port1.Parity = Parity.None;                 //无奇偶校验位
+            port1.StopBits = StopBits.One;              //两个停止位
+            //port1.Handshake = Handshake.RequestToSend;//控制协议
+            port1.ReadBufferSize = 8192;
+            port1.WriteBufferSize = 8192;
+            //port1.ReceivedBytesThreshold = 4;//设置 DataReceived 事件发生前内部输入缓冲区中的字节数
+            port1.DataReceived += Port1_DataReceived;//DataReceived事件委托
+        }
+
         public bool OpenPort()
         {
             try
@@ -147,8 +160,7 @@ namespace YyWsnCommunicatonLibrary
             try
             {
                 port1.Write(Input, (int)IndexOfStart, (int)nbrOfBytes);
-                // TODO: 2019-07-01 需要写日志
-                // Logger.AddLogAutoTime("Send:\t\t" + CommArithmetic.ToHexString(CommandBytes));
+                Logger.AddLogAutoTime("TX:\t\t" + CommArithmetic.ToHexString(Input, (int)IndexOfStart, (int)nbrOfBytes));
             }
             catch (Exception)
             {
@@ -177,7 +189,7 @@ namespace YyWsnCommunicatonLibrary
                 }
                 args.ReceivedBytes = CommArithmetic.HexStringToByteArray(currentline.ToString());
                 commandResult = args.ReceivedBytes;
-                Logger.AddLogAutoTime("Received:\t" + CommArithmetic.ToHexString(args.ReceivedBytes));
+                Logger.AddLogAutoTime("RX:\t" + CommArithmetic.ToHexString(args.ReceivedBytes));
 
                 isGetResult = true;            
             }

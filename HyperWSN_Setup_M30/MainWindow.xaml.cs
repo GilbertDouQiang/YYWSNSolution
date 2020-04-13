@@ -144,178 +144,361 @@ namespace HyperWSN_Setup_M30
                 return -1;
             }
 
+            UInt16 iCnt = 6;
+
             // Protocol
-            if(SrcData[IndexOfStart + 5] != 0x01)
+            if (SrcData[IndexOfStart + 5] == 0x01)
+            {
+                tbxPrimaryMac.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 1].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 2].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 3].ToString("X2");
+                iCnt += 4;
+
+                tbxMac.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 1].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 2].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 3].ToString("X2");
+                iCnt += 4;
+
+                tbxHwRevision.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 1].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 2].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 3].ToString("X2");
+                iCnt += 4;
+
+                tbxSwRevision.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 1].ToString("X2");
+                iCnt += 2;
+
+                tbxSwRevision.Text += "  |  " + SrcData[IndexOfStart + iCnt + 0].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 1].ToString("X2");
+                iCnt += 2;
+
+                tbxSwRevision.Text += "  |  " + SrcData[IndexOfStart + iCnt + 0].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 1].ToString("X2");
+                iCnt += 2;
+
+                tbxCustomer.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 1].ToString("X2");
+                iCnt += 2;
+
+                tbxDebug.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 1].ToString("X2");
+                iCnt += 2;
+
+                tbxCategory.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2");
+                iCnt += 1;
+
+                tbxPattern.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2");
+                iCnt += 1;
+
+                tbxBps.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2");
+                iCnt += 1;
+
+                tbxChannel.Text = SrcData[IndexOfStart + iCnt + 0].ToString("D");
+                iCnt += 1;
+
+                Int16 txPower = (Int16)SrcData[IndexOfStart + iCnt + 0];
+                if (txPower >= 128)
+                {
+                    txPower = (Int16)(txPower - 256);
+                }
+                tbxTxPower.Text = txPower.ToString("D");
+                iCnt += 1;
+
+                tbxSampleInterval1.Text = (SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]).ToString("D");
+                iCnt += 2;
+
+                tbxSampleInterval2.Text = (SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]).ToString("D");
+                iCnt += 2;
+
+                tbxSampleIntervalACO2.Text = (SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]).ToString("D");
+                iCnt += 2;
+
+                tbxTransferInterval.Text = (SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]).ToString("D");
+                iCnt += 2;
+
+                tbxHeatInterval.Text = (SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]).ToString("D");
+                iCnt += 2;
+
+                tbxCoolInterval.Text = (SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]).ToString("D");
+                iCnt += 2;
+
+                tbxCarouselInterval.Text = (SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]).ToString("D");
+                iCnt += 2;
+
+                tbxAlertInterval.Text = (SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]).ToString("D");
+                iCnt += 2;
+
+                tbxCalendar.Text = "20" + SrcData[IndexOfStart + iCnt + 0].ToString("X2") + "-" + SrcData[IndexOfStart + iCnt + 1].ToString("X2") + "-" + SrcData[IndexOfStart + iCnt + 2].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 3].ToString("X2") + ":" + SrcData[IndexOfStart + iCnt + 4].ToString("X2") + ":" + SrcData[IndexOfStart + iCnt + 5].ToString("X2");
+                iCnt += 6;
+
+                Int32 CompensateOfCO2 = (Int32)(SrcData[IndexOfStart + iCnt + 0] * 256 * 256 + SrcData[IndexOfStart + iCnt + 1] * 256 + SrcData[IndexOfStart + iCnt + 2]);
+                tbxCO2Compensate.Text = CompensateOfCO2.ToString("D");
+                iCnt += 3;
+
+                tbxTimeSource.Text = SrcData[IndexOfStart + iCnt + 0].ToString("D");
+                iCnt += 1;
+
+                tbxAlertWay.Text = SrcData[IndexOfStart + iCnt + 0].ToString("D");
+                iCnt += 1;
+
+                tbxLcdPolicy.Text = SrcData[IndexOfStart + iCnt + 0].ToString("D");
+                iCnt += 1;
+
+                tbxHeatLowThr.Text = SrcData[IndexOfStart + iCnt + 0].ToString("D");
+                iCnt += 1;
+
+                tbxHeatHighThr.Text = SrcData[IndexOfStart + iCnt + 0].ToString("D");
+                iCnt += 1;
+
+                tbxReservedOfCfg.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 1].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 2].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 3].ToString("X2");
+                iCnt += 4;
+
+                tbxResetSource.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2");
+                iCnt += 1;
+
+                UInt16 voltMv = (UInt16)(SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]);
+                double Volt = (double)(voltMv & 0x7FFF) / 1000.0f;
+                tbxVolt.Text = Volt.ToString("F3");
+                if ((voltMv & 0x8000) == 0)
+                {   // 未接充电器
+
+                }
+                else
+                {   // 已接充电器
+                    tbxVolt.Text += "+";
+                }
+                iCnt += 2;
+
+                Int16 monTemp = SrcData[IndexOfStart + iCnt + 0];
+                if (monTemp >= 0x80)
+                {
+                    monTemp = (Int16)(monTemp - 256);
+                }
+                tbxMonTemp.Text = monTemp.ToString("D");
+                iCnt += 1;
+
+                Int16 temp = (Int16)(SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]);
+                tbxTempOfCH1.Text = ((double)temp / 100.0f).ToString("F2");
+                iCnt += 2;
+
+                UInt16 hum = (UInt16)(SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]);
+                tbxHumOfCH1.Text = ((double)hum / 100.0f).ToString("F2");
+                iCnt += 2;
+
+                temp = (Int16)(SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]);
+                tbxTempOfCH2.Text = ((double)temp / 100.0f).ToString("F2");
+                iCnt += 2;
+
+                hum = (UInt16)(SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]);
+                tbxHumOfCH2.Text = ((double)hum / 100.0f).ToString("F2");
+                iCnt += 2;
+
+                temp = (Int16)(SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]);
+                tbxTempOfACO2.Text = ((double)temp / 100.0f).ToString("F2");
+                iCnt += 2;
+
+                hum = (UInt16)(SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]);
+                tbxHumOfACO2.Text = ((double)hum / 100.0f).ToString("F2");
+                iCnt += 2;
+
+                tbxCO2.Text = (SrcData[IndexOfStart + iCnt + 0] * 256 * 256 + SrcData[IndexOfStart + iCnt + 1] * 256 + SrcData[IndexOfStart + iCnt + 2]).ToString("D");
+                iCnt += 3;
+
+                tbxRamOfCH1.Text = SrcData[IndexOfStart + iCnt + 0].ToString("D");
+                iCnt += 1;
+
+                tbxRamOfCH2.Text = SrcData[IndexOfStart + iCnt + 0].ToString("D");
+                iCnt += 1;
+
+                tbxRamOfACO2.Text = SrcData[IndexOfStart + iCnt + 0].ToString("D");
+                iCnt += 1;
+
+                tbxFlashOfCH1.Text = (SrcData[IndexOfStart + iCnt + 0] * 256 * 256 + SrcData[IndexOfStart + iCnt + 1] * 256 + SrcData[IndexOfStart + iCnt + 2]).ToString("D");
+                iCnt += 3;
+
+                tbxFlashOfCH2.Text = (SrcData[IndexOfStart + iCnt + 0] * 256 * 256 + SrcData[IndexOfStart + iCnt + 1] * 256 + SrcData[IndexOfStart + iCnt + 2]).ToString("D");
+                iCnt += 3;
+
+                tbxFlashOfACO2.Text = (SrcData[IndexOfStart + iCnt + 0] * 256 * 256 + SrcData[IndexOfStart + iCnt + 1] * 256 + SrcData[IndexOfStart + iCnt + 2]).ToString("D");
+                iCnt += 3;
+
+                tbxReservedOfProtocol.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 1].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 2].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 3].ToString("X2");
+                iCnt += 4;
+
+                tbxStdCompOfCO2.Text = "";
+            }
+            else if (SrcData[IndexOfStart + 5] == 0x02)
+            {
+                SrcLen = (UInt16)(SrcData.Length - IndexOfStart);
+                if (SrcLen < 111)
+                {
+                    return -1;
+                }
+
+                tbxPrimaryMac.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 1].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 2].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 3].ToString("X2");
+                iCnt += 4;
+
+                tbxMac.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 1].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 2].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 3].ToString("X2");
+                iCnt += 4;
+
+                tbxHwRevision.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 1].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 2].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 3].ToString("X2");
+                iCnt += 4;
+
+                tbxSwRevision.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 1].ToString("X2");
+                iCnt += 2;
+
+                tbxSwRevision.Text += "  |  " + SrcData[IndexOfStart + iCnt + 0].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 1].ToString("X2");
+                iCnt += 2;
+
+                tbxSwRevision.Text += "  |  " + SrcData[IndexOfStart + iCnt + 0].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 1].ToString("X2");
+                iCnt += 2;
+
+                tbxCustomer.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 1].ToString("X2");
+                iCnt += 2;
+
+                tbxDebug.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 1].ToString("X2");
+                iCnt += 2;
+
+                tbxCategory.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2");
+                iCnt += 1;
+
+                tbxPattern.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2");
+                iCnt += 1;
+
+                tbxBps.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2");
+                iCnt += 1;
+
+                tbxChannel.Text = SrcData[IndexOfStart + iCnt + 0].ToString("D");
+                iCnt += 1;
+
+                Int16 txPower = (Int16)SrcData[IndexOfStart + iCnt + 0];
+                if (txPower >= 128)
+                {
+                    txPower = (Int16)(txPower - 256);
+                }
+                tbxTxPower.Text = txPower.ToString("D");
+                iCnt += 1;
+
+                tbxSampleInterval1.Text = (SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]).ToString("D");
+                iCnt += 2;
+
+                tbxSampleInterval2.Text = (SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]).ToString("D");
+                iCnt += 2;
+
+                tbxSampleIntervalACO2.Text = (SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]).ToString("D");
+                iCnt += 2;
+
+                tbxTransferInterval.Text = (SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]).ToString("D");
+                iCnt += 2;
+
+                tbxHeatInterval.Text = (SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]).ToString("D");
+                iCnt += 2;
+
+                tbxCoolInterval.Text = (SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]).ToString("D");
+                iCnt += 2;
+
+                tbxCarouselInterval.Text = (SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]).ToString("D");
+                iCnt += 2;
+
+                tbxAlertInterval.Text = (SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]).ToString("D");
+                iCnt += 2;
+
+                tbxCalendar.Text = "20" + SrcData[IndexOfStart + iCnt + 0].ToString("X2") + "-" + SrcData[IndexOfStart + iCnt + 1].ToString("X2") + "-" + SrcData[IndexOfStart + iCnt + 2].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 3].ToString("X2") + ":" + SrcData[IndexOfStart + iCnt + 4].ToString("X2") + ":" + SrcData[IndexOfStart + iCnt + 5].ToString("X2");
+                iCnt += 6;
+
+                Int32 CompensateOfCO2 = (Int32)(SrcData[IndexOfStart + iCnt + 0] * 256 * 256 + SrcData[IndexOfStart + iCnt + 1] * 256 + SrcData[IndexOfStart + iCnt + 2]);
+                tbxCO2Compensate.Text = CompensateOfCO2.ToString("D");
+                iCnt += 3;
+
+                Int32 StdCompensateOfCO2 = (Int32)(SrcData[IndexOfStart + iCnt + 0] * 256 * 256 + SrcData[IndexOfStart + iCnt + 1] * 256 + SrcData[IndexOfStart + iCnt + 2]);
+                tbxStdCompOfCO2.Text = StdCompensateOfCO2.ToString("D");
+                iCnt += 3;
+
+                tbxTimeSource.Text = SrcData[IndexOfStart + iCnt + 0].ToString("D");
+                iCnt += 1;
+
+                tbxAlertWay.Text = SrcData[IndexOfStart + iCnt + 0].ToString("D");
+                iCnt += 1;
+
+                tbxLcdPolicy.Text = SrcData[IndexOfStart + iCnt + 0].ToString("D");
+                iCnt += 1;
+
+                double HeatLowThr = (double)(SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1])/100.0f;
+                tbxHeatLowThr.Text = HeatLowThr.ToString("F2");
+                iCnt += 2;
+
+                double HeatHighThr = (double)(SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]) / 100.0f;
+                tbxHeatHighThr.Text = HeatHighThr.ToString("F2");
+                iCnt += 2;
+
+                tbxReservedOfCfg.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 1].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 2].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 3].ToString("X2");
+                iCnt += 4;
+
+                tbxResetSource.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2");
+                iCnt += 1;
+
+                UInt16 voltMv = (UInt16)(SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]);
+                double Volt = (double)(voltMv & 0x7FFF) / 1000.0f;
+                tbxVolt.Text = Volt.ToString("F3");
+                if ((voltMv & 0x8000) == 0)
+                {   // 未接充电器
+
+                }
+                else
+                {   // 已接充电器
+                    tbxVolt.Text += "+";
+                }
+                iCnt += 2;
+
+                Int16 monTemp = SrcData[IndexOfStart + iCnt + 0];
+                if (monTemp >= 0x80)
+                {
+                    monTemp = (Int16)(monTemp - 256);
+                }
+                tbxMonTemp.Text = monTemp.ToString("D");
+                iCnt += 1;
+
+                Int16 temp = (Int16)(SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]);
+                tbxTempOfCH1.Text = ((double)temp / 100.0f).ToString("F2");
+                iCnt += 2;
+
+                UInt16 hum = (UInt16)(SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]);
+                tbxHumOfCH1.Text = ((double)hum / 100.0f).ToString("F2");
+                iCnt += 2;
+
+                temp = (Int16)(SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]);
+                tbxTempOfCH2.Text = ((double)temp / 100.0f).ToString("F2");
+                iCnt += 2;
+
+                hum = (UInt16)(SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]);
+                tbxHumOfCH2.Text = ((double)hum / 100.0f).ToString("F2");
+                iCnt += 2;
+
+                temp = (Int16)(SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]);
+                tbxTempOfACO2.Text = ((double)temp / 100.0f).ToString("F2");
+                iCnt += 2;
+
+                hum = (UInt16)(SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]);
+                tbxHumOfACO2.Text = ((double)hum / 100.0f).ToString("F2");
+                iCnt += 2;
+
+                tbxCO2.Text = (SrcData[IndexOfStart + iCnt + 0] * 256 * 256 + SrcData[IndexOfStart + iCnt + 1] * 256 + SrcData[IndexOfStart + iCnt + 2]).ToString("D");
+                iCnt += 3;
+
+                tbxRamOfCH1.Text = SrcData[IndexOfStart + iCnt + 0].ToString("D");
+                iCnt += 1;
+
+                tbxRamOfCH2.Text = SrcData[IndexOfStart + iCnt + 0].ToString("D");
+                iCnt += 1;
+
+                tbxRamOfACO2.Text = SrcData[IndexOfStart + iCnt + 0].ToString("D");
+                iCnt += 1;
+
+                tbxFlashOfCH1.Text = (SrcData[IndexOfStart + iCnt + 0] * 256 * 256 + SrcData[IndexOfStart + iCnt + 1] * 256 + SrcData[IndexOfStart + iCnt + 2]).ToString("D");
+                iCnt += 3;
+
+                tbxFlashOfCH2.Text = (SrcData[IndexOfStart + iCnt + 0] * 256 * 256 + SrcData[IndexOfStart + iCnt + 1] * 256 + SrcData[IndexOfStart + iCnt + 2]).ToString("D");
+                iCnt += 3;
+
+                tbxFlashOfACO2.Text = (SrcData[IndexOfStart + iCnt + 0] * 256 * 256 + SrcData[IndexOfStart + iCnt + 1] * 256 + SrcData[IndexOfStart + iCnt + 2]).ToString("D");
+                iCnt += 3;
+
+                tbxReservedOfProtocol.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 1].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 2].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 3].ToString("X2");
+                iCnt += 4;
+            }
+            else
             {
                 return -2;
             }
-
-            UInt16 iCnt = 6;
-
-            tbxPrimaryMac.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 1].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 2].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 3].ToString("X2");
-            iCnt += 4;
-
-            tbxMac.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 1].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 2].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 3].ToString("X2");
-            iCnt += 4;
-
-            tbxHwRevision.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 1].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 2].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 3].ToString("X2");
-            iCnt += 4;
-
-            tbxSwRevision.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 1].ToString("X2");
-            iCnt += 2;
-
-            tbxSwRevision.Text += "  |  " + SrcData[IndexOfStart + iCnt + 0].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 1].ToString("X2");
-            iCnt += 2;
-
-            tbxSwRevision.Text += "  |  " + SrcData[IndexOfStart + iCnt + 0].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 1].ToString("X2");
-            iCnt += 2;
-
-            tbxCustomer.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 1].ToString("X2");
-            iCnt += 2;
-
-            tbxDebug.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 1].ToString("X2");
-            iCnt += 2;
-
-            tbxCategory.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2");
-            iCnt += 1;
-
-            tbxPattern.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2");
-            iCnt += 1;
-
-            tbxBps.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2");
-            iCnt += 1;
-
-            tbxChannel.Text = SrcData[IndexOfStart + iCnt + 0].ToString("D");
-            iCnt += 1;
-
-            Int16 txPower = (Int16)SrcData[IndexOfStart + iCnt + 0];
-            if(txPower >= 128)
-            {
-                txPower = (Int16)(txPower - 256);
-            }
-            tbxTxPower.Text = txPower.ToString("D");
-            iCnt += 1;
-
-            tbxSampleInterval1.Text = (SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]).ToString("D");
-            iCnt += 2;
-
-            tbxSampleInterval2.Text = (SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]).ToString("D");
-            iCnt += 2;
-
-            tbxSampleIntervalACO2.Text = (SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]).ToString("D");
-            iCnt += 2;
-
-            tbxTransferInterval.Text = (SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]).ToString("D");
-            iCnt += 2;
-
-            tbxHeatInterval.Text = (SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]).ToString("D");
-            iCnt += 2;
-
-            tbxCoolInterval.Text = (SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]).ToString("D");
-            iCnt += 2;
-
-            tbxCarouselInterval.Text = (SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]).ToString("D");
-            iCnt += 2;
-
-            tbxAlertInterval.Text = (SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]).ToString("D");
-            iCnt += 2;
-
-            tbxCalendar.Text = "20" + SrcData[IndexOfStart + iCnt + 0].ToString("X2") + "-" + SrcData[IndexOfStart + iCnt + 1].ToString("X2") + "-" + SrcData[IndexOfStart + iCnt + 2].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 3].ToString("X2") + ":" + SrcData[IndexOfStart + iCnt + 4].ToString("X2") + ":" + SrcData[IndexOfStart + iCnt + 5].ToString("X2");
-            iCnt += 6;
-
-            Int32 CompensateOfCO2 = (Int32)(SrcData[IndexOfStart + iCnt + 0] * 256 * 256 + SrcData[IndexOfStart + iCnt + 1] * 256 + SrcData[IndexOfStart + iCnt + 2]);
-            tbxCO2Compensate.Text = CompensateOfCO2.ToString("D");
-            iCnt += 3;
-
-            tbxTimeSource.Text = SrcData[IndexOfStart + iCnt + 0].ToString("D");
-            iCnt += 1;
-
-            tbxAlertWay.Text = SrcData[IndexOfStart + iCnt + 0].ToString("D");
-            iCnt += 1;
-
-            tbxLcdPolicy.Text = SrcData[IndexOfStart + iCnt + 0].ToString("D");
-            iCnt += 1;
-
-            tbxHeatLowThr.Text = SrcData[IndexOfStart + iCnt + 0].ToString("D");
-            iCnt += 1;
-
-            tbxHeatHighThr.Text = SrcData[IndexOfStart + iCnt + 0].ToString("D");
-            iCnt += 1;
-
-            tbxReservedOfCfg.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 1].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 2].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 3].ToString("X2");
-            iCnt += 4;
-
-            tbxResetSource.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2");
-            iCnt += 1;
-
-            UInt16 voltMv = (UInt16)(SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]);
-            double Volt = (double)(voltMv & 0x7FFF) / 1000.0f;
-            tbxVolt.Text = Volt.ToString("F3");
-            if ((voltMv & 0x8000) == 0)
-            {   // 未接充电器
-
-            }
-            else
-            {   // 已接充电器
-                tbxVolt.Text += "+";
-            }
-            iCnt += 2;
-
-            Int16 monTemp = SrcData[IndexOfStart + iCnt + 0];
-            if(monTemp >= 0x80)
-            {
-                monTemp = (Int16)(monTemp - 256);
-            }
-            tbxMonTemp.Text = monTemp.ToString("D");
-            iCnt += 1;
-
-            Int16 temp = (Int16)(SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]);
-            tbxTempOfCH1.Text = ((double)temp / 100.0f).ToString("F2");
-            iCnt += 2;
-
-            UInt16 hum = (UInt16)(SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]);
-            tbxHumOfCH1.Text = ((double)hum / 100.0f).ToString("F2");
-            iCnt += 2;
-
-            temp = (Int16)(SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]);
-            tbxTempOfCH2.Text = ((double)temp / 100.0f).ToString("F2");
-            iCnt += 2;
-
-            hum = (UInt16)(SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]);
-            tbxHumOfCH2.Text = ((double)hum / 100.0f).ToString("F2");
-            iCnt += 2;
-
-            temp = (Int16)(SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]);
-            tbxTempOfACO2.Text = ((double)temp / 100.0f).ToString("F2");
-            iCnt += 2;
-
-            hum = (UInt16)(SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]);
-            tbxHumOfACO2.Text = ((double)hum / 100.0f).ToString("F2");
-            iCnt += 2;
-
-            tbxCO2.Text = (SrcData[IndexOfStart + iCnt + 0] * 256 * 256 + SrcData[IndexOfStart + iCnt + 1] * 256 + SrcData[IndexOfStart + iCnt + 2]).ToString("D");
-            iCnt += 3;
-
-            tbxRamOfCH1.Text = SrcData[IndexOfStart + iCnt + 0].ToString("D");
-            iCnt += 1;
-
-            tbxRamOfCH2.Text = SrcData[IndexOfStart + iCnt + 0].ToString("D");
-            iCnt += 1;
-
-            tbxRamOfACO2.Text = SrcData[IndexOfStart + iCnt + 0].ToString("D");
-            iCnt += 1;
-
-            tbxFlashOfCH1.Text = (SrcData[IndexOfStart + iCnt + 0] * 256 * 256 + SrcData[IndexOfStart + iCnt + 1] * 256 + SrcData[IndexOfStart + iCnt + 2]).ToString("D");
-            iCnt += 3;
-
-            tbxFlashOfCH2.Text = (SrcData[IndexOfStart + iCnt + 0] * 256 * 256 + SrcData[IndexOfStart + iCnt + 1] * 256 + SrcData[IndexOfStart + iCnt + 2]).ToString("D");
-            iCnt += 3;
-
-            tbxFlashOfACO2.Text = (SrcData[IndexOfStart + iCnt + 0] * 256 * 256 + SrcData[IndexOfStart + iCnt + 1] * 256 + SrcData[IndexOfStart + iCnt + 2]).ToString("D");
-            iCnt += 3;
-
-            tbxReservedOfProtocol.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 1].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 2].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 3].ToString("X2");
-            iCnt += 4;
 
             return 0;
         }
@@ -558,7 +741,7 @@ namespace HyperWSN_Setup_M30
             TxBuf[TxLen++] = 0x00;
 
             // Protocol
-            TxBuf[TxLen++] = 0x01;
+            TxBuf[TxLen++] = 0x00;
 
             // GW ID
             TxBuf[TxLen++] = 0x00;
@@ -628,6 +811,7 @@ namespace HyperWSN_Setup_M30
             tbxLcdPolicyNew.Text = tbxLcdPolicy.Text;
             tbxHeatLowThrNew.Text = tbxHeatLowThr.Text;
             tbxHeatHighThrNew.Text = tbxHeatHighThr.Text;
+            tbxStdCompOfCO2New.Text = tbxStdCompOfCO2.Text;
             tbxReservedOfCfgNew.Text = tbxReservedOfCfg.Text;
         }
 
@@ -638,30 +822,51 @@ namespace HyperWSN_Setup_M30
         /// <param name="e"></param>
         private void btnClearCfg_Click(object sender, RoutedEventArgs e)
         {
-            tbxMacNew.Text = "";
-            tbxHwRevisionNew.Text = "";
-            tbxCustomerNew.Text = "";
-            tbxDebugNew.Text = "";
-            tbxCategoryNew.Text = "";
-            tbxPatternNew.Text = "";
-            tbxBpsNew.Text = "";
-            tbxChannelNew.Text = "";
-            tbxTxPowerNew.Text = "";
-            tbxTransferIntervalNew.Text = "";
-            tbxSampleInterval1New.Text = "";
-            tbxSampleInterval2New.Text = "";
-            tbxSampleIntervalACO2New.Text = "";
-            tbxHeatIntervalNew.Text = "";
-            tbxCoolIntervalNew.Text = "";
-            tbxCarouselIntervalNew.Text = "";
-            tbxAlertIntervalNew.Text = "";
-            tbxCO2CompensateNew.Text = "";
-            tbxTimeSourceNew.Text = "";
-            tbxAlertWayNew.Text = "";
-            tbxLcdPolicyNew.Text = "";
-            tbxHeatLowThrNew.Text = "";
-            tbxHeatHighThrNew.Text = "";
-            tbxReservedOfCfgNew.Text = "";
+            tbxMac.Text = "";
+            tbxSwRevision.Text = "";
+            tbxHwRevision.Text = "";
+
+            tbxCustomer.Text = "";
+            tbxDebug.Text = "";
+            tbxCategory.Text = "";
+            tbxPattern.Text = "";
+            tbxBps.Text = "";
+            tbxChannel.Text = "";
+            tbxTxPower.Text = "";
+            tbxTransferInterval.Text = "";
+            tbxSampleInterval1.Text = "";
+            tbxSampleInterval2.Text = "";
+            tbxSampleIntervalACO2.Text = "";
+            tbxHeatInterval.Text = "";
+            tbxCoolInterval.Text = "";
+            tbxCarouselInterval.Text = "";
+            tbxAlertInterval.Text = "";
+            tbxCO2Compensate.Text = "";
+            tbxTimeSource.Text = "";
+            tbxAlertWay.Text = "";
+            tbxLcdPolicy.Text = "";
+            tbxHeatLowThr.Text = "";
+            tbxHeatHighThr.Text = "";
+            tbxStdCompOfCO2.Text = "";
+            tbxReservedOfCfg.Text = "";
+
+            tbxResetSource.Text = "";
+            tbxVolt.Text = "";
+            tbxMonTemp.Text = "";
+            tbxTempOfCH1.Text = "";
+            tbxHumOfCH1.Text = "";
+            tbxTempOfCH2.Text = "";
+            tbxHumOfCH2.Text = "";
+            tbxTempOfACO2.Text = "";
+            tbxHumOfACO2.Text = "";
+
+            tbxRamOfCH1.Text = "";
+            tbxRamOfCH2.Text = "";
+            tbxRamOfACO2.Text = "";
+            tbxFlashOfCH1.Text = "";
+            tbxFlashOfCH2.Text = "";
+            tbxFlashOfACO2.Text = "";
+            tbxReservedOfProtocol.Text = "";          
         }
 
         /// <summary>
@@ -743,7 +948,7 @@ namespace HyperWSN_Setup_M30
         {
             try
             {
-                byte[] TxBuf = new byte[56];
+                byte[] TxBuf = new byte[60];
                 UInt16 TxLen = 0;
 
                 // Start

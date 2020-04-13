@@ -44,7 +44,7 @@
                             <DataGrid.Columns>
 
                                 <DataGridTextColumn Header="SN" Binding="{Binding DisplayID}" />
-                                <DataGridTextColumn Header="工作模式" Binding="{Binding WorkFunction}" />
+                                <DataGridTextColumn Header="工作模式" Binding="{Binding Pattern}" />
                                 <DataGridTextColumn Header="协议版本" Binding="{Binding ProtocolVersion}" />
                                 <DataGridTextColumn Header="客户码" Binding="{Binding ClientID}" />
 

@@ -42,10 +42,6 @@ namespace SocketMonitorUI.BusinessLayer
             //记录到日志,收到数据
             Logger.AddLog(DateTime.Now.ToString("HH:mm:ss.fff") + " :Received:" + session.RemoteEndPoint.Address.ToString() + " :\t"
                 + CommArithmetic.ToHexString(requestInfo.Body) + " ");
-            //The logic of saving GPS position data
-            //var response = session.AppServer.DefaultResponse;
-            //byte[] response = new byte[] { 0xEB, 0xEB, 0x01, 0x03, 0x00, 0x00, 0xBE, 0xBE };
-
 
             //识别出不同的网关
             Device gateway = DeviceFactory.CreateDevice(requestInfo.Body);
@@ -53,25 +49,88 @@ namespace SocketMonitorUI.BusinessLayer
             {
                 if (ServiceStatus.ResponseGatewayReport == true)
                 {
-                    //发现一体机
-                    //发送默认反馈
-                    byte[] response = new byte[11];
-                    response[0] = 0xEB;
-                    response[1] = 0xEB;
-                    response[2] = 0x04;
-                    response[3] = 0x92;
+                    byte[] TxBuf = null;
 
-                    response[4] = requestInfo.Body[4];
-                    response[5] = requestInfo.Body[5];
-                    response[6] = requestInfo.Body[6];
+                    if (gateway.DeviceMacV == ServiceStatus.MacOfDesGateway && ServiceStatus.ExeResult == 0 && ServiceStatus.ExeCmd == 0xA3)
+                    {
+                        TxBuf = new byte[17];
+                        
+                        // 起始位
+                        TxBuf[0] = 0xEB;
+                        TxBuf[1] = 0xEB;
 
+                        // 长度位
+                        TxBuf[2] = 0x0A;
 
-                    response[7] = 0x00;
-                    response[8] = 0x00;
-                    response[9] = 0xBE;
-                    response[10] = 0xBE;
+                        // 命令位
+                        TxBuf[3] = ServiceStatus.ExeCmd;
 
-                    session.Send(response, 0, response.Length); ;
+                        // 协议版本
+                        TxBuf[4] = requestInfo.Body[4];
+
+                        // 序列号
+                        TxBuf[5] = requestInfo.Body[5];
+                        TxBuf[6] = requestInfo.Body[6];
+
+                        ServiceStatus.Serial = (UInt16)(((UInt16)requestInfo.Body[5] << 8) | ((UInt16)requestInfo.Body[6] << 0));
+
+                        // GW ID
+                        TxBuf[7] = requestInfo.Body[8];
+                        TxBuf[8] = requestInfo.Body[9];
+                        TxBuf[9] = requestInfo.Body[10];
+                        TxBuf[10] = requestInfo.Body[11];
+
+                        // 协议保留位
+                        TxBuf[11] = 0x00;
+                        TxBuf[12] = 0x00;
+
+                        // CRC16
+                        UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 3, TxBuf[2]);
+                        TxBuf[13] = (byte)((crc & 0xFF00) >> 8);
+                        TxBuf[14] = (byte)((crc & 0x00FF) >> 0);
+
+                        // 结束位
+                        TxBuf[15] = 0xBE;
+                        TxBuf[16] = 0xBE;
+
+                        session.Send(TxBuf, 0, TxBuf.Length);
+
+                        ServiceStatus.ExeResult = 1;
+                    }
+                    else
+                    {
+                        //发现一体机
+                        //发送默认反馈
+                        TxBuf = new byte[11];
+
+                        // 起始位
+                        TxBuf[0] = 0xEB;
+                        TxBuf[1] = 0xEB;
+
+                        // 长度位
+                        TxBuf[2] = 0x04;
+
+                        // 命令位
+                        TxBuf[3] = 0x92;
+
+                        // 协议版本
+                        TxBuf[4] = requestInfo.Body[4];
+
+                        // 序列号
+                        TxBuf[5] = requestInfo.Body[5];
+                        TxBuf[6] = requestInfo.Body[6];
+
+                        // CRC16
+                        UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 3, TxBuf[2]);
+                        TxBuf[7] = (byte)((crc & 0xFF00) >> 8);
+                        TxBuf[8] = (byte)((crc & 0x00FF) >> 0);
+
+                        // 结束位
+                        TxBuf[9] = 0xBE;
+                        TxBuf[10] = 0xBE;
+
+                        session.Send(TxBuf, 0, TxBuf.Length);
+                    }
 
                     //Save to database
                     try
@@ -82,9 +141,9 @@ namespace SocketMonitorUI.BusinessLayer
                             SqlCommand command = new SqlCommand();
                             command.Connection = session.SQLConn;
                             command.CommandText = "INSERT INTO [dbo].[GatewayStatus]([DeviceMacS],[ProtocolVersion],[SerialNo],[DeviceTypeS],[GatewayTransDateTime]" +
-                                ",[GatewayVoltage],[SwVersionS] ,[CustomerS],[RamCount],[RomCount],[GSMSignal],[BindingNumber],[TransforNumber],[SimNumber]" +
+                                ",[GatewayVoltage],[SwRevisionS] ,[CustomerS],[RamCount],[RomCount],[GSMSignal],[BindingNumber],[TransforNumber],[SimNumber]" +
                                 ",[LastSuccessNumber],[LastStatus],[TransStrategy],[ACPower],[SourceData],[SendData]) VALUES(@DeviceMacS,@ProtocolVersion,@SerialNo,@DeviceTypeS,@GatewayTransDateTime, " +
-                                "@GatewayVoltage,@SwVersionS,@CustomerS,@RamCount,@RomCount,@GSMSignal,@BindingNumber,@TransforNumber,@SimNumber," +
+                                "@GatewayVoltage,@SwRevisionS,@CustomerS,@RamCount,@RomCount,@GSMSignal,@BindingNumber,@TransforNumber,@SimNumber," +
                                 "@LastSuccessNumber,@LastStatus,@TransStrategy,@ACPower,@SourceData,@SendData)";
 
                             command.Parameters.Add("@DeviceMAC", SqlDbType.NVarChar);
@@ -93,7 +152,7 @@ namespace SocketMonitorUI.BusinessLayer
                             command.Parameters.Add("@DeviceTypeS", SqlDbType.NVarChar);
                             command.Parameters.Add("@GatewayTransDateTime", SqlDbType.DateTime);
                             command.Parameters.Add("@GatewayVoltage", SqlDbType.Decimal);
-                            command.Parameters.Add("@SwVersionS", SqlDbType.NVarChar);
+                            command.Parameters.Add("@SwRevisionS", SqlDbType.NVarChar);
                             command.Parameters.Add("@CustomerS", SqlDbType.NVarChar);
                             command.Parameters.Add("@RamCount", SqlDbType.Int);
                             command.Parameters.Add("@RomCount", SqlDbType.Int);
@@ -108,14 +167,13 @@ namespace SocketMonitorUI.BusinessLayer
                             command.Parameters.Add("@SourceData", SqlDbType.VarChar);
                             command.Parameters.Add("@SendData", SqlDbType.VarChar);
 
-
                             command.Parameters["@DeviceMAC"].Value = CommArithmetic.DecodeMAC(requestInfo.Body, 8); //协议起始位置-1
                             command.Parameters["@ProtocolVersion"].Value = requestInfo.Body[4].ToString("X2");
                             command.Parameters["@SerialNo"].Value = CommArithmetic.Byte2Int(requestInfo.Body, 5, 2);
                             command.Parameters["@DeviceTypeS"].Value = requestInfo.Body[7].ToString("X2");
                             command.Parameters["@GatewayTransDateTime"].Value = CommArithmetic.DecodeDateTime(requestInfo.Body, 12);
                             command.Parameters["@GatewayVoltage"].Value = CommArithmetic.DecodeVoltage(requestInfo.Body, 18);
-                            command.Parameters["@SwVersionS"].Value = CommArithmetic.DecodeClientID(requestInfo.Body, 20);
+                            command.Parameters["@SwRevisionS"].Value = CommArithmetic.DecodeClientID(requestInfo.Body, 20);
                             command.Parameters["@CustomerS"].Value = CommArithmetic.DecodeClientID(requestInfo.Body, 22);
                             //新增：TransStrategy
                             command.Parameters["@TransStrategy"].Value = requestInfo.Body[24];
@@ -130,7 +188,7 @@ namespace SocketMonitorUI.BusinessLayer
                             command.Parameters["@LastStatus"].Value = CommArithmetic.Byte2Int(requestInfo.Body, 45, 2);
                             command.Parameters["@ACPower"].Value = CommArithmetic.DecodeACPower(requestInfo.Body[18]);
                             command.Parameters["@SourceData"].Value = CommArithmetic.ToHexString(requestInfo.Body);
-                            command.Parameters["@SendData"].Value = CommArithmetic.ToHexString(response);
+                            command.Parameters["@SendData"].Value = CommArithmetic.ToHexString(TxBuf);
 
                             try
                             {
@@ -160,7 +218,7 @@ namespace SocketMonitorUI.BusinessLayer
                     }
 
                     Logger.AddLog(DateTime.Now.ToString("HH:mm:ss.fff") + " :SendData:" + session.RemoteEndPoint.Address.ToString() + " :\t"
-                       + CommArithmetic.ToHexString(response) + " ");
+                       + CommArithmetic.ToHexString(TxBuf) + " ");
                 }
             }
         }

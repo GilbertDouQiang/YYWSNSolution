@@ -11,8 +11,10 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="6*"/>
         </Grid.RowDefinitions>
+        
         <Border Padding="5" Grid.Row="0">
-            <StackPanel Margin="5.2,5.2,-5.2,0">
+            <StackPanel Margin="5,5,5,0">
+                
                 <Grid Margin="0 0 0 5">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -22,7 +24,7 @@
                     </Grid.ColumnDefinitions>
                 </Grid>
 
-                <Grid Margin="0,4,0,4">
+                <Grid Margin="0,6,0,4">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="4*"/>
@@ -55,26 +57,30 @@
 
                 </Grid>
 
-                <Grid Margin="0,4,0,4">
+                <Grid Margin="0,8,0,4">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="117*"/>
-                        <ColumnDefinition Width="234*"/>
-                        <ColumnDefinition Width="61*"/>
-                        <ColumnDefinition Width="100*"/>
-                        <ColumnDefinition Width="54.4"/>
-                        <ColumnDefinition Width="182*"/>
-                        <ColumnDefinition Width="30*"/>
-                        <ColumnDefinition Width="51*"/>
-                        <ColumnDefinition Width="101*"/>
-                        <ColumnDefinition Width="57*"/>
-                        <ColumnDefinition Width="22*"/>
+                        <ColumnDefinition Width="0.3*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="0.8*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="0.5*"/>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="0.5*"/>
+                        <ColumnDefinition Width="0.5*"/>
+                        <ColumnDefinition Width="0.8*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="0.3*"/>
                     </Grid.ColumnDefinitions>
 
-                    <Button Grid.Column="0" Margin="20,0,4.8,-0.2" x:Name="btnClearData" Content="Clear Data" Click="btnClearData_Click" />
-                    <Button Grid.Column="1" Margin="5.2,0,5.4,-0.2" x:Name="btnExportExcel" Content="Export Excel" Click="btnExportExcel_Click" />
-                    <TextBlock Grid.Column="2" Margin="10,3,0,0" Text="SS类型" Width="38" />
-                    <ComboBox Grid.Column="3" Margin="0" x:Name="cbSensorType" SelectedIndex="0" >
-                        <ListBoxItem Content="ALL" />
+                    <Button Grid.Column="1" Margin="3,0,3,0" x:Name="btnClearData" Content="Clear Data" Click="btnClearData_Click" />
+                    <Button Grid.Column="2" Margin="20,0,20,0" x:Name="btnClearAll" Content="Clear All" Click="btnClearAll_Click" />
+                    <Button Grid.Column="3" Margin="3,0,3,0" x:Name="btnExportExcel" Content="Export Excel" Click="btnExportExcel_Click" />
+
+                    <TextBlock Grid.Column="4" Margin="0,4,4,0" Text="SS类型" Width="38" HorizontalAlignment="Right"/>
+                    <ComboBox Grid.Column="5" Margin="0,0,0,0" x:Name="cbSensorType" SelectedIndex="0" >
+                        <ListBoxItem Content="ALL" />   
                         <ListBoxItem Content="M1" />
                         <ListBoxItem Content="M1 NTC" />
                         <ListBoxItem Content="M1 Beetech" />
@@ -83,26 +89,30 @@
                         <ListBoxItem Content="ACO2" />
                         <ListBoxItem Content="SK" />
                         <ListBoxItem Content="AO2" />
+                        <ListBoxItem Content="M20" />
+                        <ListBoxItem Content="L1" />
+                        <ListBoxItem Content="M40（门磁）" />
                     </ComboBox>
-                    <TextBlock Grid.Column="4" Margin="20,3,0,-0.2" Text="MAC" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" Width="28" />
-                    <TextBox Grid.Column="5" Margin="1.4,0,0.2,-0.2" x:Name="txtDestMac" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" AcceptsReturn="True" AcceptsTab="True" MaxLines="128" MaxLength="1000" Text="" />
-                    <TextBlock Grid.Column="6" x:Name="textBlock_ExpSensorIdLen" Margin="2,3,0,-0.2" Text="0" RenderTransformOrigin="-0.644,0.365" HorizontalAlignment="Left" />
-                    <TextBlock Grid.Column="7" Margin="15,3,0,-0.2" Text="客户码" RenderTransformOrigin="-0.644,0.365" />
-                    <TextBox Grid.Column="8" Margin="5,0,0,0" x:Name="txtFilterClientID" />
-                    <Button Grid.Column="9" Margin="11.4,0,0.4,-0.2" Content="Save" x:Name="btnSave" Click="btnSave_Click"  />
+                    <TextBlock Grid.Column="6" Margin="0,4,4,0" Text="MAC" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" Width="28" HorizontalAlignment="Right"/>
+                    <TextBox Grid.Column="7" Margin="0,0,0,0" x:Name="txtDestMac" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" AcceptsReturn="True" AcceptsTab="True" MaxLines="128" MaxLength="1000" Text="" />
+                    <TextBlock Grid.Column="8"  Margin="4,4,0,0" x:Name="textBlock_ExpSensorIdLen" Text="0" RenderTransformOrigin="-0.644,0.365" HorizontalAlignment="Left" />
+                    <TextBlock Grid.Column="9" Margin="0,4,4,0" Text="客户码" RenderTransformOrigin="-0.644,0.365" HorizontalAlignment="Right"/>
+                    <TextBox Grid.Column="10" Margin="0,0,0,0" x:Name="txtFilterClientID" Text="" />
+                    <Button Grid.Column="11" Margin="5,0,0,0" Content="Save" x:Name="btnSave" Click="btnSave_Click"  />
                 </Grid>
 
             </StackPanel>
 
         </Border>
         <Border Padding="6" Grid.Row="1">
-            <TabControl x:Name="tabData" Margin="20,0,20,10" SelectedIndex="6" >
-                <TabItem x:Name="TableM1" Header="M1数据包">
+            <TabControl x:Name="tabData" Margin="20,0,20,10" SelectedIndex="0" >
+                
+                <TabItem x:Name="TableM1" Header=" M1 ">
                     <Grid Margin="0,0,0,0">
                         <DataGrid Margin="0,0,0,0" x:Name="TableOfM1" AutoGenerateColumns="False"  AlternatingRowBackground="#F4F4F4">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="序号" Binding="{Binding DisplayID}" />
-                                <DataGridTextColumn Header="工作模式" Binding="{Binding WorkFunction}" />
+                                <DataGridTextColumn Header="工作模式" Binding="{Binding Pattern}" />
                                 <DataGridTextColumn Header="设备类型" Binding="{Binding DeviceTypeS}" />
                                 <DataGridTextColumn Header="协议版本" Binding="{Binding ProtocolVersion}" />
                                 <DataGridTextColumn Header="客户码" Binding="{Binding CustomerS}" />
@@ -129,114 +139,12 @@
 
                 </TabItem>
 
-                <TabItem x:Name="TableSelfTest" Header="上电自检">
-                    <Grid>
-                        <DataGrid  x:Name="TableOfSelfTest" AutoGenerateColumns="False"  AlternatingRowBackground="#F4F4F4">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="序号" Binding="{Binding DisplayID}" />
-                                <DataGridTextColumn Header="Cmd" Binding="{Binding WorkFunction, StringFormat='{}{0:X2}'}" />
-                                <DataGridTextColumn Header="设备类型" Binding="{Binding DeviceTypeS}" />
-                                <DataGridTextColumn Header="协议版本" Binding="{Binding ProtocolVersion}" />
-                                <DataGridTextColumn Header="PrimaryMAC" Binding="{Binding PrimaryMacS}" />
-                                <DataGridTextColumn Header="MAC" Binding="{Binding DeviceMacS}" />
-                                <DataGridTextColumn Header="硬件版本" Binding="{Binding HwRevisionV, StringFormat='{}{0:X8}'}" />
-                                <DataGridTextColumn Header="软件版本" Binding="{Binding SwRevisionV, StringFormat='{}{0:X}'}" />
-                                <DataGridTextColumn Header="客户码" Binding="{Binding CustomerS}" />
-                                <DataGridTextColumn Header="DebugT" Binding="{Binding DebugT, StringFormat='{}{0:X4}'}" />
-                                <DataGridTextColumn Header="Category" Binding="{Binding Category, StringFormat='{}{0:X2}'}" />
-                                <DataGridTextColumn Header="采集间隔" Binding="{Binding Interval}" />
-                                <DataGridTextColumn Header="SS的日期和时间" Binding="{Binding CurrentT,StringFormat='{}{0:MM-dd HH:mm:ss}'}" />
-                                <DataGridTextColumn Header="Pattern" Binding="{Binding Pattern}" />
-                                <DataGridTextColumn Header="Bps" Binding="{Binding Bps}" />
-                                <DataGridTextColumn Header="TxPower" Binding="{Binding TxPower}" />
-                                <DataGridTextColumn Header="发/采" Binding="{Binding SampleSend}" />
-                                <DataGridTextColumn Header="Channel" Binding="{Binding  Channel}" />
-                                <DataGridTextColumn Header="温度警戒上限℃" Binding="{Binding  TemperatureInfoHigh,StringFormat='{}{0:F2}'}" />
-                                <DataGridTextColumn Header="温度警戒下限℃" Binding="{Binding  TemperatureInfoLow,StringFormat='{}{0:F2}'}" />
-                                <DataGridTextColumn Header="湿度警戒上限%" Binding="{Binding  HumidityInfoHigh,StringFormat='{}{0:F2}'}" />
-                                <DataGridTextColumn Header="湿度警戒下限%" Binding="{Binding  HumidityInfoLow,StringFormat='{}{0:F2}'}" />
-                                <DataGridTextColumn Header="温度阈值上限℃" Binding="{Binding   TemperatureWarnHigh,StringFormat='{}{0:F2}'}" />
-                                <DataGridTextColumn Header="温度阈值下限℃" Binding="{Binding TemperatureWarnLow,StringFormat='{}{0:F2}'}" />
-                                <DataGridTextColumn Header="湿度阈值上限%" Binding="{Binding HumidityWarnHigh,StringFormat='{}{0:F2}'}" />
-                                <DataGridTextColumn Header="湿度阈值下限%" Binding="{Binding  HumidityWarnLow,StringFormat='{}{0:F2}'}" />
-                                <DataGridTextColumn Header="温度补偿℃" Binding="{Binding  TemperatureCompensation,StringFormat='{}{0:F2}'}" />
-                                <DataGridTextColumn Header="湿度补偿%" Binding="{Binding  HumidityCompensation,StringFormat='{}{0:F2}'}" />
-                                <DataGridTextColumn Header="片内温度℃" Binding="{Binding ICTemperature,StringFormat='{}{0:F0}'}" />
-                                <DataGridTextColumn Header="SS电压V" Binding="{Binding   Volt,StringFormat='{}{0:F3}'}" />
-                                <DataGridTextColumn Header="Flash ID" Binding="{Binding   FlashID }" />
-                                <DataGridTextColumn Header="存储容量" Binding="{Binding   MaxLength}" />
-                                <DataGridTextColumn Header="读指针" Binding="{Binding  FlashFront}" />
-                                <DataGridTextColumn Header="写指针" Binding="{Binding  FlashRear}" />
-                                <DataGridTextColumn Header="已存数量" Binding="{Binding  FlashQueueLength}" />
-                                <DataGridTextColumn Header="温度℃" Binding="{Binding  Temperature,StringFormat='{}{0:F2}'}" />
-                                <DataGridTextColumn Header="湿度%" Binding="{Binding   Humidity ,StringFormat='{}{0:F2}'}" />
-                                <DataGridTextColumn Header="源数据" Binding="{Binding SourceData}" />
-
-                            </DataGrid.Columns>
-                        </DataGrid>
-                    </Grid>
-
-                </TabItem>
-                <TabItem x:Name="TableAck" Header="传感器数据包的反馈">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="17*"/>
-                            <ColumnDefinition Width="464*"/>
-                        </Grid.ColumnDefinitions>
-                        <DataGrid  x:Name="TableOfAck" AutoGenerateColumns="False"  AlternatingRowBackground="#F4F4F4" Grid.ColumnSpan="2" Margin="0,0,0.4,0">
-
-                            <DataGrid.Columns>
-
-                                <DataGridTextColumn Header="序号" Binding="{Binding DisplayID}" />
-                                <DataGridTextColumn Header="Cmd" Binding="{Binding WorkFunction,StringFormat='{}{0:X2}'}" />
-                                <DataGridTextColumn Header="设备类型" Binding="{Binding DeviceType}" />
-                                <DataGridTextColumn Header="协议版本" Binding="{Binding ProtocolVersion}" />
-                                <DataGridTextColumn Header="MAC" Binding="{Binding DeviceMac}" />
-                                <DataGridTextColumn Header="采集序列号" Binding="{Binding SensorSN}" />
-                                <DataGridTextColumn Header="Error" Binding="{Binding Error}" />
-                                <DataGridTextColumn Header="GW的日期和时间" Binding="{Binding GWTime,StringFormat='{}{0:MM-dd HH:mm:ss}'}" />
-                                <DataGridTextColumn Header="系统时间" Binding="{Binding SensorTransforTime,StringFormat='{}{0:MM-dd HH:mm:ss.fff}'}" />
-                                <DataGridTextColumn Header="RSSI" Binding="{Binding RSSI}" />
-                                <DataGridTextColumn Header="源数据" Binding="{Binding SourceData}" />
-                            </DataGrid.Columns>
-
-                        </DataGrid>
-                    </Grid>
-
-
-                </TabItem>
-
-                <TabItem x:Name="tabUartGateway" Header=" UartGateway ">
-
-                </TabItem>
-                <TabItem x:Name="tabConsole" Header="  Console  ">
-
-                    <Grid >
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="41*"/>
-                            <ColumnDefinition Width="748*"/>
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="auto" MinHeight="30" />
-                            <RowDefinition Height="*"/>
-
-                        </Grid.RowDefinitions>
-                        <WrapPanel Grid.Row="0" VerticalAlignment="Center" Grid.ColumnSpan="2" Margin="0,2,0,98">
-                            <Label Content="日志行数:" Margin="0 0 10 0"/>
-                            <TextBox x:Name="txtLogLineLimit" Width="50" Text="20" VerticalContentAlignment="Center" Margin="0 0 10 0" />
-                            <Button x:Name="btnLogClear" Content="清空" VerticalContentAlignment="Center" Width="50"   Margin="0 0 10 0" RenderTransformOrigin="3.189,0.543" Click="btnLogClear_Click"/>
-                            <CheckBox x:Name="chkLockLog" Content="锁定" VerticalContentAlignment="Center" Margin="0 0 10 0" ></CheckBox>
-                        </WrapPanel>
-                        <TextBox   x:Name="txtConsole" TextWrapping="Wrap"  AcceptsReturn="True"  VerticalScrollBarVisibility="Visible" Grid.ColumnSpan="2" Margin="0,30,0,-0.5" Grid.RowSpan="2"/>
-                    </Grid>
-                </TabItem>
-
-                <TabItem x:Name="TableM9" Header="M9数据包">
+                <TabItem x:Name="TableM5" Header=" M5 ">
                     <Grid Margin="0,0,0,0">
-                        <DataGrid Margin="0,0,0,0" x:Name="TableOfM9" AutoGenerateColumns="False"  AlternatingRowBackground="#F4F4F4">
+                        <DataGrid Margin="0,0,0,0" x:Name="TableOfM5" AutoGenerateColumns="False"  AlternatingRowBackground="#F4F4F4">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="序号" Binding="{Binding DisplayID}" />
-                                <DataGridTextColumn Header="工作模式" Binding="{Binding WorkFunction}" />
+                                <DataGridTextColumn Header="工作模式" Binding="{Binding Pattern}" />
                                 <DataGridTextColumn Header="设备类型" Binding="{Binding DeviceTypeS}" />
                                 <DataGridTextColumn Header="协议版本" Binding="{Binding ProtocolVersion}" />
                                 <DataGridTextColumn Header="客户码" Binding="{Binding CustomerS}" />
@@ -249,10 +157,7 @@
                                 <DataGridTextColumn Header="IC温度" Binding="{Binding ICTemperature,StringFormat='{}{0:F0}'}" />
                                 <DataGridTextColumn Header="电压V" Binding="{Binding voltF,StringFormat='{}{0:F3}'}" />
                                 <DataGridTextColumn Header="小采" Binding="{Binding AltSerial}"/>
-                                <DataGridTextColumn Header="X轴/mg" Binding="{Binding xAccel }" />
-                                <DataGridTextColumn Header="Y轴/mg" Binding="{Binding yAccel }" />
-                                <DataGridTextColumn Header="Z轴/mg" Binding="{Binding zAccel }" />
-                                <DataGridTextColumn Header="合量/mg" Binding="{Binding SizeOfAccel }" />
+                                <DataGridTextColumn Header="压强Pa" Binding="{Binding PascalF,StringFormat='{}{0:F1}'}" />
                                 <DataGridTextColumn Header="RAM" Binding="{Binding ToSendRam}" />
                                 <DataGridTextColumn Header="FLASH" Binding="{Binding ToSendFlash}" />
                                 <DataGridTextColumn Header="RSSI" Binding="{Binding RSSI}" />
@@ -265,12 +170,190 @@
 
                 </TabItem>
 
-                <TabItem x:Name="TableACO2" Header="ACO2数据包">
+                <TabItem x:Name="TableM20" Header=" M20 ">
+                    <Grid Margin="0,0,0,0">
+                        <DataGrid Margin="0,0,0,0" x:Name="TableOfM20" AutoGenerateColumns="False"  AlternatingRowBackground="#F4F4F4">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="序号" Binding="{Binding DisplayID}" />
+                                <DataGridTextColumn Header="工作模式" Binding="{Binding Pattern}" />
+                                <DataGridTextColumn Header="设备类型" Binding="{Binding DeviceTypeS}" />
+                                <DataGridTextColumn Header="协议版本" Binding="{Binding ProtocolVersion}" />
+                                <DataGridTextColumn Header="客户码" Binding="{Binding CustomerS}" />
+                                <DataGridTextColumn Header="MAC" Binding="{Binding DeviceMacS}" />
+                                <DataGridTextColumn Header="L/H" Binding="{Binding LastHistory, StringFormat='{}{0:X2}'}" />
+                                <DataGridTextColumn Header="状态" Binding="{Binding State,StringFormat='{}{0:X2}'}" />
+                                <DataGridTextColumn Header="报警项" Binding="{Binding AlarmItem,StringFormat='{}{0:X2}'}" />
+                                <DataGridTextColumn Header="采集序列号" Binding="{Binding SensorSN}" />
+                                <DataGridTextColumn Header="采集时间" Binding="{Binding SensorCollectTime,StringFormat='{}{0:MM-dd HH:mm:ss}'}" />
+                                <DataGridTextColumn Header="IC温度" Binding="{Binding ICTemperature,StringFormat='{}{0:F0}'}" />
+                                <DataGridTextColumn Header="电压V" Binding="{Binding voltF,StringFormat='{}{0:F3}'}" />
+                                <DataGridTextColumn Header="小采" Binding="{Binding AltSerial}"/>
+                                <DataGridTextColumn Header="标识" Binding="{Binding ifg,StringFormat='{}{0:X2}'}" />
+                                <DataGridTextColumn Header="温度℃" Binding="{Binding tempF,StringFormat='{}{0:F2}'}" />
+                                <DataGridTextColumn Header="湿度%" Binding="{Binding humF,StringFormat='{}{0:F2}'}" />
+                                <DataGridTextColumn Header="标识" Binding="{Binding ifg1,StringFormat='{}{0:X2}'}" />
+                                <DataGridTextColumn Header="温度℃" Binding="{Binding temp1F,StringFormat='{}{0:F2}'}" />
+                                <DataGridTextColumn Header="湿度%" Binding="{Binding hum1F,StringFormat='{}{0:F2}'}" />
+                                <DataGridTextColumn Header="标识" Binding="{Binding ifg2,StringFormat='{}{0:X2}'}" />
+                                <DataGridTextColumn Header="温度℃" Binding="{Binding temp2F,StringFormat='{}{0:F2}'}" />
+                                <DataGridTextColumn Header="湿度%" Binding="{Binding hum2F,StringFormat='{}{0:F2}'}" />
+                                <DataGridTextColumn Header="RAM" Binding="{Binding ToSendRam}" />
+                                <DataGridTextColumn Header="FLASH" Binding="{Binding ToSendFlash}" />
+                                <DataGridTextColumn Header="RSSI" Binding="{Binding RSSI}" />
+                                <DataGridTextColumn Header="传输时间" Binding="{Binding SensorTransforTime,StringFormat='{}{0:MM-dd HH:mm:ss.fff}'}" />
+                                <DataGridTextColumn Header="源数据" Binding="{Binding SourceData}" />
+
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+
+                </TabItem>
+
+                <TabItem x:Name="TableMAX31855" Header="MAX31855">
+                    <Grid Margin="0,0,0,0">
+                        <DataGrid Margin="0,0,0,0" x:Name="TableOfMAX31855" AutoGenerateColumns="False"  AlternatingRowBackground="#F4F4F4">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="序号" Binding="{Binding DisplayID}" />
+                                <DataGridTextColumn Header="工作模式" Binding="{Binding Pattern}" />
+                                <DataGridTextColumn Header="设备类型" Binding="{Binding DeviceTypeS}" />
+                                <DataGridTextColumn Header="协议版本" Binding="{Binding ProtocolVersion}" />
+                                <DataGridTextColumn Header="客户码" Binding="{Binding CustomerS}" />
+                                <DataGridTextColumn Header="MAC" Binding="{Binding DeviceMacS}" />
+                                <DataGridTextColumn Header="采集序列号" Binding="{Binding SensorSN}" />
+                                <DataGridTextColumn Header="IC温度" Binding="{Binding ICTemperature,StringFormat='{}{0:F0}'}" />
+                                <DataGridTextColumn Header="电压V" Binding="{Binding voltF,StringFormat='{}{0:F3}'}" />
+                                <DataGridTextColumn Header="采集结果" Binding="{Binding SampleResult}"/>
+                                <DataGridTextColumn Header="寄存器值" Binding="{Binding RegValue, StringFormat='{}{0:X8}'}"/>
+                                <DataGridTextColumn Header="热电偶温度/℃" Binding="{Binding thermocoupleTempF, StringFormat='{}{0:F2}'}"/>
+                                <DataGridTextColumn Header="芯片温度/℃" Binding="{Binding internalTempF, StringFormat='{}{0:F2}'}"/>
+                                <DataGridTextColumn Header="温度℃" Binding="{Binding tempF, StringFormat='{}{0:F2}'}" />
+                                <DataGridTextColumn Header="RSSI" Binding="{Binding RSSI}" />
+                                <DataGridTextColumn Header="传输时间" Binding="{Binding SensorTransforTime,StringFormat='{}{0:MM-dd HH:mm:ss.fff}'}" />
+                                <DataGridTextColumn Header="源数据" Binding="{Binding SourceData}" />
+
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+
+                </TabItem>
+
+                <TabItem x:Name="TableAck" Header="传感器数据包的反馈">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="17*"/>
+                            <ColumnDefinition Width="464*"/>
+                        </Grid.ColumnDefinitions>
+                        <DataGrid  x:Name="TableOfAck" AutoGenerateColumns="False"  AlternatingRowBackground="#F4F4F4" Grid.ColumnSpan="2" Margin="0,0,0.4,0">
+
+                            <DataGrid.Columns>
+
+                                <DataGridTextColumn Header="序号" Binding="{Binding DisplayID}" />
+                                <DataGridTextColumn Header="Cmd" Binding="{Binding Pattern,StringFormat='{}{0:X2}'}" />
+                                <DataGridTextColumn Header="设备类型" Binding="{Binding DeviceType}" />
+                                <DataGridTextColumn Header="协议版本" Binding="{Binding ProtocolVersion}" />
+                                <DataGridTextColumn Header="MAC" Binding="{Binding DeviceMac}" />
+                                <DataGridTextColumn Header="采集序列号" Binding="{Binding SensorSN}" />
+                                <DataGridTextColumn Header="Error" Binding="{Binding Error}" />
+                                <DataGridTextColumn Header="GW的日期和时间" Binding="{Binding GWTime,StringFormat='{}{0:MM-dd HH:mm:ss}'}" />
+                                <DataGridTextColumn Header="系统时间" Binding="{Binding SensorTransforTime,StringFormat='{}{0:MM-dd HH:mm:ss.fff}'}" />
+                                <DataGridTextColumn Header="RSSI" Binding="{Binding RSSI}" />
+                                <DataGridTextColumn Header="源数据" Binding="{Binding SourceData}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </TabItem>
+
+                <TabItem x:Name="tabConsole" Header=" Console ">
+                    <Grid >
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="41*"/>
+                            <ColumnDefinition Width="748*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto" MinHeight="30" />
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        
+                        <WrapPanel Grid.Row="0" VerticalAlignment="Center" Grid.ColumnSpan="2" Margin="0,2,0,98">
+                            <Label Content="日志行数:" Margin="0 0 10 0"/>
+                            <TextBox x:Name="txtLogLineLimit" Width="50" Text="20" VerticalContentAlignment="Center" Margin="0 0 10 0" />
+                            <Button x:Name="btnLogClear" Content="清空" VerticalContentAlignment="Center" Width="50"   Margin="0 0 10 0" RenderTransformOrigin="3.189,0.543" Click="btnLogClear_Click"/>
+                            <CheckBox x:Name="chkLockLog" Content="锁定" VerticalContentAlignment="Center" Margin="0 0 10 0" ></CheckBox>
+                        </WrapPanel>
+
+                        <TextBox   x:Name="txtConsole" TextWrapping="Wrap"  AcceptsReturn="True"  VerticalScrollBarVisibility="Visible" Grid.ColumnSpan="2" Margin="0,30,0,-0.5" Grid.RowSpan="2"/>
+                    </Grid>
+                </TabItem>
+
+                <TabItem x:Name="TableM9" Header="M9（振动）">
+                    <Grid Margin="0,0,0,0">
+                        <DataGrid Margin="0,0,0,0" x:Name="TableOfM9" AutoGenerateColumns="False"  AlternatingRowBackground="#F4F4F4">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="序号" Binding="{Binding DisplayID}" />
+                                <DataGridTextColumn Header="工作模式" Binding="{Binding Pattern}" />
+                                <DataGridTextColumn Header="设备类型" Binding="{Binding DeviceTypeS}" />
+                                <DataGridTextColumn Header="协议版本" Binding="{Binding ProtocolVersion}" />
+                                <DataGridTextColumn Header="客户码" Binding="{Binding CustomerS}" />
+                                <DataGridTextColumn Header="MAC" Binding="{Binding DeviceMacS}" />
+                                <DataGridTextColumn Header="L/H" Binding="{Binding LastHistory, StringFormat='{}{0:X2}'}" />
+                                <DataGridTextColumn Header="状态" Binding="{Binding State,StringFormat='{}{0:X2}'}" />
+                                <DataGridTextColumn Header="报警项" Binding="{Binding AlarmItem,StringFormat='{}{0:X2}'}" />
+                                <DataGridTextColumn Header="采集序列号" Binding="{Binding SensorSN}" />
+                                <DataGridTextColumn Header="采集时间" Binding="{Binding SensorCollectTime,StringFormat='{}{0:MM-dd HH:mm:ss}'}" />
+                                <DataGridTextColumn Header="IC温度" Binding="{Binding ICTemperature,StringFormat='{}{0:F0}'}" />
+                                <DataGridTextColumn Header="电压V" Binding="{Binding voltF,StringFormat='{}{0:F3}'}" />
+                                <DataGridTextColumn Header="小采" Binding="{Binding AltSerial}"/>
+                                <DataGridTextColumn Header="运动状态" Binding="{Binding moveStateV, StringFormat='{}{0:G}'}" />
+                                <DataGridTextColumn Header="运动状态" Binding="{Binding moveStateS }" />
+                                <DataGridTextColumn Header="RAM" Binding="{Binding ToSendRam}" />
+                                <DataGridTextColumn Header="FLASH" Binding="{Binding ToSendFlash}" />
+                                <DataGridTextColumn Header="RSSI" Binding="{Binding RSSI}" />
+                                <DataGridTextColumn Header="传输时间" Binding="{Binding SensorTransforTime,StringFormat='{}{0:MM-dd HH:mm:ss.fff}'}" />
+                                <DataGridTextColumn Header="源数据" Binding="{Binding SourceData}" />
+
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </TabItem>
+
+                <TabItem x:Name="TableM40" Header="M40（门磁）">
+                    <Grid Margin="0,0,0,0">
+                        <DataGrid Margin="0,0,0,0" x:Name="TableOfM40" AutoGenerateColumns="False"  AlternatingRowBackground="#F4F4F4">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="序号" Binding="{Binding DisplayID}" />
+                                <DataGridTextColumn Header="工作模式" Binding="{Binding Pattern}" />
+                                <DataGridTextColumn Header="设备类型" Binding="{Binding DeviceTypeS}" />
+                                <DataGridTextColumn Header="协议版本" Binding="{Binding ProtocolVersion}" />
+                                <DataGridTextColumn Header="客户码" Binding="{Binding CustomerS}" />
+                                <DataGridTextColumn Header="MAC" Binding="{Binding DeviceMacS}" />
+                                <DataGridTextColumn Header="L/H" Binding="{Binding LastHistory, StringFormat='{}{0:X2}'}" />
+                                <DataGridTextColumn Header="状态" Binding="{Binding State,StringFormat='{}{0:X2}'}" />
+                                <DataGridTextColumn Header="报警项" Binding="{Binding AlarmItem,StringFormat='{}{0:X2}'}" />
+                                <DataGridTextColumn Header="采集序列号" Binding="{Binding SensorSN}" />
+                                <DataGridTextColumn Header="采集时间" Binding="{Binding SensorCollectTime,StringFormat='{}{0:MM-dd HH:mm:ss}'}" />
+                                <DataGridTextColumn Header="IC温度" Binding="{Binding ICTemperature,StringFormat='{}{0:F0}'}" />
+                                <DataGridTextColumn Header="电压V" Binding="{Binding voltF,StringFormat='{}{0:F3}'}" />
+                                <DataGridTextColumn Header="小采" Binding="{Binding AltSerial}"/>
+                                <DataGridTextColumn Header="门状态" Binding="{Binding openStateV, StringFormat='{}{0:G}'}" />
+                                <DataGridTextColumn Header="门状态" Binding="{Binding openStateS }" />
+                                <DataGridTextColumn Header="RAM" Binding="{Binding ToSendRam}" />
+                                <DataGridTextColumn Header="FLASH" Binding="{Binding ToSendFlash}" />
+                                <DataGridTextColumn Header="RSSI" Binding="{Binding RSSI}" />
+                                <DataGridTextColumn Header="传输时间" Binding="{Binding SensorTransforTime,StringFormat='{}{0:MM-dd HH:mm:ss.fff}'}" />
+                                <DataGridTextColumn Header="源数据" Binding="{Binding SourceData}" />
+
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </TabItem>
+
+                <TabItem x:Name="TableACO2" Header=" ACO2 ">
                     <Grid Margin="0,0,0,0">
                         <DataGrid Margin="0,0,0,0" x:Name="TableOfACO2" AutoGenerateColumns="False"  AlternatingRowBackground="#F4F4F4">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="序号" Binding="{Binding DisplayID}" />
-                                <DataGridTextColumn Header="工作模式" Binding="{Binding WorkFunction}" />
+                                <DataGridTextColumn Header="工作模式" Binding="{Binding Pattern}" />
                                 <DataGridTextColumn Header="设备类型" Binding="{Binding DeviceTypeS}" />
                                 <DataGridTextColumn Header="协议版本" Binding="{Binding ProtocolVersion}" />
                                 <DataGridTextColumn Header="客户码" Binding="{Binding CustomerS}" />
@@ -298,12 +381,12 @@
                     </Grid>
                 </TabItem>
 
-                <TabItem x:Name="TableAO2" Header="AO2数据包">
+                <TabItem x:Name="TableAO2" Header=" AO2 ">
                     <Grid Margin="0,0,0,0">
                         <DataGrid Margin="0,0,0,0" x:Name="TableOfAO2" AutoGenerateColumns="False"  AlternatingRowBackground="#F4F4F4">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="序号" Binding="{Binding DisplayID}" />
-                                <DataGridTextColumn Header="工作模式" Binding="{Binding WorkFunction}" />
+                                <DataGridTextColumn Header="工作模式" Binding="{Binding Pattern}" />
                                 <DataGridTextColumn Header="设备类型" Binding="{Binding DeviceTypeS}" />
                                 <DataGridTextColumn Header="协议版本" Binding="{Binding ProtocolVersion}" />
                                 <DataGridTextColumn Header="客户码" Binding="{Binding CustomerS}" />
@@ -331,12 +414,12 @@
                     </Grid>
                 </TabItem>
 
-                <TabItem x:Name="TableSK" Header="SK数据包">
+                <TabItem x:Name="TableSK" Header=" SK ">
                     <Grid Margin="0,0,0,0">
                         <DataGrid Margin="0,0,0,0" x:Name="TableOfSK" AutoGenerateColumns="False"  AlternatingRowBackground="#F4F4F4">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="序号" Binding="{Binding DisplayID}" />
-                                <DataGridTextColumn Header="工作模式" Binding="{Binding WorkFunction}" />
+                                <DataGridTextColumn Header="工作模式" Binding="{Binding Pattern}" />
                                 <DataGridTextColumn Header="设备类型" Binding="{Binding DeviceTypeS}" />
                                 <DataGridTextColumn Header="协议版本" Binding="{Binding ProtocolVersion}" />
                                 <DataGridTextColumn Header="客户码" Binding="{Binding CustomerS}" />
@@ -351,6 +434,35 @@
                                 <DataGridTextColumn Header="小采" Binding="{Binding AltSerial}"/>
                                 <DataGridTextColumn Header="负载功率W" Binding="{Binding loadPower}" />
                                 <DataGridTextColumn Header="插座电压V" Binding="{Binding supplyVolt}" />
+                                <DataGridTextColumn Header="RAM" Binding="{Binding ToSendRam}" />
+                                <DataGridTextColumn Header="FLASH" Binding="{Binding ToSendFlash}" />
+                                <DataGridTextColumn Header="RSSI" Binding="{Binding RSSI}" />
+                                <DataGridTextColumn Header="传输时间" Binding="{Binding SensorTransforTime,StringFormat='{}{0:MM-dd HH:mm:ss.fff}'}" />
+                                <DataGridTextColumn Header="源数据" Binding="{Binding SourceData}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </TabItem>
+
+                <TabItem x:Name="TableL1" Header=" L1 ">
+                    <Grid Margin="0,0,0,0">
+                        <DataGrid Margin="0,0,0,0" x:Name="TableOfL1" AutoGenerateColumns="False"  AlternatingRowBackground="#F4F4F4">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="序号" Binding="{Binding DisplayID}" />
+                                <DataGridTextColumn Header="工作模式" Binding="{Binding Pattern}" />
+                                <DataGridTextColumn Header="设备类型" Binding="{Binding DeviceTypeS}" />
+                                <DataGridTextColumn Header="协议版本" Binding="{Binding ProtocolVersion}" />
+                                <DataGridTextColumn Header="客户码" Binding="{Binding CustomerS}" />
+                                <DataGridTextColumn Header="MAC" Binding="{Binding DeviceMacS}" />
+                                <DataGridTextColumn Header="L/H" Binding="{Binding LastHistory, StringFormat='{}{0:X2}'}" />
+                                <DataGridTextColumn Header="状态" Binding="{Binding State,StringFormat='{}{0:X2}'}" />
+                                <DataGridTextColumn Header="报警项" Binding="{Binding AlarmItem,StringFormat='{}{0:X2}'}" />
+                                <DataGridTextColumn Header="采集序列号" Binding="{Binding SensorSN}" />
+                                <DataGridTextColumn Header="采集时间" Binding="{Binding SensorCollectTime,StringFormat='{}{0:MM-dd HH:mm:ss}'}" />
+                                <DataGridTextColumn Header="IC温度" Binding="{Binding ICTemperature,StringFormat='{}{0:F0}'}" />
+                                <DataGridTextColumn Header="电压V" Binding="{Binding voltF,StringFormat='{}{0:F3}'}" />
+                                <DataGridTextColumn Header="小采" Binding="{Binding AltSerial}"/>
+                                <DataGridTextColumn Header="光照强度lux" Binding="{Binding Lux}" />
                                 <DataGridTextColumn Header="RAM" Binding="{Binding ToSendRam}" />
                                 <DataGridTextColumn Header="FLASH" Binding="{Binding ToSendFlash}" />
                                 <DataGridTextColumn Header="RSSI" Binding="{Binding RSSI}" />

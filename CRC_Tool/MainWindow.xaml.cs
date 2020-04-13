@@ -23,6 +23,9 @@ namespace CRC_Tool
         public MainWindow()
         {
             InitializeComponent();
+
+            this.Title += " v" +
+               System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
         }
 
         /// <summary>
@@ -76,14 +79,118 @@ namespace CRC_Tool
             }
 
             // 计算CRC
-            //UInt16 CRC = MyCustomFxn.CRC16(Polynomial, Seed, CrcBuf, 0, (UInt16)CrcBuf.Length);
-            UInt16 CRC = MyCustomFxn.CRC16_By_CHISCDC(CrcBuf, 0, (UInt16)CrcBuf.Length);
+            UInt16 CRC = 0;
+            switch (cbbAlgorithm.SelectedIndex)
+            {
+                case 0:
+                    {
+                        CRC = MyCustomFxn.CRC16(Polynomial, Seed, CrcBuf, 0, (UInt16)CrcBuf.Length);
+                        break;
+                    }
+                case 1:
+                    {
+                        CRC = MyCustomFxn.CRC16_By_CHISCDC(CrcBuf, 0, (UInt16)CrcBuf.Length);
+                        break;
+                    }
+                case 2:
+                    {
+                        CRC = MyCustomFxn.CRC16_By_Zigin(CrcBuf, 0, (UInt16)CrcBuf.Length);
+                        break;
+                    }
+                case 3:
+                    {
+                        CRC = MyCustomFxn.CRC8((byte)Polynomial, (byte)Seed, CrcBuf, 0, (UInt16)CrcBuf.Length);
+                        break;
+                    }
+                case 4:
+                    {
+                        CRC = MyCustomFxn.CRC16_Modbus(Polynomial, Seed, CrcBuf, 0, (UInt16)CrcBuf.Length);
+                        break;
+                    }
+                default:
+                    {
+                        return;
+                    }
+            }
 
             // 显示字节数组的长度
             tbx_Len.Text = CrcBuf.Length.ToString();
 
             // 显示计算得出的CRC值
-            tbx_Crc.Text = CRC.ToString("X4");
+            if (cbbAlgorithm.SelectedIndex == 3)
+            {   // CRC8
+                tbx_Crc.Text = CRC.ToString("X2");
+            }
+            else
+            {
+                tbx_Crc.Text = CRC.ToString("X4");
+            }
+
+        }
+
+        private void cbbAlgorithm_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            switch (cbbAlgorithm.SelectedIndex)
+            {
+                case 0:
+                    {
+                        tbx_Seed.Text = "0000";
+                        tbx_Polynomial.Text = "1021";
+
+                        tbx_Seed.IsEnabled = true;
+                        tbx_Polynomial.IsEnabled = true;
+
+                        tbx_Seed.MaxLength = 4;
+                        tbx_Polynomial.MaxLength = 4;
+                        break;
+                    }
+                case 1:
+                    {
+                        tbx_Seed.Text = "";
+                        tbx_Polynomial.Text = "";
+
+                        tbx_Seed.IsEnabled = false;
+                        tbx_Polynomial.IsEnabled = false;
+                        break;
+                    }
+                case 2:
+                    {
+                        tbx_Seed.Text = "";
+                        tbx_Polynomial.Text = "";
+
+                        tbx_Seed.IsEnabled = false;
+                        tbx_Polynomial.IsEnabled = false;
+                        break;
+                    }
+                case 3:
+                    {
+                        tbx_Seed.Text = "00";
+                        tbx_Polynomial.Text = "31";
+
+                        tbx_Seed.IsEnabled = true;
+                        tbx_Polynomial.IsEnabled = true;
+
+                        tbx_Seed.MaxLength = 2;
+                        tbx_Polynomial.MaxLength = 2;
+                        break;
+                    }
+                case 4:
+                    {
+                        tbx_Seed.Text = "FFFF";
+                        tbx_Polynomial.Text = "A001";
+
+                        tbx_Seed.IsEnabled = true;
+                        tbx_Polynomial.IsEnabled = true;
+
+                        tbx_Seed.MaxLength = 4;
+                        tbx_Polynomial.MaxLength = 4;
+                        break;
+                    }
+                default:
+                    {
+                        return;
+                    }
+            }
         }
     }
 }

@@ -26,17 +26,17 @@ namespace YyWsnDeviceLibrary
                 ProtocolVersion = SrcData[5];
                 SetDevicePrimaryMac(SrcData, 6);
                 SetDeviceMac(SrcData, 10);
-                HwVersionS = CommArithmetic.DecodeMAC(SrcData, 14);
-                SwVersionS = CommArithmetic.DecodeClientID(SrcData, 18);
+                HwRevisionS = CommArithmetic.DecodeMAC(SrcData, 14);
+                SwRevisionS = CommArithmetic.DecodeClientID(SrcData, 18);
                 CustomerS = CommArithmetic.DecodeClientID(SrcData, 20);
                 DebugV = (UInt16)(SrcData[22] * 256 + SrcData[23]);
                 Category = SrcData[24];
-                Interval = SrcData[25] * 256 + SrcData[26];
+                Interval = (UInt16)(SrcData[25] * 256 + SrcData[26]);
                 Calendar = CommArithmetic.DecodeDateTime(SrcData, 27);
 
-                WorkFunction = SrcData[33];
-                SymbolRate = SrcData[34];
-                TxPower = SrcData[35];
+                Pattern = SrcData[33];
+                Bps = SrcData[34];
+                SetTxPower(SrcData[35]);
                 SampleSend = SrcData[36];
                 Channel = SrcData[37];
 
@@ -78,7 +78,7 @@ namespace YyWsnDeviceLibrary
                 SetDeviceName(0x57);
                 SetDeviceMac(SrcData, 5);
                 CustomerS = CommArithmetic.DecodeClientID(SrcData, 3);
-                WorkFunction = SrcData[2];
+                Pattern = SrcData[2];
                 ProtocolVersion = 0x00;
 
                 SensorSN = SrcData[12] * 256 + SrcData[13];
@@ -111,7 +111,7 @@ namespace YyWsnDeviceLibrary
                 SetDeviceName(SrcData[3]);
                 SetDeviceMac(SrcData, 7);
                 CustomerS = CommArithmetic.DecodeClientID(SrcData, 5);
-                WorkFunction = SrcData[2];
+                Pattern = SrcData[2];
                 ProtocolVersion = SrcData[4];
 
                 SensorSN = SrcData[13] * 256 + SrcData[14];

@@ -31,9 +31,11 @@ namespace SocketMonitorUI.BusinessLayer
             //记录到日志,收到数据
             Logger.AddLog(DateTime.Now.ToString("HH:mm:ss.fff") + " :Received:" + session.RemoteEndPoint.Address.ToString() + " :\t"
                 + CommArithmetic.ToHexString(requestInfo.Body) + " ");
+
             //The logic of saving GPS position data
             //var response = session.AppServer.DefaultResponse;
             //byte[] response = new byte[] { 0xEB, 0xEB, 0x01, 0x03, 0x00, 0x00, 0xBE, 0xBE };
+
             if (ServiceStatus.ResponseSensorData == true)
             {
                 if (requestInfo.Body.Length == 63 || requestInfo.Body.Length == 60 || requestInfo.Body.Length == 68 || requestInfo.Body.Length == 65)
@@ -48,7 +50,6 @@ namespace SocketMonitorUI.BusinessLayer
                     response[6] = requestInfo.Body[6]; //序列号
                     response[7] = 0x00;
 
-
                     response[8] = 0x00;
                     response[9] = 0x00;
                     response[10] = 0xBE;
@@ -61,12 +62,9 @@ namespace SocketMonitorUI.BusinessLayer
                         {
                             //session.SaveToQueue(requestInfo.Body);
                         }
-
                     }
                     catch (Exception)
                     {
-
-
 
                     }
 
@@ -81,8 +79,6 @@ namespace SocketMonitorUI.BusinessLayer
 
                             if (requestInfo.Body[26] == 0x51 || requestInfo.Body[26] == 0x53)
                             {
-
-
                                 //授时响应
 
                                 //TODO 是否需要RSSI
@@ -122,8 +118,6 @@ namespace SocketMonitorUI.BusinessLayer
                                 command.Parameters.Add("@SensorROMCount", SqlDbType.Int);
                                 command.Parameters.Add("@DeviceCSQ", SqlDbType.Int);
 
-
-
                                 //Line1
                                 command.Parameters["@DeviceMAC"].Value = CommArithmetic.DecodeMAC(requestInfo.Body, 8); //协议起始位置-1
                                 command.Parameters["@DeviceSN"].Value = CommArithmetic.Byte2Int(requestInfo.Body, 5, 2);
@@ -135,7 +129,6 @@ namespace SocketMonitorUI.BusinessLayer
                                 command.Parameters["@SensorFuntction"].Value = requestInfo.Body[25];
                                 command.Parameters["@SensorType"].Value = requestInfo.Body[26].ToString("X2"); //ok
 
-
                                 //line 2
                                 command.Parameters["@ProtocolVersion"].Value = requestInfo.Body[27].ToString("X2"); //ok
                                 command.Parameters["@ICTemperature"].Value = requestInfo.Body[33]; //todo
@@ -145,7 +138,6 @@ namespace SocketMonitorUI.BusinessLayer
                                 command.Parameters["@SensorCollectDatetime"].Value = CommArithmetic.DecodeDateTime(requestInfo.Body, 38);
                                 command.Parameters["@SensorTransforDatetime"].Value = CommArithmetic.DecodeDateTime(requestInfo.Body, 45);
                                 command.Parameters["@SensorRSSI"].Value = requestInfo.Body[52] - 256;
-
 
                                 //line 3
                                 command.Parameters["@SensorTemperature"].Value = CommArithmetic.DecodeTemperature(requestInfo.Body, 54);
@@ -157,9 +149,7 @@ namespace SocketMonitorUI.BusinessLayer
                                 command.Parameters["@SensorRAMCount"].Value = requestInfo.Body[60];
                                 command.Parameters["@SensorROMCount"].Value = CommArithmetic.Byte2Int(requestInfo.Body, 61, 2);
                                 command.Parameters["@DeviceCSQ"].Value = requestInfo.Body[63];
-
-
-
+                                
                                 try
                                 {
                                     command.ExecuteNonQuery();
@@ -172,8 +162,6 @@ namespace SocketMonitorUI.BusinessLayer
 
                             if (requestInfo.Body[26] == 0x57)
                             {
-
-
                                 //授时响应
 
                                 //TODO 是否需要RSSI
@@ -193,6 +181,7 @@ namespace SocketMonitorUI.BusinessLayer
                                 command.Parameters.Add("@SensorStatic", SqlDbType.Int);
                                 command.Parameters.Add("@SensorFuntction", SqlDbType.Int);
                                 command.Parameters.Add("@SensorType", SqlDbType.NVarChar);
+
                                 //line2
                                 command.Parameters.Add("@ProtocolVersion", SqlDbType.Int);
                                 command.Parameters.Add("@ICTemperature", SqlDbType.Decimal);
@@ -213,8 +202,6 @@ namespace SocketMonitorUI.BusinessLayer
                                 command.Parameters.Add("@SensorROMCount", SqlDbType.Int);
                                 command.Parameters.Add("@DeviceCSQ", SqlDbType.Int);
 
-
-
                                 //Line1
                                 command.Parameters["@DeviceMAC"].Value = CommArithmetic.DecodeMAC(requestInfo.Body, 8); //协议起始位置-1
                                 command.Parameters["@DeviceSN"].Value = CommArithmetic.Byte2Int(requestInfo.Body, 5, 2);
@@ -226,7 +213,6 @@ namespace SocketMonitorUI.BusinessLayer
                                 command.Parameters["@SensorFuntction"].Value = requestInfo.Body[25];
                                 command.Parameters["@SensorType"].Value = requestInfo.Body[26].ToString("X2"); //ok
 
-
                                 //line 2
                                 command.Parameters["@ProtocolVersion"].Value = requestInfo.Body[27].ToString("X2"); //ok
                                 command.Parameters["@ICTemperature"].Value = requestInfo.Body[33]; //todo
@@ -236,7 +222,6 @@ namespace SocketMonitorUI.BusinessLayer
                                 command.Parameters["@SensorCollectDatetime"].Value = CommArithmetic.DecodeDateTime(requestInfo.Body, 38);
                                 command.Parameters["@SensorTransforDatetime"].Value = CommArithmetic.DecodeDateTime(requestInfo.Body, 45);
                                 command.Parameters["@SensorRSSI"].Value = requestInfo.Body[52] - 256;
-
 
                                 //line 3
                                 command.Parameters["@SensorTemperature"].Value = CommArithmetic.DecodeTemperature(requestInfo.Body, 54);

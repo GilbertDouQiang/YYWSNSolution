@@ -11,13 +11,20 @@
         <TextBox x:Name="tbx_Seed" HorizontalAlignment="Left" Height="20" Margin="55,0,0,40" TextWrapping="Wrap" VerticalAlignment="Bottom" Width="60" MaxLines="1" MaxLength="4" Text="0000" IsUndoEnabled="True" TextAlignment="Center" FontSize="14"/>
         <TextBox x:Name="tbx_Polynomial" HorizontalAlignment="Left" Height="20" Margin="145,0,0,40" TextWrapping="Wrap" VerticalAlignment="Bottom" Width="60" MaxLines="1" MaxLength="4" Text="1021" TextAlignment="Center" FontSize="14"/>
         <TextBox x:Name="tbx_Crc" HorizontalAlignment="Right" Height="20" Margin="0,0,55,40" TextWrapping="Wrap" VerticalAlignment="Bottom" Width="60" MaxLines="1" MaxLength="4" TextAlignment="Center" FontSize="14" IsReadOnly="True"/>
-        <Button x:Name="btn_Calc" Content="计算" Margin="0,0,0,40" VerticalAlignment="Bottom" Width="60" RenderTransformOrigin="-0.096,0.76" Height="50" FontSize="14" Click="btn_Calc_Click" />
+        <Button x:Name="btn_Calc" Content="计算" Margin="0,228,0,63" VerticalAlignment="Center" Width="90" RenderTransformOrigin="-0.096,0.76" Height="50" FontSize="14" Click="btn_Calc_Click" HorizontalAlignment="Center" />
         <TextBox x:Name="tbx_Len" HorizontalAlignment="Right" Height="20" Margin="0,0,145,40" TextWrapping="Wrap" VerticalAlignment="Bottom" Width="60" MaxLines="1" MaxLength="5" FontSize="14" IsUndoEnabled="False" IsReadOnly="True" TextAlignment="Center"/>
         <Label x:Name="label_Seed" Content="种子" HorizontalAlignment="Left" Margin="55,0,0,60" VerticalAlignment="Bottom" Width="60" Height="30" FontSize="14" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
         <Label x:Name="label_Polynomial" Content="多项式" HorizontalAlignment="Left" Margin="145,0,0,60" VerticalAlignment="Bottom" Width="60" Height="30" FontSize="14" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
         <Label x:Name="label_Crc" Content="CRC" HorizontalAlignment="Right" Margin="0,0,55,60" VerticalAlignment="Bottom" Width="60" Height="30" FontSize="14" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
         <Label x:Name="label_Len" Content="长度(十)" HorizontalAlignment="Right" Margin="0,0,145,60" VerticalAlignment="Bottom" Width="62" Height="30" FontSize="14" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
         <Label x:Name="label_Author" Content="DQ" HorizontalAlignment="Right" Margin="0,0,6,6" VerticalAlignment="Bottom" Width="30" Height="20" FontSize="8" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+        <ComboBox x:Name="cbbAlgorithm" HorizontalAlignment="Center" Margin="235,297,235,20" VerticalAlignment="Center" Width="120" Height="24" SelectedIndex="0" SelectionChanged="cbbAlgorithm_SelectionChanged" >
+            <ListBoxItem Content="YYWSN_CRC16" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            <ListBoxItem Content="CHISCDC" HorizontalAlignment="Center" VerticalAlignment="Center"  />
+            <ListBoxItem Content="Zigin" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            <ListBoxItem Content="YYWSN_CRC8" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            <ListBoxItem Content="Modbus_CRC16" HorizontalAlignment="Center" VerticalAlignment="Center" />
+        </ComboBox>
 
     </Grid>
 </Window>

@@ -40,6 +40,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AO2.cs" />
+    <Compile Include="IR20.cs" />
+    <Compile Include="M20.cs" />
+    <Compile Include="M30O2.cs" />
+    <Compile Include="M5.cs" />
+    <Compile Include="L1.cs" />
+    <Compile Include="M40.cs" />
+    <Compile Include="ESK.cs" />
+    <Compile Include="MD5.cs" />
     <Compile Include="SK.cs" />
     <Compile Include="AlarmGateway1.cs" />
     <Compile Include="CommArithmetic.cs" />

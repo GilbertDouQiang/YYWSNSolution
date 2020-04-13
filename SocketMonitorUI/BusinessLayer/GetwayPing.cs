@@ -25,34 +25,58 @@ namespace SocketMonitorUI.BusinessLayer
             }
         }
 
-        public override void ExecuteCommand(HyperWSNSession session, BinaryRequestInfo requestInfo)
+        public override void ExecuteCommand(HyperWSNSession session, BinaryRequestInfo RxBuf)
         {
             //记录到日志,收到数据
             Logger.AddLog(DateTime.Now.ToString("HH:mm:ss.fff") + " :Received:" + session.RemoteEndPoint.Address.ToString() + " :\t"
-                + CommArithmetic.ToHexString(requestInfo.Body) + " ");
-            //The logic of saving GPS position data
-            //var response = session.AppServer.DefaultResponse;
-            //byte[] response = new byte[] { 0xEB, 0xEB, 0x01, 0x03, 0x00, 0x00, 0xBE, 0xBE };
-            if (ServiceStatus.ResponsePing == true && requestInfo.Body.Length == 11)
+                + CommArithmetic.ToHexString(RxBuf.Body) + " ");
+
+            Int16 error = Device.IsPktFromGatewayToServer(RxBuf.Body);
+
+            if (error < 0)
             {
-                byte[] response = new byte[11];
-                response[0] = 0xEB;
-                response[1] = 0xEB;
-                response[2] = 0x04;
-                response[3] = 0x90;
-                response[4] = requestInfo.Body[4];
-                response[5] = requestInfo.Body[5];
-                response[6] = requestInfo.Body[6];
-                response[7] = 0x00;
-                response[8] = 0x00;
-                response[9] = 0xBE;
-                response[10] = 0xBE;
-
-                session.Send(response, 0, response.Length);
-
-                Logger.AddLog(DateTime.Now.ToString("HH:mm:ss.fff") + " :SendData:" + session.RemoteEndPoint.Address.ToString() + " :\t"
-                   + CommArithmetic.ToHexString(response) + " ");
+                return;             // 格式错误
             }
+
+            if (ServiceStatus.ResponsePing == false)
+            {
+                return;             // 不需要响应
+            }
+
+            // 发送反馈
+            byte[] TxBuf = new byte[11];
+
+            // 起始位
+            TxBuf[0] = 0xEB;
+            TxBuf[1] = 0xEB;
+
+            // 长度位
+            TxBuf[2] = 0x04;
+
+            // 命令位
+            TxBuf[3] = RxBuf.Body[3];
+
+            // 协议版本
+            TxBuf[4] = RxBuf.Body[4];
+
+            // 序列号
+            TxBuf[5] = RxBuf.Body[5];
+            TxBuf[6] = RxBuf.Body[6];
+
+            // CRC
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 3, TxBuf[2]);
+            TxBuf[7] = (byte)((crc & 0xFF00) >> 8);
+            TxBuf[8] = (byte)((crc & 0x00FF) >> 0);
+
+            // 结束位
+            TxBuf[9] = 0xBE;
+            TxBuf[10] = 0xBE;
+
+            session.Send(TxBuf, 0, TxBuf.Length);
+
+            // 记录日志
+            Logger.AddLog(DateTime.Now.ToString("HH:mm:ss.fff") + " :SendData:" + session.RemoteEndPoint.Address.ToString() + " :\t"
+               + CommArithmetic.ToHexString(TxBuf) + " ");
         }
     }
 }

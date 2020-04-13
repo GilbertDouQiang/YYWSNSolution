@@ -68,7 +68,39 @@ namespace YyWsnDeviceLibrary
         }
 
         /// <summary>
-        /// 计算CRC
+        /// 计算CRC8
+        /// </summary>
+        /// <param name="polynomial"></param>
+        /// <param name="seed"></param>
+        /// <param name="input"></param>
+        /// <param name="nbrOfBytes"></param>
+        /// <returns></returns>
+        static public byte CRC8(byte polynomial, byte seed, byte[] input, UInt16 IndexOfStart, UInt16 nbrOfBytes)
+        {
+            byte crc = seed, bit = 0, byteCtr = 0;
+
+            for (byteCtr = 0; byteCtr < nbrOfBytes; byteCtr++)
+            {
+                crc ^= input[IndexOfStart + byteCtr];
+
+                for (bit = 8; bit > 0; bit--)
+                {
+                    if ((crc & 0x80) == 0)
+                    {
+                        crc <<= 1;
+                    }
+                    else
+                    {
+                        crc = (byte)((crc << 1) ^ polynomial);
+                    }
+                }
+            }
+
+            return crc;
+        }
+
+        /// <summary>
+        /// 计算CRC16
         /// </summary>
         /// <param name="polynomial"></param>
         /// <param name="seed"></param>
@@ -97,6 +129,84 @@ namespace YyWsnDeviceLibrary
             }
 
             return crc;
+        }
+
+        /// <summary>
+        /// Modbus CRC16的计算方法
+        /// </summary>
+        /// <param name="polynomial"></param>
+        /// <param name="seed"></param>
+        /// <param name="input"></param>
+        /// <param name="IndexOfStart"></param>
+        /// <param name="nbrOfBytes"></param>
+        /// <returns></returns>
+        static public UInt16 CRC16_Modbus(UInt16 polynomial, UInt16 seed, byte[] input, UInt16 IndexOfStart, UInt16 nbrOfBytes)
+        {
+            UInt16 crc = seed, bit = 0, byteCtr = 0;
+
+            for (byteCtr = 0; byteCtr < nbrOfBytes; byteCtr++)
+            {
+                crc ^= (UInt16)input[IndexOfStart + byteCtr];
+
+                for (bit = 8; bit > 0; bit--)
+                {
+                    if ((crc & 0x0001) == 0)
+                    {
+                        crc >>= 1;
+                    }
+                    else
+                    {
+                        crc = (UInt16)((crc >> 1) ^ polynomial);
+                    }
+                }
+            }
+
+            return crc;
+        }
+
+        /// <summary>
+        /// 哲勤：计算CRC
+        /// </summary>
+        /// <param name="polynomial"></param>
+        /// <param name="seed"></param>
+        /// <param name="input"></param>
+        /// <param name="nbrOfBytes"></param>
+        /// <returns></returns>
+        static public UInt16 CRC16_By_Zigin(byte[] input, UInt16 IndexOfStart, UInt16 nbrOfBytes)
+        {
+            const byte PolynomialHigh = 0x10, PolynomialLow = 0x21;
+
+            byte crcHigh = 0xFF, crcLow = 0xFF;
+            byte thisCrcHigh = 0, thisCrcLow = 0;
+
+            UInt16 bit = 0, byteCtr = 0;
+
+            for (byteCtr = 0; byteCtr < nbrOfBytes; byteCtr++)
+            {
+                crcLow ^= input[IndexOfStart + byteCtr];
+
+                for (bit = 8; bit > 0; bit--)
+                {
+                    thisCrcHigh = crcHigh;
+                    thisCrcLow = crcLow;
+
+                    crcHigh >>= 1;
+                    crcLow >>= 1;
+
+                    if ((thisCrcHigh & 0x01) == 0x01)
+                    {
+                        crcLow |= 0x80;
+                    }
+
+                    if ((thisCrcLow & 0x01) == 0x01)
+                    {
+                        crcHigh ^= PolynomialHigh;
+                        crcLow ^= PolynomialLow;
+                    }
+                }
+            }
+
+            return (UInt16)(((UInt16)crcLow << 8) | ((UInt16)crcHigh << 0));
         }
 
         /// <summary>
@@ -143,14 +253,16 @@ namespace YyWsnDeviceLibrary
         /// </summary>
         /// <param name="s"></param>
         /// <returns></returns>
-         static public byte[] HexStringToByteArray(string hexStr)
+        static public byte[] HexStringToByteArray(string hexStr)
         {
             try
             {
-                // 去除字符串中的空格、回车、换行
+                // 去除字符串中的空格、回车、换行、英文逗号、中文逗号
                 hexStr = hexStr.Replace(" ", "");
                 hexStr = hexStr.Replace("\r", "");
                 hexStr = hexStr.Replace("\n", "");
+                hexStr = hexStr.Replace(",", "");
+                hexStr = hexStr.Replace("，", "");
 
                 // 判断字符串中是否有非16进制数
                 UInt16 StrLen = HexString_isRight(hexStr);
@@ -261,7 +373,7 @@ namespace YyWsnDeviceLibrary
         {
             // 十位
             byte tens = (byte)((iValue & 0xF0) >> 4);
-            if(tens > 9)
+            if (tens > 9)
             {
                 return 0;
             }
@@ -274,6 +386,38 @@ namespace YyWsnDeviceLibrary
             }
 
             return (byte)(tens * 10 + units);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <returns></returns>
+        static public string ToHexString(byte[] HexBuf, UInt16 IndexOfStart, UInt16 HexLen)
+        {
+            string hexString = string.Empty;
+            if (HexBuf == null || HexLen == 0 || IndexOfStart + HexLen > HexBuf.Length)
+            {
+                return hexString;
+            }
+
+            StringBuilder strB = new StringBuilder();
+
+            for (UInt16 iCnt = 0; iCnt < HexLen; iCnt++)
+            {
+                if(iCnt == 0)
+                {
+                    strB.Append(HexBuf[IndexOfStart + iCnt].ToString("X2"));
+                }
+                else
+                {
+                    strB.Append(" " + HexBuf[IndexOfStart + iCnt].ToString("X2"));
+                }                
+            }
+
+            hexString = strB.ToString();
+
+            return hexString;
         }
     }
 }

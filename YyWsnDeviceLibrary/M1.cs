@@ -18,6 +18,31 @@ namespace YyWsnDeviceLibrary
         private DataPktType dataPktType { get; set; }       // 外部只读
 
         /// <summary>
+        /// 网关的设备类型
+        /// </summary>
+        public byte deviceTypeOfGw { get; set; }    
+
+        /// <summary>
+        /// 网关的传输序列号
+        /// </summary>
+        public UInt16 SerialOfGw { get; set; }            
+
+        /// <summary>
+        /// 网关的电压，单位：0.001V
+        /// </summary>
+        public UInt16 GwVolt { get; set; }
+
+        /// <summary>
+        /// 网关的电压，单位：V
+        /// </summary>
+        public double GwVoltF { get; set; }
+
+        /// <summary>
+        /// 保留位
+        /// </summary>
+        public byte Reserved { get; set; }
+
+        /// <summary>
         /// 温度，单位：0.01℃
         /// </summary>
         public Int16 temp { get; set; }
@@ -40,51 +65,82 @@ namespace YyWsnDeviceLibrary
         /// <summary>
         /// 温度预警上限
         /// </summary>
-        public double TemperatureInfoHigh { get; set; }
+        public double TempWarnHigh { get; set; }
 
         /// <summary>
         /// 温度预警下限
         /// </summary>
-        public double TemperatureInfoLow { get; set; }
+        public double TempWarnLow { get; set; }
 
         /// <summary>
         /// 温度报警上限
         /// </summary>
-        public double TemperatureWarnHigh { get; set; }
+        public double TempAlertHigh { get; set; }
 
         /// <summary>
         /// 温度报警下限
         /// </summary>
-        public double TemperatureWarnLow { get; set; }
+        public double TempAlertLow { get; set; }
 
         /// <summary>
         /// 湿度预警上限
         /// </summary>
-        public double HumidityInfoHigh { get; set; }
+        public double HumWarnHigh { get; set; }
         /// <summary>
         /// 湿度预警下限
         /// </summary>
-        public double HumidityInfoLow { get; set; }
+        public double HumWarnLow { get; set; }
 
         /// <summary>
         /// 湿度报警上限
         /// </summary>
-        public double HumidityWarnHigh { get; set; }
+        public double HumAlertHigh { get; set; }
 
         /// <summary>
         /// 湿度报警下限
         /// </summary>
-        public double HumidityWarnLow { get; set; }
+        public double HumAlertLow { get; set; }
 
         /// <summary>
         /// 温度补偿
         /// </summary>
-        public double TemperatureCompensation { get; set; }
+        public double TempCompensation { get; set; }
 
         /// <summary>
         /// 湿度补偿
         /// </summary>
-        public double HumidityCompensation { get; set; }
+        public double HumCompensation { get; set; }
+
+        /// <summary>
+        /// MAX31855的采集结果，源数据是一个字节
+        /// </summary>
+        public Int16 SampleResult { get; set; }
+
+        /// <summary>
+        /// MAX31855的寄存器值
+        /// </summary>
+        public UInt32 RegValue { get; set; }
+
+        /// <summary>
+        /// MAX31855的热电偶温度，单位：0.01℃
+        /// </summary>
+        public Int16 thermocoupleTemp { get; set; }
+
+        /// <summary>
+        /// MAX31855的热电偶温度，单位：℃
+        /// </summary>
+        public double thermocoupleTempF { get; set; }
+
+        /// <summary>
+        /// MAX31855的芯片温度，单位：0.01℃
+        /// </summary>
+        public Int16 internalTemp { get; set; }
+
+        /// <summary>
+        /// MAX31855的芯片温度，单位：℃
+        /// </summary>
+        public double internalTempF { get; set; }
+
 
         /**************************************
          * 方法
@@ -106,7 +162,7 @@ namespace YyWsnDeviceLibrary
         /// <returns></returns>
         static public bool isDeviceType(byte iDeviceType)
         {
-            if (iDeviceType == (byte)DeviceType.M1 || iDeviceType == (byte)DeviceType.S1P || iDeviceType == (byte)DeviceType.M1_NTC || iDeviceType == (byte)DeviceType.M1_Beetech || iDeviceType == (byte)DeviceType.M6 || iDeviceType == (byte)DeviceType.M2_SHT30 || iDeviceType == (byte)DeviceType.M30)
+            if (iDeviceType == (byte)DeviceType.M1 || iDeviceType == (byte)DeviceType.S1P || iDeviceType == (byte)DeviceType.M1_NTC || iDeviceType == (byte)DeviceType.M1_Beetech || iDeviceType == (byte)DeviceType.M6 || iDeviceType == (byte)DeviceType.M2_SHT30 || iDeviceType == (byte)DeviceType.M30 || iDeviceType == (byte)DeviceType.ZQM1 || iDeviceType == (byte)DeviceType.M10 || iDeviceType == (byte)DeviceType.M20 || iDeviceType == (byte)DeviceType.M1X)
             {
                 return true;
             }
@@ -132,70 +188,10 @@ namespace YyWsnDeviceLibrary
             //2017版协议 v3.5
             //判断第三位 ，01 代表从传感器发出的正常数据，长度不是固定值
 
-            //上电自检数据
-            if (SrcData.Length == 82)
-            {
-                SetDeviceName(SrcData[4]);
-                ProtocolVersion = SrcData[5];
-                SetDevicePrimaryMac(SrcData, 6);
-                SetDeviceMac(SrcData, 10);
-                HwVersionS = CommArithmetic.DecodeMAC(SrcData, 14);
-                SwVersionS = CommArithmetic.DecodeClientID(SrcData, 18);
-                CustomerS = CommArithmetic.DecodeClientID(SrcData, 20);
-                DebugV = (UInt16)(SrcData[22] * 256 + SrcData[23]);
-                Category = SrcData[24];
-                Interval = SrcData[25] * 256 + SrcData[26];
-                Calendar = CommArithmetic.DecodeDateTime(SrcData, 27);
-
-                WorkFunction = SrcData[33];
-                SymbolRate = SrcData[34];
-                TxPower = SrcData[35];
-                SampleSend = SrcData[36];
-                Channel = SrcData[37];
-
-                TemperatureInfoHigh = CommArithmetic.DecodeTemperature(SrcData, 38);
-                TemperatureInfoLow = CommArithmetic.DecodeTemperature(SrcData, 40);
-
-                HumidityInfoHigh = CommArithmetic.DecodeHumidity(SrcData, 42);
-                HumidityInfoLow = CommArithmetic.DecodeHumidity(SrcData, 44);
-
-                TemperatureWarnHigh = CommArithmetic.DecodeTemperature(SrcData, 46);
-                TemperatureWarnLow = CommArithmetic.DecodeTemperature(SrcData, 48);
-
-                HumidityWarnHigh = CommArithmetic.DecodeHumidity(SrcData, 50);
-                HumidityWarnLow = CommArithmetic.DecodeHumidity(SrcData, 52);
-
-                TemperatureCompensation = CommArithmetic.DecodeTemperature(SrcData, 54);
-                HumidityCompensation = CommArithmetic.DecodeHumidity(SrcData, 56);
-
-                ICTemperature = SrcData[58];
-                volt = (UInt16)(SrcData[59] * 256 + SrcData[60]);
-                voltF = (double)(volt / 1000.0f);
-
-                MaxLength = SrcData[63];
-
-                temp = (Int16)(SrcData[73] * 256 + SrcData[74]);
-                tempF = (double)(temp / 100.0f);
-
-                hum = (UInt16)(SrcData[75] * 256 + SrcData[76]);
-                humF = (double)(hum / 100.0f);
-
-                RSSI = SrcData[78] - 256;
-
-                //Falsh
-                FlashID = CommArithmetic.DecodeClientID(SrcData, 61);
-                FlashFront = SrcData[64] * 256 * 256 + SrcData[65] * 256 + SrcData[66];
-                FlashRear = SrcData[67] * 256 * 256 + SrcData[68] * 256 + SrcData[69];
-                FlashQueueLength = SrcData[70] * 256 * 256 + SrcData[71] * 256 + SrcData[72];
-
-                return;
-            }
-
             if (SrcData[0] == 0xEA && SrcData[1] == 0x4B && (SrcData[3] == 0x51 || SrcData[3] == 0x5C || SrcData[3] == 0x5D))
             {
-
                 // Cmd
-                WorkFunction = SrcData[2];
+                Pattern = SrcData[2];
 
                 // Device type     
                 SetDeviceName(SrcData[3]);
@@ -210,20 +206,22 @@ namespace YyWsnDeviceLibrary
                 SetDeviceMac(SrcData, 9);
 
                 //硬件版本
-                HwVersionS = CommArithmetic.DecodeHardwareVersion(SrcData, 13);
+                SetHardwareRevision(SrcData, 13);
+                
+                // 软件版本
+                SetSoftwareRevision(SrcData, 17);
 
-                SwVersionS = CommArithmetic.DecodeSoftwareVersion(SrcData, 17);
                 // CustomerV
-                CustomerS = CommArithmetic.DecodeClientID(SrcData, 19);
+                SetDeviceCustomer(SrcData, 19);
 
                 //Debug
-                DebugV = (UInt16)(SrcData[21] * 256 + SrcData[22]);
+                SetDeviceDebug(SrcData, 21);
 
                 //category
                 Category = SrcData[23];
 
                 //interval
-                Interval = SrcData[24] * 256 + SrcData[25];
+                Interval = (UInt16)(SrcData[24] * 256 + SrcData[25]);
 
                 //SS的日期和时间
                 SensorCollectTime = CommArithmetic.DecodeDateTime(SrcData, 26);
@@ -235,28 +233,29 @@ namespace YyWsnDeviceLibrary
                 Bps = SrcData[33];
 
                 //TxPower
-                TxPower = SrcData[34];
+                SetTxPower(SrcData[34]);
+
                 //
                 SampleSend = SrcData[35];
                 //
                 Channel = SrcData[36];
 
                 //温度警戒上限/下限
-                TemperatureInfoHigh = CommArithmetic.DecodeTemperature(SrcData, 37);
-                TemperatureInfoLow = CommArithmetic.DecodeTemperature(SrcData, 39);
+                TempWarnHigh = CommArithmetic.DecodeTemperature(SrcData, 37);
+                TempWarnLow = CommArithmetic.DecodeTemperature(SrcData, 39);
 
                 //湿度警戒上限/下限
-                HumidityInfoHigh = CommArithmetic.DecodeHumidity(SrcData, 41);
-                HumidityInfoLow = CommArithmetic.DecodeHumidity(SrcData, 43);
+                HumWarnHigh = CommArithmetic.DecodeHumidity(SrcData, 41);
+                HumWarnLow = CommArithmetic.DecodeHumidity(SrcData, 43);
 
-                TemperatureWarnHigh = CommArithmetic.DecodeTemperature(SrcData, 45);
-                TemperatureWarnLow = CommArithmetic.DecodeTemperature(SrcData, 47);
+                TempAlertHigh = CommArithmetic.DecodeTemperature(SrcData, 45);
+                TempAlertLow = CommArithmetic.DecodeTemperature(SrcData, 47);
 
-                HumidityWarnHigh = CommArithmetic.DecodeHumidity(SrcData, 49);
-                HumidityWarnLow = CommArithmetic.DecodeHumidity(SrcData, 51);
+                HumAlertHigh = CommArithmetic.DecodeHumidity(SrcData, 49);
+                HumAlertLow = CommArithmetic.DecodeHumidity(SrcData, 51);
 
-                TemperatureCompensation = CommArithmetic.DecodeTemperature(SrcData, 53);
-                HumidityCompensation = CommArithmetic.DecodeHumidity(SrcData, 55);
+                TempCompensation = CommArithmetic.DecodeTemperature(SrcData, 53);
+                HumCompensation = CommArithmetic.DecodeHumidity(SrcData, 55);
 
                 // IC temp
                 ICTemperature = SrcData[57];
@@ -304,7 +303,7 @@ namespace YyWsnDeviceLibrary
                 UInt16 pktLen = SrcData[1];
 
                 // Cmd
-                WorkFunction = SrcData[2];
+                Pattern = SrcData[2];
 
                 // Device type     
                 SetDeviceName(SrcData[3]);
@@ -313,6 +312,7 @@ namespace YyWsnDeviceLibrary
                 ProtocolVersion = SrcData[4];
 
                 // CustomerV
+                CustomerV = 0;
                 CustomerS = "00 00";
 
                 //SS ID
@@ -357,9 +357,9 @@ namespace YyWsnDeviceLibrary
                 SetDeviceName(0x51);
                 SetDeviceMac(SrcData, 5);
 
-                CustomerS = CommArithmetic.DecodeClientID(SrcData, 3);
+                SetDeviceCustomer(SrcData, 3);
 
-                WorkFunction = SrcData[2];
+                Pattern = SrcData[2];
 
                 ProtocolVersion = 0x00;
 
@@ -398,9 +398,8 @@ namespace YyWsnDeviceLibrary
                 //将收到的数据填充到属性
                 SetDeviceName(SrcData[3]);
                 SetDeviceMac(SrcData, 7);
-
-                CustomerS = CommArithmetic.DecodeClientID(SrcData, 5);
-                WorkFunction = SrcData[2];
+                SetDeviceCustomer(SrcData, 5);
+                Pattern = SrcData[2];
                 ProtocolVersion = SrcData[4];
 
                 SensorSN = SrcData[13] * 256 + SrcData[14];
@@ -463,8 +462,303 @@ namespace YyWsnDeviceLibrary
             {
                 ReadSensorDataV1(SrcData, IndexOfStart, true);
             }
+            else if (isSensorDataV1_MAX31855(SrcData, IndexOfStart, true) >= 0)
+            {
+                ReadSensorDataV1_MAX31855(SrcData, IndexOfStart, true);
+            }
 
             return;
+        }
+
+        /// <summary>
+        /// 构造函数
+        /// </summary>
+        /// <param name="SrcData"></param>
+        public M1(byte[] SrcData, UInt16 IndexOfStart, Device.DataPktType pktType, Device.DeviceType deviceType)
+        {
+            if (isDeviceType((byte)deviceType) == false)
+            {
+                return;
+            }
+
+            if (pktType == Device.DataPktType.SensorDataFromGmToPc)
+            {
+                UInt16 iCnt = (UInt16)(IndexOfStart + 9);
+
+                // 数据包类型
+                dataPktType = DataPktType.SensorFromSsToGw;
+
+                // 网关的设备类型
+                deviceTypeOfGw = SrcData[iCnt];
+                iCnt += 1;
+
+                // 网关的传输序列号
+                SerialOfGw = (UInt16)(SrcData[iCnt] * 256 + SrcData[iCnt + 1]);
+                iCnt += 2;
+
+                // 网关的传输时间
+                GWTime = CommArithmetic.DecodeDateTime(SrcData, iCnt);
+                iCnt += 6;
+
+                // 网关的电压
+                GwVolt = (UInt16)(SrcData[iCnt] * 256 + SrcData[iCnt + 1]);
+                GwVoltF = (double)(GwVolt / 1000.0f);
+                iCnt += 2;
+
+                // Sensor ID
+                SetDeviceMac(SrcData, iCnt);
+                iCnt += 4;
+
+                //状态state
+                State = SrcData[iCnt];
+                iCnt += 1;
+
+                //报警项
+                AlarmItem = SrcData[iCnt];
+                iCnt += 1;
+
+                // Cmd
+                Pattern = SrcData[iCnt];
+                iCnt += 1;
+
+                // Device Type
+                SetDeviceName(SrcData[iCnt]);
+                iCnt += 1;
+
+                // protocol
+                ProtocolVersion = SrcData[iCnt];
+                iCnt += 1;
+
+                iCnt += 2;
+
+                // Serial
+                SensorSN = SrcData[iCnt] * 256 + SrcData[iCnt + 1];
+                iCnt += 2;
+
+                iCnt += 1;
+
+                // IC temp
+                ICTemperature = SrcData[iCnt];
+                if (ICTemperature >= 128)
+                {
+                    ICTemperature -= 256;
+                }
+                iCnt += 1;
+
+                iCnt += 1;
+
+                // voltage
+                volt = (UInt16)(SrcData[iCnt] * 256 + SrcData[iCnt + 1]);
+                voltF = (double)(volt / 1000.0f);
+                iCnt += 2;
+
+                iCnt += 1;
+
+                // Sample Calendar
+                SensorCollectTime = CommArithmetic.DecodeDateTime(SrcData, iCnt);
+                iCnt += 6;
+
+                iCnt += 1;
+
+                // Transfer Calendar
+                SensorTransforTime = CommArithmetic.DecodeDateTime(SrcData, iCnt);
+                iCnt += 6;
+
+                iCnt += 1;
+
+                // RSSI
+                byte rssi = SrcData[iCnt];
+                if (rssi >= 0x80)
+                {
+                    RSSI = (double)(rssi - 0x100);
+                }
+                else
+                {
+                    RSSI = (double)rssi;
+                }
+                iCnt += 1;
+
+                iCnt += 1;
+
+                // 温湿度传感数据
+                if (deviceType == Device.DeviceType.M1)
+                {
+                    temp = (Int16)(SrcData[iCnt] * 256 + SrcData[iCnt + 1]);
+                    tempF = (double)(temp / 100.0f);
+                    iCnt += 2;
+
+                    iCnt += 1;
+
+                    hum = (UInt16)(SrcData[iCnt] * 256 + SrcData[iCnt + 1]);
+                    humF = (double)(hum / 100.0f);
+                    iCnt += 2;
+                }
+                else    // Device.DeviceType.M2
+                {
+                    temp = (Int16)(SrcData[iCnt] * 256 + SrcData[iCnt + 1]);
+                    tempF = (double)(temp / 100.0f);
+                    iCnt += 2;
+
+                    hum = 0;
+                    humF = 0.0f;
+                }
+
+                // Last/History
+                LastHistory = SrcData[iCnt];
+                iCnt += 1;
+
+                // To Send Ram
+                ToSendRam = SrcData[iCnt];
+                iCnt += 1;
+
+                // To Send Flash
+                ToSendFlash = (UInt16)(SrcData[iCnt] * 256 + SrcData[iCnt + 1]);
+                iCnt += 2;
+
+                // 保留
+                Reserved = SrcData[iCnt];
+                iCnt += 1;
+
+                // 系统时间            
+                SystemTime = System.DateTime.Now;
+
+                // 源数据
+                this.SourceData = CommArithmetic.ToHexString(SrcData);
+
+            }
+            else if (pktType == Device.DataPktType.SelfTestFromUsbToPc)
+            {
+                byte protocol = SrcData[IndexOfStart + 5];
+
+                if (protocol == 2)
+                {
+                    SetDeviceName(SrcData[IndexOfStart + 4]);
+                    ProtocolVersion = protocol;
+                    SetDevicePrimaryMac(SrcData, (UInt16)(IndexOfStart + 6));
+                    SetDeviceMac(SrcData, (UInt16)(IndexOfStart + 10));
+                    SetHardwareRevision(SrcData, (UInt16)(IndexOfStart + 14));
+                    SetSoftwareRevision(SrcData, (UInt16)(IndexOfStart + 18));
+                    SetDeviceCustomer(SrcData, (UInt16)(IndexOfStart + 20));
+                    SetDeviceDebug(SrcData, (UInt16)(IndexOfStart + 22));
+
+                    Category = SrcData[IndexOfStart + 24];
+                    Interval = (UInt16)(SrcData[IndexOfStart + 25] * 256 + SrcData[IndexOfStart + 26]);
+                    Calendar = CommArithmetic.DecodeDateTime(SrcData, (UInt16)(IndexOfStart + 27));
+
+                    Pattern = SrcData[IndexOfStart + 33];
+                    Bps = SrcData[IndexOfStart + 34];
+                    SetTxPower(SrcData[IndexOfStart + 35]);
+                    SampleSend = SrcData[IndexOfStart + 36];
+                    Channel = SrcData[IndexOfStart + 37];
+
+                    TempWarnHigh = (double)(Int16)(SrcData[IndexOfStart + 38] * 256 + SrcData[IndexOfStart + 39]) / 100.0f;
+                    TempWarnLow = (double)(Int16)(SrcData[IndexOfStart + 40] * 256 + SrcData[IndexOfStart + 41]) / 100.0f;
+
+                    HumWarnHigh = (double)(SrcData[IndexOfStart + 42] * 256 + SrcData[IndexOfStart + 43]) / 100.0f;
+                    HumWarnLow = (double)(SrcData[IndexOfStart + 44] * 256 + SrcData[IndexOfStart + 45]) / 100.0f;
+
+                    TempAlertHigh = (double)(Int16)(SrcData[IndexOfStart + 46] * 256 + SrcData[IndexOfStart + 47]) / 100.0f;
+                    TempAlertLow = (double)(Int16)(SrcData[IndexOfStart + 48] * 256 + SrcData[IndexOfStart + 49]) / 100.0f;
+
+                    HumAlertHigh = (double)(SrcData[IndexOfStart + 50] * 256 + SrcData[IndexOfStart + 51]) / 100.0f;
+                    HumAlertLow = (double)(SrcData[IndexOfStart + 52] * 256 + SrcData[IndexOfStart + 53]) / 100.0f;
+
+                    TempCompensation = (double)(Int16)(SrcData[IndexOfStart + 54] * 256 + SrcData[IndexOfStart + 55]) / 100.0f;
+                    HumCompensation = (double)(Int16)(SrcData[IndexOfStart + 56] * 256 + SrcData[IndexOfStart + 57]) / 100.0f;
+
+                    ICTemperature = SrcData[IndexOfStart + 58];
+                    voltF = Math.Round(Convert.ToDouble((SrcData[IndexOfStart + 59] * 256 + SrcData[IndexOfStart + 60])) / 1000, 2);
+
+                    FlashID = CommArithmetic.DecodeClientID(SrcData, IndexOfStart + 61);
+                    MaxLength = SrcData[IndexOfStart + 63];
+
+                    FlashFront = SrcData[IndexOfStart + 64] * 256 * 256 + SrcData[IndexOfStart + 65] * 256 + SrcData[IndexOfStart + 66];
+                    FlashRear = SrcData[IndexOfStart + 67] * 256 * 256 + SrcData[IndexOfStart + 68] * 256 + SrcData[IndexOfStart + 69];
+                    FlashQueueLength = SrcData[IndexOfStart + 70] * 256 * 256 + SrcData[IndexOfStart + 71] * 256 + SrcData[IndexOfStart + 72];
+
+                    temp = (Int16)(SrcData[IndexOfStart + 73] * 256 + SrcData[IndexOfStart + 74]);
+                    tempF = (double)(temp / 100.0f);
+
+                    hum = (UInt16)(SrcData[IndexOfStart + 75] * 256 + SrcData[IndexOfStart + 76]);
+                    humF = (double)(hum / 100.0f);
+
+                    byte rssi = SrcData[IndexOfStart + 78];
+                    if (rssi >= 0x80)
+                    {
+                        RSSI = (double)(rssi - 0x100);
+                    }
+                    else
+                    {
+                        RSSI = (double)rssi;
+                    }
+                }
+                else if (protocol == 3)
+                {
+                    SetDeviceName(SrcData[IndexOfStart + 4]);
+                    ProtocolVersion = protocol;
+                    SetDevicePrimaryMac(SrcData, (UInt16)(IndexOfStart + 6));
+                    SetDeviceMac(SrcData, (UInt16)(IndexOfStart + 10));
+                    SetHardwareRevision(SrcData, (UInt16)(IndexOfStart + 14));
+                    SetSoftwareRevision(SrcData, (UInt16)(IndexOfStart + 18));
+                    SetDeviceCustomer(SrcData, (UInt16)(IndexOfStart + 20));
+                    SetDeviceDebug(SrcData, (UInt16)(IndexOfStart + 22));
+
+                    Category = SrcData[IndexOfStart + 24];
+                    Interval = (UInt16)(SrcData[IndexOfStart + 25] * 256 + SrcData[IndexOfStart + 26]);
+                    Calendar = CommArithmetic.DecodeDateTime(SrcData, (UInt16)(IndexOfStart + 27));
+
+                    Pattern = SrcData[IndexOfStart + 33];
+                    Bps = SrcData[IndexOfStart + 34];
+                    SetTxPower(SrcData[IndexOfStart + 35]);
+                    SampleSend = SrcData[IndexOfStart + 36];
+                    Channel = SrcData[IndexOfStart + 37];
+
+                    TempWarnHigh = (double)(Int16)(SrcData[IndexOfStart + 38] * 256 + SrcData[IndexOfStart + 39])/100.0f;
+                    TempWarnLow = (double)(Int16)(SrcData[IndexOfStart + 40] * 256 + SrcData[IndexOfStart + 41])/100.0f;
+
+                    HumWarnHigh = (double)(SrcData[IndexOfStart + 42] * 256 + SrcData[IndexOfStart + 43]) / 100.0f;
+                    HumWarnLow = (double)(SrcData[IndexOfStart + 44] * 256 + SrcData[IndexOfStart + 45]) / 100.0f;
+
+                    TempAlertHigh = (double)(Int16)(SrcData[IndexOfStart + 46] * 256 + SrcData[IndexOfStart + 47]) / 100.0f;
+                    TempAlertLow = (double)(Int16)(SrcData[IndexOfStart + 48] * 256 + SrcData[IndexOfStart + 49]) / 100.0f;
+
+                    HumAlertHigh = (double)(SrcData[IndexOfStart + 50] * 256 + SrcData[IndexOfStart + 51]) / 100.0f;
+                    HumAlertLow = (double)(SrcData[IndexOfStart + 52] * 256 + SrcData[IndexOfStart + 53]) / 100.0f;
+
+                    TempCompensation = (double)(Int16)(SrcData[IndexOfStart + 54] * 256 + SrcData[IndexOfStart + 55]) / 100.0f;
+                    HumCompensation = (double)(Int16)(SrcData[IndexOfStart + 56] * 256 + SrcData[IndexOfStart + 57]) / 100.0f;
+
+                    ICTemperature = SrcData[IndexOfStart + 58];
+                    voltF = Math.Round(Convert.ToDouble((SrcData[IndexOfStart + 59] * 256 + SrcData[IndexOfStart + 60])) / 1000, 2);
+
+                    FlashID = CommArithmetic.DecodeClientID(SrcData, IndexOfStart + 61);
+                    MaxLength = SrcData[IndexOfStart + 63];
+
+                    FlashFront = SrcData[IndexOfStart + 64] * 256 * 256 + SrcData[IndexOfStart + 65] * 256 + SrcData[IndexOfStart + 66];
+                    FlashRear = SrcData[IndexOfStart + 67] * 256 * 256 + SrcData[IndexOfStart + 68] * 256 + SrcData[IndexOfStart + 69];
+                    FlashQueueLength = SrcData[IndexOfStart + 70] * 256 * 256 + SrcData[IndexOfStart + 71] * 256 + SrcData[IndexOfStart + 72];
+
+                    temp = (Int16)(SrcData[IndexOfStart + 73] * 256 + SrcData[IndexOfStart + 74]);
+                    tempF = (double)(temp / 100.0f);
+
+                    hum = (UInt16)(SrcData[IndexOfStart + 75] * 256 + SrcData[IndexOfStart + 76]);
+                    humF = (double)(hum / 100.0f);
+
+                    NormalInterval = (UInt16)(SrcData[IndexOfStart + 77] * 256 + SrcData[IndexOfStart + 78]);
+                    WarnInterval = (UInt16)(SrcData[IndexOfStart + 79] * 256 + SrcData[IndexOfStart + 80]);
+                    AlertInterval = (UInt16)(SrcData[IndexOfStart + 81] * 256 + SrcData[IndexOfStart + 82]);
+
+                    byte rssi = SrcData[IndexOfStart + 86];
+                    if (rssi >= 0x80)
+                    {
+                        RSSI = (double)(rssi - 0x100);
+                    }
+                    else
+                    {
+                        RSSI = (double)rssi;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -577,6 +871,109 @@ namespace YyWsnDeviceLibrary
         }
 
         /// <summary>
+        /// 判断是不是监测工具监测到的M1发出的传感器数据包（V1版本）
+        /// </summary>
+        /// <param name="SrcBuf"></param>
+        /// <param name="ExistRssi">true = 包含RSSI； false = 不包含RSSI；</param>
+        /// <returns></returns>
+        static public Int16 isSensorDataV1_MAX31855(byte[] SrcData, UInt16 IndexOfStart, bool ExistRssi)
+        {
+            UInt16 AppendLen = 0;
+            if (ExistRssi == true)
+            {
+                AppendLen = 1;
+            }
+
+            // 数据包的总长度
+            UInt16 SrcLen = (UInt16)(SrcData.Length - IndexOfStart);
+            if (SrcLen < 30 + AppendLen)
+            {
+                return -1;
+            }
+
+            // 起始位
+            if (SrcData[IndexOfStart + 0] != 0xEA)
+            {
+                return -2;
+            }
+
+            // 长度位
+            byte pktLen = SrcData[IndexOfStart + 1];
+            if (pktLen + 5 + AppendLen > SrcLen)
+            {
+                return -3;
+            }
+
+            if (SrcData[IndexOfStart + 2 + pktLen + 2] != 0xAE)
+            {
+                return -4;
+            }
+
+            // CRC16
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, SrcData, (UInt16)(IndexOfStart + 2), pktLen);
+            UInt16 crc_chk = (UInt16)(SrcData[IndexOfStart + 2 + pktLen + 0] * 256 + SrcData[IndexOfStart + 2 + pktLen + 1]);
+            if (crc_chk != crc && crc_chk != 0)
+            {
+                return -5;
+            }
+
+            // Cmd
+            byte Cmd = SrcData[IndexOfStart + 2];
+            if (Cmd != 1 && Cmd != 2 && Cmd != 3 && Cmd != 4)
+            {
+                return -6;
+            }
+
+            // DeviceType
+            byte DeviceType = SrcData[IndexOfStart + 3];
+            if (isDeviceType(DeviceType) == false)
+            {
+                return -7;
+            }
+
+            // 协议版本
+            byte protocol = SrcData[IndexOfStart + 4];
+            if (protocol != 1)
+            {
+                return -8;
+            }
+
+            // 负载长度
+            byte payLen = SrcData[IndexOfStart + 11];
+            if (payLen != 0x14)
+            {
+                return -9;
+            }
+
+            // 数据类型
+            byte dataType = SrcData[IndexOfStart + 12];
+            if (dataType != 0x61)
+            {
+                return -10;
+            }
+
+            dataType = SrcData[IndexOfStart + 15];
+            if (dataType != 0x63)
+            {
+                return -11;
+            }
+
+            dataType = SrcData[IndexOfStart + 17];
+            if (dataType != 0x64)
+            {
+                return -12;
+            }
+
+            dataType = SrcData[IndexOfStart + 20];
+            if (dataType != 0x81)
+            {
+                return -13;
+            }
+
+            return 0;
+        }
+
+        /// <summary>
         /// 判断是不是监测工具监测到的M1发出的传感器数据包（V2和V3版本）
         /// </summary>
         /// <param name="SrcBuf"></param>
@@ -683,7 +1080,7 @@ namespace YyWsnDeviceLibrary
             STP = SrcData[IndexOfStart + 0];
 
             // Cmd
-            WorkFunction = SrcData[IndexOfStart + 2];
+            Pattern = SrcData[IndexOfStart + 2];
 
             // Device Type
             SetDeviceName(SrcData[IndexOfStart + 3]);
@@ -762,6 +1159,94 @@ namespace YyWsnDeviceLibrary
         }
 
         /// <summary>
+        /// 读取Sensor的数据包（V1版本）
+        /// </summary>
+        /// <param name="SrcData"></param>
+        /// <param name="IndexOfStart"></param>
+        /// <param name="ExistRssi"></param>
+        /// <returns></returns>
+        public Int16 ReadSensorDataV1_MAX31855(byte[] SrcData, UInt16 IndexOfStart, bool ExistRssi)
+        {
+            // 数据包类型
+            dataPktType = DataPktType.SensorDataMax31855Debug;
+
+            // 起始位
+            STP = SrcData[IndexOfStart + 0];
+
+            // Cmd
+            Pattern = SrcData[IndexOfStart + 2];
+
+            // Device Type
+            SetDeviceName(SrcData[IndexOfStart + 3]);
+
+            // protocol
+            ProtocolVersion = SrcData[IndexOfStart + 4];
+
+            // CustomerV
+            SetDeviceCustomer(SrcData, (UInt16)(IndexOfStart + 5));
+
+            // Sensor ID
+            SetDeviceMac(SrcData, (UInt16)(IndexOfStart + 7));
+
+            // Serial
+            SensorSN = SrcData[IndexOfStart + 13] * 256 + SrcData[IndexOfStart + 14];
+
+            // IC temp
+            ICTemperature = SrcData[IndexOfStart + 16];
+            if (ICTemperature >= 128)
+            {
+                ICTemperature -= 256;
+            }
+
+            // voltage
+            volt = (UInt16)(SrcData[IndexOfStart + 18] * 256 + SrcData[IndexOfStart + 19]);
+            voltF = (double)(volt / 1000.0f);
+
+            // MAX31855 采集结果
+            SampleResult = SrcData[IndexOfStart + 21];
+            if(SampleResult >= 0x80)
+            {
+                SampleResult -= 0x100;
+            }
+
+            // MAX31855 寄存器值
+            RegValue = (UInt32)(SrcData[IndexOfStart + 22] * 256 * 256 * 256 + SrcData[IndexOfStart + 23] * 256 * 256 + SrcData[IndexOfStart + 24] * 256 + SrcData[IndexOfStart + 25]);
+
+            // MAX31855 热电偶温度
+            thermocoupleTemp = (Int16)(SrcData[IndexOfStart + 26] * 256 + SrcData[IndexOfStart + 27]);
+            thermocoupleTempF = (double)(thermocoupleTemp / 100.0f);
+
+            // MAX31855 芯片温度
+            internalTemp = (Int16)(SrcData[IndexOfStart + 28] * 256 + SrcData[IndexOfStart + 29]);
+            internalTempF = (double)(internalTemp / 100.0f);
+
+            // MAX31855 被测环境温度
+            temp = (Int16)(SrcData[IndexOfStart + 30] * 256 + SrcData[IndexOfStart + 31]);
+            tempF = (double)(temp / 100.0f);
+
+            // RSSI
+            if (ExistRssi == true)
+            {
+                byte rssi = SrcData[IndexOfStart + 36];
+                if (rssi >= 0x80)
+                {
+                    RSSI = (double)(rssi - 0x100);
+                }
+                else
+                {
+                    RSSI = (double)rssi;
+                }
+            }
+
+            // 传输时间                
+            SensorTransforTime = System.DateTime.Now;
+
+            this.SourceData = CommArithmetic.ToHexString(SrcData);
+
+            return 0;
+        }
+
+        /// <summary>
         /// 读取Sensor的数据包（V2和V3版本）
         /// </summary>
         /// <param name="SrcData"></param>
@@ -777,7 +1262,7 @@ namespace YyWsnDeviceLibrary
             STP = SrcData[IndexOfStart + 0];
 
             // Cmd
-            WorkFunction = SrcData[IndexOfStart + 2];
+            Pattern = SrcData[IndexOfStart + 2];
 
             // Device Type
             SetDeviceName(SrcData[IndexOfStart + 3]);
@@ -901,7 +1386,7 @@ namespace YyWsnDeviceLibrary
             STP = SrcData[0];
 
             // Cmd
-            WorkFunction = SrcData[2];
+            Pattern = SrcData[2];
 
             // Device Type
             SetDeviceName(SrcData[3]);
@@ -1151,7 +1636,7 @@ namespace YyWsnDeviceLibrary
             STP = SrcBuf[0];
 
             // Cmd
-            WorkFunction = SrcBuf[2];
+            Pattern = SrcBuf[2];
 
             // Device type
             SetDeviceName(SrcBuf[3]);
@@ -1193,7 +1678,7 @@ namespace YyWsnDeviceLibrary
             Bps = SrcBuf[33];
 
             // TxPower
-            TxPower = SrcBuf[34];
+            SetTxPower(SrcBuf[34]);
 
             // 发/采
             SampleSend = SrcBuf[35];
@@ -1257,134 +1742,300 @@ namespace YyWsnDeviceLibrary
             return 0;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public byte[] UpdateFactory()
         {
-            byte[] updateBytes = new byte[21];
-            updateBytes[0] = 0xCE;
-            updateBytes[1] = 0x10;
-            updateBytes[2] = 0xA1;
-            updateBytes[3] = 0x01;
+            byte[] ByteBuf = new byte[21];
+            UInt16 ByteLen = 0;
 
-            //兼容M1 和 M1P
-            if (DeviceTypeS == "51")
+            // 起始位
+            ByteBuf[ByteLen++] = 0xCE;
+
+            // 长度位
+            ByteBuf[ByteLen++] = (byte)(ByteBuf.Length - 5);
+
+            // 命令位
+            ByteBuf[ByteLen++] = 0xA1;
+
+            // USB Protocol
+            ByteBuf[ByteLen++] = 0x01;
+
+            // 设备类型
+            if (DeviceTypeS == "M1")
             {
-                updateBytes[4] = 0x51;
+                ByteBuf[ByteLen++] = 0x51;
             }
-            else if (DeviceTypeS == "53")
+            else if (DeviceTypeS == "M1P")
             {
-                updateBytes[4] = 0x53;
+                ByteBuf[ByteLen++] = 0x53;
             }
-            else if (DeviceTypeS == "57")
+            else if (DeviceTypeS == "M2")
             {
-                updateBytes[4] = 0x57;
+                ByteBuf[ByteLen++] = 0x57;
+            }
+            else if (DeviceTypeS == "M1NTC")
+            {
+                ByteBuf[ByteLen++] = 0x5C;
+            }
+            else if (DeviceTypeS == "M1_Beetech")
+            { 
+                ByteBuf[ByteLen++] = 0x5D;
+            }
+            else if (DeviceTypeS == "M1_ZheQin")
+            {
+                ByteBuf[ByteLen++] = 0x7D;
+            }else
+            {
+                ByteBuf[ByteLen++] = 0x00;
             }
 
-            updateBytes[5] = 0x02;
+            // Protocol
+            ByteBuf[ByteLen++] = 0x02;
 
+            // Sensor Mac
             byte[] deviceMacBytes = CommArithmetic.HexStringToByteArray(DeviceMacS);
-            updateBytes[6] = deviceMacBytes[0];
-            updateBytes[7] = deviceMacBytes[1];
-            updateBytes[8] = deviceMacBytes[2];
-            updateBytes[9] = deviceMacBytes[3];
+            ByteBuf[ByteLen++] = deviceMacBytes[0];
+            ByteBuf[ByteLen++] = deviceMacBytes[1];
+            ByteBuf[ByteLen++] = deviceMacBytes[2];
+            ByteBuf[ByteLen++] = deviceMacBytes[3];
 
-            deviceMacBytes = CommArithmetic.HexStringToByteArray(DeviceNewMAC);
-            updateBytes[10] = deviceMacBytes[0];
-            updateBytes[11] = deviceMacBytes[1];
-            updateBytes[12] = deviceMacBytes[2];
-            updateBytes[13] = deviceMacBytes[3];
+            // New Sensor Mac
+            deviceMacBytes = CommArithmetic.HexStringToByteArray(DeviceMacNewS);
+            ByteBuf[ByteLen++] = deviceMacBytes[0];
+            ByteBuf[ByteLen++] = deviceMacBytes[1];
+            ByteBuf[ByteLen++] = deviceMacBytes[2];
+            ByteBuf[ByteLen++] = deviceMacBytes[3];
 
-            deviceMacBytes = CommArithmetic.HexStringToByteArray(HwVersionS);
-            updateBytes[14] = deviceMacBytes[0];
-            updateBytes[15] = deviceMacBytes[1];
-            updateBytes[16] = deviceMacBytes[2];
-            updateBytes[17] = deviceMacBytes[3];
+            // Hardware Revision
+            deviceMacBytes = CommArithmetic.HexStringToByteArray(HwRevisionS);
+            ByteBuf[ByteLen++] = deviceMacBytes[0];
+            ByteBuf[ByteLen++] = deviceMacBytes[1];
+            ByteBuf[ByteLen++] = deviceMacBytes[2];
+            ByteBuf[ByteLen++] = deviceMacBytes[3];
 
+            // CRC
+            UInt16 crc = MyCustomFxn.CRC16(0x1021, 0, ByteBuf, 2, (UInt16)(ByteLen - 2));
+            ByteBuf[ByteLen++] = (byte)((crc & 0xFF00) >> 8);
+            ByteBuf[ByteLen++] = (byte)((crc & 0x00FF) >> 0);
 
-            updateBytes[18] = 0x00;
-            updateBytes[19] = 0x00;
-            updateBytes[20] = 0xEC;
+            // 结束位
+            ByteBuf[ByteLen++] = 0xEC;
 
-            return updateBytes;
+            return ByteBuf;
         }
 
         public byte[] UpdateUserConfig()
         {
-            byte[] updateBytes = new byte[27];
-            updateBytes[0] = 0xCE;
-            if (DeviceTypeS == "57")
+            byte[] updateBytes = null;
+
+            if (ProtocolVersion == 2)
             {
-                updateBytes[1] = 0x14;
-            }                
-            else
+                updateBytes = new byte[27];
+                updateBytes[0] = 0xCE;
+
+                if (DeviceTypeS == "57")
+                {   // M2 类型
+                    updateBytes[1] = 0x14;
+                }
+                else
+                {   // M1 所有类型
+                    updateBytes[1] = 0x16;
+                }
+
+                updateBytes[2] = 0xA2;
+                updateBytes[3] = 0x01;
+
+                if (DeviceTypeS == "51")
+                {
+                    updateBytes[4] = 0x51;
+                }
+                else if (DeviceTypeS == "53")
+                {
+                    updateBytes[4] = 0x53;
+                }
+                else if (DeviceTypeS == "57")
+                {
+                    updateBytes[4] = 0x57;
+                }
+                else if (DeviceTypeS == "5C")
+                {
+                    updateBytes[4] = 0x5C;
+                }
+                else if (DeviceTypeS == "5D")
+                {
+                    updateBytes[4] = 0x5D;
+                }
+                else if (DeviceTypeS == "7D")
+                {
+                    updateBytes[4] = 0x7D;
+                }
+
+                updateBytes[5] = 0x02;
+
+                //Mac
+                byte[] deviceMacBytes = CommArithmetic.HexStringToByteArray(DeviceMacS);
+                updateBytes[6] = deviceMacBytes[0];
+                updateBytes[7] = deviceMacBytes[1];
+                updateBytes[8] = deviceMacBytes[2];
+                updateBytes[9] = deviceMacBytes[3];
+
+                //clientID
+                deviceMacBytes = CommArithmetic.HexStringToByteArray(CustomerS);
+                updateBytes[10] = deviceMacBytes[0];
+                updateBytes[11] = deviceMacBytes[1];
+
+                //Debug
+                deviceMacBytes = CommArithmetic.HexStringToByteArray(DebugS);
+                updateBytes[12] = deviceMacBytes[0];
+                updateBytes[13] = deviceMacBytes[1];
+
+                //category
+                updateBytes[14] = Category;
+
+                //Pattern
+                updateBytes[15] = Pattern;
+
+                //Bps
+                updateBytes[16] = Bps;
+
+                //TXPower
+                updateBytes[17] = (byte)TxPower;
+
+                //Frequency
+                updateBytes[18] = Channel;
+
+                //温度补偿
+                Int16 tempComp = (Int16)Math.Round(TempCompensation * 100.0f);       // 单位：0.01℃
+                updateBytes[19] = (byte)((tempComp & 0xFF00) >> 8);
+                updateBytes[20] = (byte)((tempComp & 0x00FF) >> 0);
+
+                if (DeviceTypeS == "57")
+                {   // M2无湿度补偿
+
+                    // 存储容量
+                    updateBytes[21] = MaxLength;
+
+                    //CRC
+                    updateBytes[22] = 0x00;
+                    updateBytes[23] = 0x00;
+
+                    // 结束位
+                    updateBytes[24] = 0xEC;
+                }
+                else
+                {
+                    //湿度补偿
+                    UInt16 humComp = (UInt16)Math.Round(HumCompensation * 100.0f);     // 单位：0.01%
+                    updateBytes[21] = (byte)((humComp & 0xFF00) >> 8);
+                    updateBytes[22] = (byte)((humComp & 0x00FF) >> 0);
+
+                    // 存储容量
+                    updateBytes[23] = MaxLength;
+
+                    //CRC
+                    updateBytes[22] = 0x00;
+                    updateBytes[23] = 0x00;
+
+                    // 结束位
+                    updateBytes[26] = 0xEC;
+                }
+
+            }          
+            else if (ProtocolVersion == 3)
             {
-                updateBytes[1] = 0x16;
-            }
-            
-            updateBytes[2] = 0xA2;
-            updateBytes[3] = 0x01;
-            //兼容M1 和 M1P
-            if (DeviceTypeS == "51")
-                updateBytes[4] = 0x51;
-            else if (DeviceTypeS == "53")
-                updateBytes[4] = 0x53;
-            else if (DeviceTypeS == "57")
-                updateBytes[4] = 0x57;
+                updateBytes = new byte[35];
+                updateBytes[0] = 0xCE;
+                updateBytes[1] = 0x1E;
+                updateBytes[2] = 0xA2;
+                updateBytes[3] = 0x02;
 
-            updateBytes[5] = 0x02;
-            //DeviceMacV
-            byte[] deviceMacBytes = CommArithmetic.HexStringToByteArray(DeviceMacS);
-            updateBytes[6] = deviceMacBytes[0];
-            updateBytes[7] = deviceMacBytes[1];
-            updateBytes[8] = deviceMacBytes[2];
-            updateBytes[9] = deviceMacBytes[3];
-            //clientID
-            deviceMacBytes = CommArithmetic.HexStringToByteArray(CustomerS);
-            updateBytes[10] = deviceMacBytes[0];
-            updateBytes[11] = deviceMacBytes[1];
+                if (DeviceTypeS == "51")
+                {
+                    updateBytes[4] = 0x51;
+                }
+                else if (DeviceTypeS == "53")
+                {
+                    updateBytes[4] = 0x53;
+                }
+                else if (DeviceTypeS == "57")
+                {
+                    updateBytes[4] = 0x57;
+                }
+                else if (DeviceTypeS == "5C")
+                {
+                    updateBytes[4] = 0x5C;
+                }
+                else if (DeviceTypeS == "5D")
+                {
+                    updateBytes[4] = 0x5D;
+                }
+                else if (DeviceTypeS == "7D")
+                {
+                    updateBytes[4] = 0x7D;
+                }
 
-            //Debug      
-            updateBytes[12] = (byte) (DebugV / 256);
-            updateBytes[13] = (byte) (DebugV % 256);
+                updateBytes[5] = 0x03;
 
-            //category
-            updateBytes[14] = Category;
-            //WorkFunction
-            updateBytes[15] = WorkFunction;
-            //SymbolRate
-            updateBytes[16] = SymbolRate;
-            //TxPower
-            updateBytes[17] = TxPower;
-            //Channel
-            updateBytes[18] = Channel;
+                //Mac
+                byte[] deviceMacBytes = CommArithmetic.HexStringToByteArray(DeviceMacS);
+                updateBytes[6] = deviceMacBytes[0];
+                updateBytes[7] = deviceMacBytes[1];
+                updateBytes[8] = deviceMacBytes[2];
+                updateBytes[9] = deviceMacBytes[3];
+                //clientID
+                deviceMacBytes = CommArithmetic.HexStringToByteArray(CustomerS);
+                updateBytes[10] = deviceMacBytes[0];
+                updateBytes[11] = deviceMacBytes[1];
 
-            //温度补偿：TODO 暂未实现
-            updateBytes[19] = 0x00;
-            updateBytes[20] = 0x00;
+                //Debug
+                deviceMacBytes = CommArithmetic.HexStringToByteArray(DebugS);
+                updateBytes[12] = deviceMacBytes[0];
+                updateBytes[13] = deviceMacBytes[1];
 
-            if (DeviceTypeS == "57")
-            {
-                //湿度补偿：TODO 暂未实现,M2 没有湿度补偿               
+                //category
+                updateBytes[14] = Category;
+                //Pattern
+                updateBytes[15] = Pattern;
+                //Bps
+                updateBytes[16] = Bps;
+                //TXPower
+                updateBytes[17] = (byte)TxPower;
+                //Frequency
+                updateBytes[18] = Channel;
+                //MaxLength
+                updateBytes[19] = MaxLength;
+                //datetime
+                deviceMacBytes = CommArithmetic.EncodeDateTime(Calendar);
+                updateBytes[20] = deviceMacBytes[0];
+                updateBytes[21] = deviceMacBytes[1];
+                updateBytes[22] = deviceMacBytes[2];
+                updateBytes[23] = deviceMacBytes[3];
+                updateBytes[24] = deviceMacBytes[4];
+                updateBytes[25] = deviceMacBytes[5];
 
-                updateBytes[21] = MaxLength;
+                // 温度补偿
+                Int16 tempComp = (Int16)Math.Round(TempCompensation * 100.0f);       // 单位：0.01℃
+                updateBytes[26] = (byte)((tempComp & 0xFF00) >> 8);
+                updateBytes[27] = (byte)((tempComp & 0x00FF) >> 0);
 
-                //CRC：TODO 暂未实现
-                updateBytes[22] = 0x00;
-                updateBytes[23] = 0x00;
+                // 湿度补偿
+                UInt16 humComp = (UInt16)Math.Round(HumCompensation * 100.0f);     // 单位：0.01%
+                updateBytes[28] = (byte)((humComp & 0xFF00) >> 8);
+                updateBytes[29] = (byte)((humComp & 0x00FF) >> 0);
 
-                updateBytes[24] = 0xEC;
-            }
-            else
-            {
-                updateBytes[21] = 0x00;
-                updateBytes[22] = 0x00;
+                // 保留位
+                updateBytes[30] = 0x00;
+                updateBytes[31] = 0x00;
 
-                updateBytes[23] = MaxLength;
+                // CRC
+                updateBytes[32] = 0x00;
+                updateBytes[33] = 0x00;
 
-                //CRC：TODO 暂未实现
-                updateBytes[24] = 0x00;
-                updateBytes[25] = 0x00;
-
-                updateBytes[26] = 0xEC;
+                // 结束位
+                updateBytes[34] = 0xEC;
             }
 
             return updateBytes;
@@ -1392,166 +2043,354 @@ namespace YyWsnDeviceLibrary
 
         public byte[] UpdateApplicationConfig()
         {
-            byte[] updateBytes = new byte[38];
-            updateBytes[0] = 0xCE;
-            if (DeviceTypeS != "57")
+            byte[] ByteBuf = null;
+
+            UInt16 ByteTotalLen = 0;
+            UInt16 ByteLen = 0;
+
+            byte usbProtocol = 0;
+
+            if (ProtocolVersion == 2)
             {
-                updateBytes[1] = 0x21;
+                if (DeviceTypeS == "57")
+                {   // M2
+                    ByteTotalLen = 30;
+                }
+                else
+                {   // M1
+                    ByteTotalLen = 38;
+                }
+
+                usbProtocol = 0x01;
+            }
+            else if (ProtocolVersion == 3)
+            {
+                ByteTotalLen = 45;
+                usbProtocol = 0x02;
             }
             else
             {
-                updateBytes[1] = 0x19;
-
+                return null;
             }
-                
-            updateBytes[2] = 0xA3;
-            updateBytes[3] = 0x01;
-            //兼容M1 和 M1P
+
+            // 创建字节数组
+            ByteBuf = new byte[ByteTotalLen];
+
+            // 起始位
+            ByteBuf[ByteLen++] = 0xCE;
+
+            // 长度位
+            ByteBuf[ByteLen++] = (byte)(ByteTotalLen - 5);
+
+            // 命令位
+            ByteBuf[ByteLen++] = 0xA3;
+
+            // USB协议版本
+            ByteBuf[ByteLen++] = usbProtocol;
+
+            // 设备类型
             if (DeviceTypeS == "51")
-                updateBytes[4] = 0x51;
-            else if (DeviceTypeS == "53")
-                updateBytes[4] = 0x53;
-            else if (DeviceTypeS == "57")
-                updateBytes[4] = 0x57;
-
-            updateBytes[5] = 0x02;
-            //DeviceMacV
-            byte[] deviceMacBytes = CommArithmetic.HexStringToByteArray(DeviceMacS);
-            updateBytes[6] = deviceMacBytes[0];
-            updateBytes[7] = deviceMacBytes[1];
-            updateBytes[8] = deviceMacBytes[2];
-            updateBytes[9] = deviceMacBytes[3];
-            //Interval
-            deviceMacBytes = CommArithmetic.Int16_2Bytes(Interval);
-            updateBytes[10] = deviceMacBytes[0];
-            updateBytes[11] = deviceMacBytes[1];
-
-            //Calendar
-            deviceMacBytes = CommArithmetic.EncodeDateTime(Calendar);
-            updateBytes[12] = deviceMacBytes[0];
-            updateBytes[13] = deviceMacBytes[1];
-            updateBytes[14] = deviceMacBytes[2];
-            updateBytes[15] = deviceMacBytes[3];
-            updateBytes[16] = deviceMacBytes[4];
-            updateBytes[17] = deviceMacBytes[5];
-
-            updateBytes[18] = SampleSend;
-
-            if (DeviceTypeS == "57")
             {
-                deviceMacBytes = CommArithmetic.Double_2Bytes(TemperatureInfoHigh);
-                updateBytes[19] = deviceMacBytes[0];
-                updateBytes[20] = deviceMacBytes[1];
-
-                deviceMacBytes = CommArithmetic.Double_2Bytes(TemperatureInfoLow);
-                updateBytes[21] = deviceMacBytes[0];
-                updateBytes[22] = deviceMacBytes[1];
-
-               
-
-                deviceMacBytes = CommArithmetic.Double_2Bytes(TemperatureWarnHigh);
-                updateBytes[23] = deviceMacBytes[0];
-                updateBytes[24] = deviceMacBytes[1];
-
-
-                deviceMacBytes = CommArithmetic.Double_2Bytes(TemperatureWarnLow);
-                updateBytes[25] = deviceMacBytes[0];
-                updateBytes[26] = deviceMacBytes[1];
-
-               
-
-
-
-                //CRC：TODO 暂未实现
-                updateBytes[27] = 0x00;
-                updateBytes[28] = 0x00;
-
-
-                updateBytes[29] = 0xEC;
-
+                ByteBuf[ByteLen++] = 0x51;
+            }
+            else if (DeviceTypeS == "53")
+            {
+                ByteBuf[ByteLen++] = 0x53;
+            }
+            else if (DeviceTypeS == "57")
+            {
+                ByteBuf[ByteLen++] = 0x57;
+            }
+            else if (DeviceTypeS == "5C")
+            {
+                ByteBuf[ByteLen++] = 0x5C;
+            }
+            else if (DeviceTypeS == "5D")
+            {
+                ByteBuf[ByteLen++] = 0x5D;
+            }
+            else if (DeviceTypeS == "7D")
+            {
+                ByteBuf[ByteLen++] = 0x7D;
             }
             else
             {
-                deviceMacBytes = CommArithmetic.Double_2Bytes(TemperatureInfoHigh);
-                updateBytes[19] = deviceMacBytes[0];
-                updateBytes[20] = deviceMacBytes[1];
-
-                deviceMacBytes = CommArithmetic.Double_2Bytes(TemperatureInfoLow);
-                updateBytes[21] = deviceMacBytes[0];
-                updateBytes[22] = deviceMacBytes[1];
-
-                deviceMacBytes = CommArithmetic.Double_2Bytes(HumidityInfoHigh);
-                updateBytes[23] = deviceMacBytes[0];
-                updateBytes[24] = deviceMacBytes[1];
-
-                deviceMacBytes = CommArithmetic.Double_2Bytes(HumidityInfoLow);
-                updateBytes[25] = deviceMacBytes[0];
-                updateBytes[26] = deviceMacBytes[1];
-
-                deviceMacBytes = CommArithmetic.Double_2Bytes(TemperatureWarnHigh);
-                updateBytes[27] = deviceMacBytes[0];
-                updateBytes[28] = deviceMacBytes[1];
-
-
-                deviceMacBytes = CommArithmetic.Double_2Bytes(TemperatureWarnLow);
-                updateBytes[29] = deviceMacBytes[0];
-                updateBytes[30] = deviceMacBytes[1];
-
-                deviceMacBytes = CommArithmetic.Double_2Bytes(HumidityWarnHigh);
-                updateBytes[31] = deviceMacBytes[0];
-                updateBytes[32] = deviceMacBytes[1];
-
-                deviceMacBytes = CommArithmetic.Double_2Bytes(HumidityWarnLow);
-                updateBytes[33] = deviceMacBytes[0];
-                updateBytes[34] = deviceMacBytes[1];
-
-
-
-                //CRC：TODO 暂未实现
-                updateBytes[35] = 0x00;
-                updateBytes[36] = 0x00;
-
-
-                updateBytes[37] = 0xEC;
-
+                ByteBuf[ByteLen++] = 0x00;
             }
-            
 
-            //updateBytes[0] = 0xCE;
+            // 协议版本
+            ByteBuf[ByteLen++] = ProtocolVersion;
 
+            // Sensor Mac
+            byte[] deviceMacBytes = CommArithmetic.HexStringToByteArray(DeviceMacS);
+            ByteBuf[ByteLen++] = deviceMacBytes[0];
+            ByteBuf[ByteLen++] = deviceMacBytes[1];
+            ByteBuf[ByteLen++] = deviceMacBytes[2];
+            ByteBuf[ByteLen++] = deviceMacBytes[3];
 
+            if (ProtocolVersion == 2)
+            {
+                //Interval
+                deviceMacBytes = CommArithmetic.Int16_2Bytes(Interval);
+                ByteBuf[ByteLen++] = deviceMacBytes[0];
+                ByteBuf[ByteLen++] = deviceMacBytes[1];
 
+                //Calendar
+                deviceMacBytes = CommArithmetic.EncodeDateTime(Calendar);
+                ByteBuf[ByteLen++] = deviceMacBytes[0];
+                ByteBuf[ByteLen++] = deviceMacBytes[1];
+                ByteBuf[ByteLen++] = deviceMacBytes[2];
+                ByteBuf[ByteLen++] = deviceMacBytes[3];
+                ByteBuf[ByteLen++] = deviceMacBytes[4];
+                ByteBuf[ByteLen++] = deviceMacBytes[5];
 
-            return updateBytes;
+                //采集发送倍数
+                ByteBuf[ByteLen++] = SampleSend;
+
+                if (DeviceTypeS == "57")
+                {   // M2
+                    // 温度预警上限
+                    Int16 tempValue = (Int16)Math.Round(TempWarnHigh * 100.0f);
+                    ByteBuf[ByteLen++] = (byte)((tempValue & 0xFF00) >> 8);
+                    ByteBuf[ByteLen++] = (byte)((tempValue & 0x00FF) >> 0);
+
+                    // 温度预警下限
+                    tempValue = (Int16)Math.Round(TempWarnLow * 100.0f);
+                    ByteBuf[ByteLen++] = (byte)((tempValue & 0xFF00) >> 8);
+                    ByteBuf[ByteLen++] = (byte)((tempValue & 0x00FF) >> 0);
+
+                    // 温度阈值上限
+                    tempValue = (Int16)Math.Round(TempAlertHigh * 100.0f);
+                    ByteBuf[ByteLen++] = (byte)((tempValue & 0xFF00) >> 8);
+                    ByteBuf[ByteLen++] = (byte)((tempValue & 0x00FF) >> 0);
+
+                    // 温度阈值下限
+                    tempValue = (Int16)Math.Round(TempAlertLow * 100.0f);
+                    ByteBuf[ByteLen++] = (byte)((tempValue & 0xFF00) >> 8);
+                    ByteBuf[ByteLen++] = (byte)((tempValue & 0x00FF) >> 0);
+
+                    // CRC 
+                    UInt16 crc = MyCustomFxn.CRC16(0x1021, 0, ByteBuf, 2, (UInt16)(ByteLen - 2));
+                    ByteBuf[ByteLen++] = (byte)((crc & 0xFF00) >> 8);
+                    ByteBuf[ByteLen++] = (byte)((crc & 0x00FF) >> 0);
+
+                    // 结束位
+                    ByteBuf[ByteLen++] = 0xEC;
+                }
+                else
+                {   // M1
+                    // 温度预警上限
+                    Int16 tempValue = (Int16)Math.Round(TempWarnHigh * 100.0f);
+                    ByteBuf[ByteLen++] = (byte)((tempValue & 0xFF00) >> 8);
+                    ByteBuf[ByteLen++] = (byte)((tempValue & 0x00FF) >> 0);
+
+                    // 温度预警下限
+                    tempValue = (Int16)Math.Round(TempWarnLow * 100.0f);
+                    ByteBuf[ByteLen++] = (byte)((tempValue & 0xFF00) >> 8);
+                    ByteBuf[ByteLen++] = (byte)((tempValue & 0x00FF) >> 0);
+
+                    // 湿度预警上限
+                    UInt16 humValue = (UInt16)Math.Round(HumWarnHigh * 100.0f);
+                    ByteBuf[ByteLen++] = (byte)((humValue & 0xFF00) >> 8);
+                    ByteBuf[ByteLen++] = (byte)((humValue & 0x00FF) >> 0);
+
+                    // 湿度预警下限
+                    humValue = (UInt16)Math.Round(HumWarnLow * 100.0f);
+                    ByteBuf[ByteLen++] = (byte)((humValue & 0xFF00) >> 8);
+                    ByteBuf[ByteLen++] = (byte)((humValue & 0x00FF) >> 0);
+
+                    // 温度阈值上限
+                    tempValue = (Int16)Math.Round(TempAlertHigh * 100.0f);
+                    ByteBuf[ByteLen++] = (byte)((tempValue & 0xFF00) >> 8);
+                    ByteBuf[ByteLen++] = (byte)((tempValue & 0x00FF) >> 0);
+
+                    // 温度阈值下限
+                    tempValue = (Int16)Math.Round(TempAlertLow * 100.0f);
+                    ByteBuf[ByteLen++] = (byte)((tempValue & 0xFF00) >> 8);
+                    ByteBuf[ByteLen++] = (byte)((tempValue & 0x00FF) >> 0);
+
+                    // 湿度阈值上限
+                    humValue = (UInt16)Math.Round(HumAlertHigh * 100.0f);
+                    ByteBuf[ByteLen++] = (byte)((humValue & 0xFF00) >> 8);
+                    ByteBuf[ByteLen++] = (byte)((humValue & 0x00FF) >> 0);
+
+                    // 湿度阈值下限
+                    humValue = (UInt16)Math.Round(HumAlertLow * 100.0f);
+                    ByteBuf[ByteLen++] = (byte)((humValue & 0xFF00) >> 8);
+                    ByteBuf[ByteLen++] = (byte)((humValue & 0x00FF) >> 0);
+
+                    // CRC 
+                    UInt16 crc = MyCustomFxn.CRC16(0x1021, 0, ByteBuf, 2, (UInt16)(ByteLen - 2));
+                    ByteBuf[ByteLen++] = (byte)((crc & 0xFF00) >> 8);
+                    ByteBuf[ByteLen++] = (byte)((crc & 0x00FF) >> 0);
+
+                    // 结束位
+                    ByteBuf[ByteLen++] = 0xEC;
+                }
+            }
+            else if (ProtocolVersion == 3)
+            {
+                // 日期和时间
+                deviceMacBytes = CommArithmetic.EncodeDateTime(Calendar);
+                ByteBuf[ByteLen++] = deviceMacBytes[0];
+                ByteBuf[ByteLen++] = deviceMacBytes[1];
+                ByteBuf[ByteLen++] = deviceMacBytes[2];
+                ByteBuf[ByteLen++] = deviceMacBytes[3];
+                ByteBuf[ByteLen++] = deviceMacBytes[4];
+                ByteBuf[ByteLen++] = deviceMacBytes[5];
+
+                // 采集间隔
+                ByteBuf[ByteLen++] = (byte)((Interval & 0xFF00) >> 8);
+                ByteBuf[ByteLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+                // 正常传输间隔
+                ByteBuf[ByteLen++] = (byte)((NormalInterval & 0xFF00) >> 8);
+                ByteBuf[ByteLen++] = (byte)((NormalInterval & 0x00FF) >> 0);
+
+                // 预警传输间隔
+                ByteBuf[ByteLen++] = (byte)((WarnInterval & 0xFF00) >> 8);
+                ByteBuf[ByteLen++] = (byte)((WarnInterval & 0x00FF) >> 0);
+
+                // 报警传输间隔
+                ByteBuf[ByteLen++] = (byte)((AlertInterval & 0xFF00) >> 8);
+                ByteBuf[ByteLen++] = (byte)((AlertInterval & 0x00FF) >> 0);
+
+                // 温度预警上限
+                Int16 tempValue = (Int16)Math.Round(TempWarnHigh * 100.0f);
+                ByteBuf[ByteLen++] = (byte)((tempValue & 0xFF00) >> 8);
+                ByteBuf[ByteLen++] = (byte)((tempValue & 0x00FF) >> 0);
+
+                // 温度预警下限
+                tempValue = (Int16)Math.Round(TempWarnLow * 100.0f);
+                ByteBuf[ByteLen++] = (byte)((tempValue & 0xFF00) >> 8);
+                ByteBuf[ByteLen++] = (byte)((tempValue & 0x00FF) >> 0);
+
+                // 湿度预警上限
+                UInt16 humValue = (UInt16)Math.Round(HumWarnHigh * 100.0f);
+                ByteBuf[ByteLen++] = (byte)((humValue & 0xFF00) >> 8);
+                ByteBuf[ByteLen++] = (byte)((humValue & 0x00FF) >> 0);
+
+                // 湿度预警下限
+                humValue = (UInt16)Math.Round(HumWarnLow * 100.0f);
+                ByteBuf[ByteLen++] = (byte)((humValue & 0xFF00) >> 8);
+                ByteBuf[ByteLen++] = (byte)((humValue & 0x00FF) >> 0);
+
+                // 温度阈值上限
+                tempValue = (Int16)Math.Round(TempAlertHigh * 100.0f);
+                ByteBuf[ByteLen++] = (byte)((tempValue & 0xFF00) >> 8);
+                ByteBuf[ByteLen++] = (byte)((tempValue & 0x00FF) >> 0);
+
+                // 温度阈值下限
+                tempValue = (Int16)Math.Round(TempAlertLow * 100.0f);
+                ByteBuf[ByteLen++] = (byte)((tempValue & 0xFF00) >> 8);
+                ByteBuf[ByteLen++] = (byte)((tempValue & 0x00FF) >> 0);
+
+                // 湿度阈值上限
+                humValue = (UInt16)Math.Round(HumAlertHigh * 100.0f);
+                ByteBuf[ByteLen++] = (byte)((humValue & 0xFF00) >> 8);
+                ByteBuf[ByteLen++] = (byte)((humValue & 0x00FF) >> 0);
+
+                // 湿度阈值下限
+                humValue = (UInt16)Math.Round(HumAlertLow * 100.0f);
+                ByteBuf[ByteLen++] = (byte)((humValue & 0xFF00) >> 8);
+                ByteBuf[ByteLen++] = (byte)((humValue & 0x00FF) >> 0);
+
+                // 保留位
+                ByteBuf[ByteLen++] = 0x00;
+                ByteBuf[ByteLen++] = 0x00;
+
+                // CRC 
+                UInt16 crc = MyCustomFxn.CRC16(0x1021, 0, ByteBuf, 2, (UInt16)(ByteLen - 2));
+                ByteBuf[ByteLen++] = (byte)((crc & 0xFF00) >> 8);
+                ByteBuf[ByteLen++] = (byte)((crc & 0x00FF) >> 0);
+
+                // 结束位
+                ByteBuf[ByteLen++] = 0xEC;
+            }
+
+            return ByteBuf;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public byte[] DeleteData()
         {
-            byte[] updateBytes = new byte[19];
-            updateBytes[0] = 0xCE;
-            updateBytes[1] = 0x0E;
-            updateBytes[2] = 0xA4;
-            updateBytes[3] = 0x01;
-            //兼容M1 和 M1P
+            byte[] ByteBuf = new byte[19];
+            UInt16 ByteLen = 0;
+
+            // 起始位
+            ByteBuf[ByteLen++] = 0xCE;
+
+            // 长度位
+            ByteBuf[ByteLen++] = (byte)(ByteBuf.Length - 5);
+
+            // 命令位
+            ByteBuf[ByteLen++] = 0xA4;
+
+            // USB Protocol
+            ByteBuf[ByteLen++] = 0x01;
+
+            // 设备类型
             if (DeviceTypeS == "51")
-                updateBytes[4] = 0x51;
+            {
+                ByteBuf[ByteLen++] = 0x51;
+            }
             else if (DeviceTypeS == "53")
-                updateBytes[4] = 0x53;
+            {
+                ByteBuf[ByteLen++] = 0x53;
+            }
             else if (DeviceTypeS == "57")
-                updateBytes[4] = 0x57;
+            {
+                ByteBuf[ByteLen++] = 0x57;
+            }
+            else if (DeviceTypeS == "5C")
+            {
+                ByteBuf[ByteLen++] = 0x5C;
+            }
+            else if (DeviceTypeS == "5D")
+            {
+                ByteBuf[ByteLen++] = 0x5D;
+            }
+            else if (DeviceTypeS == "7D")
+            {
+                ByteBuf[ByteLen++] = 0x7D;
+            }
+            else
+            {
+                ByteBuf[ByteLen++] = 0x00;
+            }
 
-            updateBytes[5] = 0x02;
+            // Protocol
+            ByteBuf[ByteLen++] = 0x02;
 
+            // Sensor Mac
             byte[] deviceMacBytes = CommArithmetic.HexStringToByteArray(DeviceMacS);
-            updateBytes[6] = deviceMacBytes[0];
-            updateBytes[7] = deviceMacBytes[1];
-            updateBytes[8] = deviceMacBytes[2];
-            updateBytes[9] = deviceMacBytes[3];
+            ByteBuf[ByteLen++] = deviceMacBytes[0];
+            ByteBuf[ByteLen++] = deviceMacBytes[1];
+            ByteBuf[ByteLen++] = deviceMacBytes[2];
+            ByteBuf[ByteLen++] = deviceMacBytes[3];
 
-           
-            updateBytes[18] = 0xEC;
+            // Front
+            ByteBuf[ByteLen++] = 0x00;
+            ByteBuf[ByteLen++] = 0x00;
+            ByteBuf[ByteLen++] = 0x00;
 
-            return updateBytes;
+            // Rear
+            ByteBuf[ByteLen++] = 0x00;
+            ByteBuf[ByteLen++] = 0x00;
+            ByteBuf[ByteLen++] = 0x00;
+
+            // CRC 
+            UInt16 crc = MyCustomFxn.CRC16(0x1021, 0, ByteBuf, 2, (UInt16)(ByteLen - 2));
+            ByteBuf[ByteLen++] = (byte)((crc & 0xFF00) >> 8);
+            ByteBuf[ByteLen++] = (byte)((crc & 0x00FF) >> 0);
+
+            // 结束位
+            ByteBuf[ByteLen++] = 0xEC;
+
+            return ByteBuf;
         }
     }
 }

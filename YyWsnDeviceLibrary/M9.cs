@@ -18,24 +18,40 @@ namespace YyWsnDeviceLibrary
         private DataPktType dataPktType { get; set; }       // 外部只读
 
         /// <summary>
-        /// X轴的加速度，单位：mg；
+        /// 运动状态，该属性的源数据是一个字节，为了体现负数，所以选择使用Int16类型
         /// </summary>
-        public Int16 xAccel { get; set; }
+        public Int16 moveStateV { get; set; }
 
         /// <summary>
-        /// Y轴的加速度，单位：mg；
+        /// 运动状态，字符串显示
         /// </summary>
-        public Int16 yAccel { get; set; }
+        public string moveStateS { get; set; }
 
         /// <summary>
-        /// Z轴的加速度，单位：mg；
+        /// 运动检测阈值，单位：mg
         /// </summary>
-        public Int16 zAccel { get; set; }
+        public UInt16 MoveDetectThr { get; set; }
 
         /// <summary>
-        /// 加速度合量的大小，单位：mg；
+        /// 运动检测时间，单位：ms
         /// </summary>
-        public UInt16 SizeOfAccel { get; set; }
+        public UInt16 MoveDetectTime { get; set; }
+
+        /// <summary>
+        /// 静止检测阈值，单位：mg
+        /// </summary>
+        public UInt16 StaticDetectThr { get; set; }
+
+        /// <summary>
+        /// 静止检测时间，单位：ms
+        /// </summary>
+        public UInt16 StaticDetectTime { get; set; }
+
+        /// <summary>
+        /// 报警条件
+        /// </summary>
+        public byte AlertCfg { get; set; }
+
 
         /**************************************
          * 方法
@@ -67,6 +83,50 @@ namespace YyWsnDeviceLibrary
             }
         }
 
+        public void MoveState_Set(byte iMoveState)
+        {
+            moveStateV = (Int16)iMoveState;
+            if (moveStateV > 0x80)
+            {
+                moveStateV -= 256;
+            }
+
+            if(moveStateV < 0)
+            {
+                moveStateS = "异常" + moveStateV.ToString("G");
+            }else
+            {
+                switch (moveStateV)
+                {
+                    case 0:
+                        {
+                            moveStateS = "静止";
+                            break;
+                        }
+                    case 1:
+                        {
+                            moveStateS = "运动";
+                            break;
+                        }
+                    case 2:
+                        {
+                            moveStateS = "动->静";
+                            break;
+                        }
+                    case 3:
+                        {
+                            moveStateS = "静->动";
+                            break;
+                        }
+                    default:
+                        {
+                            moveStateS = "未知" + moveStateV.ToString("G");
+                            break;
+                        }
+                }                
+            }           
+        }
+
         /// <summary>
         /// 获取数据包的类型
         /// </summary>
@@ -93,6 +153,76 @@ namespace YyWsnDeviceLibrary
         }
 
         /// <summary>
+        /// 构造函数
+        /// </summary>
+        /// <param name="SrcData"></param>
+        public M9(byte[] SrcData, UInt16 IndexOfStart, DataPktType dataPktType)
+        {
+            if (dataPktType == DataPktType.SelfTestFromUsbToPc)
+            {
+                if ((byte)Device.IsPowerOnSelfTestPktFromUsbToPc(SrcData, IndexOfStart) == GetDeviceType())
+                {
+                    byte protocol = SrcData[IndexOfStart + 5];
+                    if (protocol != 3)
+                    {
+                        return;
+                    }
+
+                    SetDeviceName(SrcData[IndexOfStart + 4]);
+                    ProtocolVersion = protocol;
+                    SetDevicePrimaryMac(SrcData, (UInt16)(IndexOfStart + 6));
+                    SetDeviceMac(SrcData, (UInt16)(IndexOfStart + 10));
+                    SetHardwareRevision(SrcData, (UInt16)(IndexOfStart + 14));
+                    SetSoftwareRevision(SrcData, (UInt16)(IndexOfStart + 18));
+                    SetDeviceCustomer(SrcData, (UInt16)(IndexOfStart + 20));
+                    SetDeviceDebug(SrcData, (UInt16)(IndexOfStart + 22));
+
+                    Category = SrcData[IndexOfStart + 24];
+                    Interval = (UInt16)(SrcData[IndexOfStart + 25] * 256 + SrcData[IndexOfStart + 26]);
+                    Calendar = CommArithmetic.DecodeDateTime(SrcData, (UInt16)(IndexOfStart + 27));
+
+                    Pattern = SrcData[IndexOfStart + 33];
+                    Bps = SrcData[IndexOfStart + 34];
+                    SetTxPower(SrcData[IndexOfStart + 35]);
+                    SampleSend = SrcData[IndexOfStart + 36];
+                    Channel = SrcData[IndexOfStart + 37];
+
+                    MoveDetectThr = (UInt16)(SrcData[IndexOfStart + 38] * 256 + SrcData[IndexOfStart + 39]);
+                    MoveDetectTime = (UInt16)(SrcData[IndexOfStart + 40] * 256 + SrcData[IndexOfStart + 41]);
+
+                    StaticDetectThr = (UInt16)(SrcData[IndexOfStart + 42] * 256 + SrcData[IndexOfStart + 43]);
+                    StaticDetectTime = (UInt16)(SrcData[IndexOfStart + 44] * 256 + SrcData[IndexOfStart + 45]);
+
+                    AlertCfg = SrcData[46];
+
+                    ICTemperature = SrcData[IndexOfStart + 47];
+                    voltF = Math.Round(Convert.ToDouble((SrcData[IndexOfStart + 48] * 256 + SrcData[IndexOfStart + 49])) / 1000, 2);
+
+                    FlashID = CommArithmetic.DecodeClientID(SrcData, IndexOfStart + 50);
+                    MaxLength = SrcData[IndexOfStart + 52];
+
+                    FlashFront = SrcData[IndexOfStart + 53] * 256 * 256 + SrcData[IndexOfStart + 54] * 256 + SrcData[IndexOfStart + 55];
+                    FlashRear = SrcData[IndexOfStart + 56] * 256 * 256 + SrcData[IndexOfStart + 57] * 256 + SrcData[IndexOfStart + 58];
+                    FlashQueueLength = SrcData[IndexOfStart + 59] * 256 * 256 + SrcData[IndexOfStart + 60] * 256 + SrcData[IndexOfStart + 61];
+
+                    MoveState_Set(SrcData[IndexOfStart + 62]);
+
+                    byte rssi = SrcData[IndexOfStart + 66];
+                    if (rssi >= 0x80)
+                    {
+                        RSSI = (double)(rssi - 0x100);
+                    }
+                    else
+                    {
+                        RSSI = (double)rssi;
+                    }
+                }
+            }
+
+            return;
+        }
+
+        /// <summary>
         /// 判断是不是监测工具监测到的M9发出的传感器数据包（V3版本）
         /// </summary>
         /// <param name="SrcBuf"></param>
@@ -108,7 +238,7 @@ namespace YyWsnDeviceLibrary
 
             // 数据包的总长度
             UInt16 SrcLen = (UInt16)(SrcData.Length - IndexOfStart);
-            if (SrcLen < 42 + AppendLen)
+            if (SrcLen < 35 + AppendLen)
             {
                 return -1;
             }
@@ -162,14 +292,14 @@ namespace YyWsnDeviceLibrary
 
             // 负载长度
             byte payLen = SrcData[IndexOfStart + 26];
-            if (payLen != 9)
+            if (payLen != 2)
             {
                 return -9;
             }
 
             // 数据类型
             byte dataType = SrcData[IndexOfStart + 27];
-            if (dataType != 0x7A)
+            if (dataType != 0x7F)
             {
                 return -10;
             }
@@ -193,7 +323,7 @@ namespace YyWsnDeviceLibrary
             STP = SrcData[IndexOfStart + 0];
 
             // Cmd
-            WorkFunction = SrcData[IndexOfStart + 2];
+            Pattern = SrcData[IndexOfStart + 2];
 
             // Device Type
             SetDeviceName(SrcData[IndexOfStart + 3]);
@@ -236,22 +366,19 @@ namespace YyWsnDeviceLibrary
             // AltSerial
             AltSerial = SrcData[IndexOfStart + 25];
 
-            // 振动传感数据
-            xAccel = (Int16)(SrcData[IndexOfStart + 28] * 256 + SrcData[IndexOfStart + 29]);
-            yAccel = (Int16)(SrcData[IndexOfStart + 30] * 256 + SrcData[IndexOfStart + 31]);
-            zAccel = (Int16)(SrcData[IndexOfStart + 32] * 256 + SrcData[IndexOfStart + 33]);
-            SizeOfAccel = (UInt16)(SrcData[IndexOfStart + 34] * 256 + SrcData[IndexOfStart + 35]);
+            // 运动状态
+            MoveState_Set(SrcData[IndexOfStart + 28]);
 
             // To Send Ram
-            ToSendRam = SrcData[IndexOfStart + 36];
+            ToSendRam = SrcData[IndexOfStart + 29];
 
             // To Send Flash
-            ToSendFlash = (UInt16)(SrcData[IndexOfStart + 37] * 256 + SrcData[IndexOfStart + 38]);
+            ToSendFlash = (UInt16)(SrcData[IndexOfStart + 30] * 256 + SrcData[IndexOfStart + 31]);
 
             // RSSI
             if (ExistRssi == true)
             {
-                byte rssi = SrcData[IndexOfStart + 42];
+                byte rssi = SrcData[IndexOfStart + 35];
                 if (rssi >= 0x80)
                 {
                     RSSI = (double)(rssi - 0x100);

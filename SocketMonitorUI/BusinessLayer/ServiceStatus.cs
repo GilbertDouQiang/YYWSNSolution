@@ -32,5 +32,34 @@ namespace SocketMonitorUI.BusinessLayer
         /// </summary>
         public static bool SaveToSQLServer { get; set; }
 
+        //======================================================
+        // DQ
+        //======================================================
+
+        /// <summary>
+        /// 目的网关的MAC
+        /// </summary>
+        public static UInt32 MacOfDesGateway { get; set; }
+
+        /// <summary>
+        /// 需要执行的指令
+        /// </summary>
+        public static byte ExeCmd { get; set; }
+
+        /// <summary>
+        /// 执行的过程和结果
+        /// </summary>
+        public static Int16 ExeResult { get; set; }
+
+        /// <summary>
+        /// 传输序列号
+        /// </summary>
+        public static UInt16 Serial { get; set; }
+
+        /// <summary>
+        /// DeptCode
+        /// </summary>
+        public static string DeptCode { get; set; }
+
     }
 }

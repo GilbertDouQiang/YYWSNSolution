@@ -81,6 +81,7 @@
     <Compile Include="BusinessLayer\CMD02.cs" />
     <Compile Include="BusinessLayer\CMD03.cs" />
     <Compile Include="BusinessLayer\GatewayStatusReport.cs" />
+    <Compile Include="BusinessLayer\ReadDeptCode.cs" />
     <Compile Include="BusinessLayer\GetwayPing.cs" />
     <Compile Include="BusinessLayer\NTP.cs" />
     <Compile Include="BusinessLayer\SensorData.cs" />

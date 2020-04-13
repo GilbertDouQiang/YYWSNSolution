@@ -18,13 +18,12 @@ namespace YyWsnDeviceLibrary
         public AlarmGateway1(byte[] SourceData)
         {
             //有效性验证，确定是合理的数据包
-            DeviceTypeS = "59";
-            Name = "AlarmGateway-1";
-            DeviceMacS = CommArithmetic.DecodeMAC(SourceData, 8);
+            SetDeviceName(SourceData[7]);
+            SetDeviceMac(SourceData, 8);
             LastTransforDate = CommArithmetic.DecodeDateTime(SourceData, 12);
             voltF = CommArithmetic.DecodeVoltage(SourceData, 18);
-            SwVersionS = CommArithmetic.DecodeClientID(SourceData, 20);
-            CustomerS = CommArithmetic.DecodeClientID(SourceData, 22);
+            SetSoftwareRevision(SourceData, 20);
+            SetDeviceCustomer(SourceData, 22);
             TransStrategy = SourceData[24];
             RAMCoutnt = SourceData[25];
             ROMCount = SourceData[26] * 65536 + SourceData[27] * 256 + SourceData[28];
@@ -38,19 +37,10 @@ namespace YyWsnDeviceLibrary
 
             LastTransforStatus = SourceData[45] * 256 + SourceData[46];
             ACPower = CommArithmetic.DecodeACPower(SourceData[18]);
-
-
-
-
-
-
-
-
-
-
         }
 
         public byte TransStrategy { get; set; }
+
         public byte ACPower { get; set;}
     }
 }

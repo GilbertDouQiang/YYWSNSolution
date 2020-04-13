@@ -9,6 +9,7 @@ using YyWsnCommunicatonLibrary;
 using ExcelExport;
 using System.ComponentModel;
 using System.Configuration;
+using System.Data;
 
 namespace SnifferGUI
 {
@@ -17,26 +18,36 @@ namespace SnifferGUI
     /// </summary>
     public partial class MainWindow : Window
     {
-        ObservableCollection<M1> SensorDataOfM1 = new ObservableCollection<M1>();   // M1的传感数据
-        ObservableCollection<M1> SelfTestPkt = new ObservableCollection<M1>();      // 上电自检数据包
-        ObservableCollection<M1> GroupFeedBack = new ObservableCollection<M1>();    // DataGrid 中对应M2的表格
-        ObservableCollection<M9> SensorDataOfM9 = new ObservableCollection<M9>();   // M9的传感数据
-        ObservableCollection<ACO2> SensorDataOfACO2 = new ObservableCollection<ACO2>(); // ACO2的传感数据
-        ObservableCollection<SK> SensorDataOfSK = new ObservableCollection<SK>();   // SK的传感数据
-        ObservableCollection<AO2> SensorDataOfAO2 = new ObservableCollection<AO2>();    // AO2的传感数据
+        ObservableCollection<M1> SensorDataOfM1 = new ObservableCollection<M1>();           // M1的传感数据
+        ObservableCollection<M5> SensorDataOfM5 = new ObservableCollection<M5>();           // M5的传感数据
+        ObservableCollection<M20> SensorDataOfM20 = new ObservableCollection<M20>();        // M20的传感数据
+        ObservableCollection<M1> SensorDataOfMAX31855 = new ObservableCollection<M1>();     // MAX31855的传感数据
+        ObservableCollection<M1> GroupFeedBack = new ObservableCollection<M1>();            // DataGrid 中对应M2的表格
+        ObservableCollection<M9> SensorDataOfM9 = new ObservableCollection<M9>();           // M9的传感数据
+        ObservableCollection<M40> SensorDataOfM40 = new ObservableCollection<M40>();        // M40的传感数据
+        ObservableCollection<ACO2> SensorDataOfACO2 = new ObservableCollection<ACO2>();     // ACO2的传感数据
+        ObservableCollection<SK> SensorDataOfSK = new ObservableCollection<SK>();           // SK的传感数据
+        ObservableCollection<AO2> SensorDataOfAO2 = new ObservableCollection<AO2>();        // AO2的传感数据
+        ObservableCollection<L1> SensorDataOfL1 = new ObservableCollection<L1>();           // L1的传感数据
+
+        DataSet DS = new DataSet();
 
         UInt32[] ExSensorIdBuf = new UInt32[64];        // 期望的Sensor ID，允许是多个
         UInt16 ExSensorIdLen = 0;                       // 期望的Sensor ID的数量
 
         SerialPortHelper comport;
 
-        int TableLineOfM1 = 1;                  // M1表格的行编号              
-        int TableLineOfSelfTest = 1;            // 上电自检表格的行编号
+        int TableLineOfM1 = 1;                  // M1表格的行编号  
+        int TableLineOfM5 = 1;                  // M5表格的行编号            
+        int TableLineOfM20 = 1;                 // M20表格的行编号                  
+        int TableLineOfMAX31855 = 1;            // M1表格的行编号              
         int TableLineOfAck = 1;                 // 传感器数据包的反馈表格的行编号
         int TableLineOfM9 = 1;                  // M9表格的行编号
+        int TableLineOfM40 = 1;                 // M40表格的行编号
         int TableLineOfACO2 = 1;                // ACO2表格的行编号
         int TableLineOfSK = 1;                  // SK表格的行编号
         int TableLineOfAO2 = 1;                 // AO2表格的行编号
+        int TableLineOfL1 = 1;                  // L1表格的行编号
 
         UInt16 ExCustomer = 0x0000;             // 期望的客户码
 
@@ -53,12 +64,16 @@ namespace SnifferGUI
             SearchComPort();
 
             TableOfM1.ItemsSource = SensorDataOfM1;
-            TableOfSelfTest.ItemsSource = SelfTestPkt;
+            TableOfM5.ItemsSource = SensorDataOfM5;
+            TableOfM20.ItemsSource = SensorDataOfM20;
+            TableOfMAX31855.ItemsSource = SensorDataOfMAX31855;
             TableOfAck.ItemsSource = GroupFeedBack;
             TableOfM9.ItemsSource = SensorDataOfM9;
+            TableOfM40.ItemsSource = SensorDataOfM40;
             TableOfACO2.ItemsSource = SensorDataOfACO2;
             TableOfSK.ItemsSource = SensorDataOfSK;
             TableOfAO2.ItemsSource = SensorDataOfAO2;
+            TableOfL1.ItemsSource = SensorDataOfL1;
 
             //M1 排序用
             ICollectionView v = CollectionViewSource.GetDefaultView(TableOfM1.ItemsSource);
@@ -67,8 +82,22 @@ namespace SnifferGUI
             v.SortDescriptions.Add(new SortDescription("DisplayID", d));
             v.Refresh();
 
-            //上电自检 排序用
-            v = CollectionViewSource.GetDefaultView(TableOfSelfTest.ItemsSource);
+            // M5 排序用
+            v = CollectionViewSource.GetDefaultView(TableOfM5.ItemsSource);
+            v.SortDescriptions.Clear();
+            d = ListSortDirection.Descending;
+            v.SortDescriptions.Add(new SortDescription("DisplayID", d));
+            v.Refresh();
+
+            // M20 排序用
+            v = CollectionViewSource.GetDefaultView(TableOfM20.ItemsSource);
+            v.SortDescriptions.Clear();
+            d = ListSortDirection.Descending;
+            v.SortDescriptions.Add(new SortDescription("DisplayID", d));
+            v.Refresh();
+
+            //MAX31855 排序用
+            v = CollectionViewSource.GetDefaultView(TableOfMAX31855.ItemsSource);
             v.SortDescriptions.Clear();
             d = ListSortDirection.Descending;
             v.SortDescriptions.Add(new SortDescription("DisplayID", d));
@@ -83,6 +112,13 @@ namespace SnifferGUI
 
             //M9 排序用
             v = CollectionViewSource.GetDefaultView(TableOfM9.ItemsSource);
+            v.SortDescriptions.Clear();
+            d = ListSortDirection.Descending;
+            v.SortDescriptions.Add(new SortDescription("DisplayID", d));
+            v.Refresh();
+
+            //M40 排序用
+            v = CollectionViewSource.GetDefaultView(TableOfM40.ItemsSource);
             v.SortDescriptions.Clear();
             d = ListSortDirection.Descending;
             v.SortDescriptions.Add(new SortDescription("DisplayID", d));
@@ -104,6 +140,13 @@ namespace SnifferGUI
 
             //AO2 排序用
             v = CollectionViewSource.GetDefaultView(TableOfAO2.ItemsSource);
+            v.SortDescriptions.Clear();
+            d = ListSortDirection.Descending;
+            v.SortDescriptions.Add(new SortDescription("DisplayID", d));
+            v.Refresh();
+
+            //L1 排序用
+            v = CollectionViewSource.GetDefaultView(TableOfL1.ItemsSource);
             v.SortDescriptions.Clear();
             d = ListSortDirection.Descending;
             v.SortDescriptions.Add(new SortDescription("DisplayID", d));
@@ -167,6 +210,20 @@ namespace SnifferGUI
             {
                 // AO2
                 ExDeviceType = AO2.GetDeviceType();
+            }
+            else if (cbSensorType.SelectedIndex == 9)
+            {
+                // M20
+                ExDeviceType = M20.GetDeviceType();
+            }
+            else if (cbSensorType.SelectedIndex == 10)
+            {
+                // L1
+                ExDeviceType = L1.GetDeviceType();
+            }else if(cbSensorType.SelectedIndex == 11)
+            {
+                // M40
+                ExDeviceType = M40.GetDeviceType();
             }
             else
             {
@@ -235,12 +292,24 @@ namespace SnifferGUI
             {
                 TableLineOfM1 = 1;
                 SensorDataOfM1.Clear();
-            }   
+            }
 
-            if(TableSelfTest.IsSelected == true)
+            if (TableM5.IsSelected == true)
             {
-                TableLineOfSelfTest = 1;
-                SelfTestPkt.Clear();
+                TableLineOfM5 = 1;
+                SensorDataOfM5.Clear();
+            }
+
+            if (TableM20.IsSelected == true)
+            {
+                TableLineOfM20 = 1;
+                SensorDataOfM20.Clear();
+            }
+
+            if (TableMAX31855.IsSelected == true)
+            {
+                TableLineOfMAX31855 = 1;
+                SensorDataOfMAX31855.Clear();
             }
 
             if (TableAck.IsSelected == true)
@@ -253,6 +322,12 @@ namespace SnifferGUI
             {
                 TableLineOfM9 = 1;
                 SensorDataOfM9.Clear();
+            }
+
+            if (TableM40.IsSelected == true)
+            {
+                TableLineOfM40 = 1;
+                SensorDataOfM40.Clear();
             }
 
             if (TableACO2.IsSelected == true)
@@ -272,6 +347,53 @@ namespace SnifferGUI
                 TableLineOfAO2 = 1;
                 SensorDataOfAO2.Clear();
             }
+
+            if (TableL1.IsSelected == true)
+            {
+                TableLineOfL1 = 1;
+                SensorDataOfL1.Clear();
+            }
+        }
+
+        /// <summary>
+        /// 清空所有接收到的数据
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btnClearAll_Click(object sender, RoutedEventArgs e)
+        {
+            TableLineOfM1 = 1;
+            SensorDataOfM1.Clear();
+
+            TableLineOfM5 = 1;
+            SensorDataOfM5.Clear();
+
+            TableLineOfM20 = 1;
+            SensorDataOfM20.Clear();
+
+            TableLineOfMAX31855 = 1;
+            SensorDataOfMAX31855.Clear();
+
+            TableLineOfAck = 1;
+            GroupFeedBack.Clear();
+
+            TableLineOfM9 = 1;
+            SensorDataOfM9.Clear();
+
+            TableLineOfM40 = 1;
+            SensorDataOfM40.Clear();
+
+            TableLineOfACO2 = 1;
+            SensorDataOfACO2.Clear();
+
+            TableLineOfSK = 1;
+            SensorDataOfSK.Clear();
+
+            TableLineOfAO2 = 1;
+            SensorDataOfAO2.Clear();
+
+            TableLineOfL1 = 1;
+            SensorDataOfL1.Clear();
         }
 
         /// <summary>
@@ -285,54 +407,22 @@ namespace SnifferGUI
             saveDlg.Filter = "XLS文件|*.xls|所有文件|*.*";
             saveDlg.FileName = "Export_" + DateTime.Now.ToString("yyyyMMdd_hhmmss");
 
-            switch (tabData.SelectedIndex)
+            if (TableM1.IsSelected == true)
             {
-                case 0:
-                    {
-                        if (saveDlg.ShowDialog() == true)
-                        {
-                            ExportXLS export = new ExportXLS();
-                            export.ExportWPFDataGrid(TableOfM1, saveDlg.FileName, SensorDataOfM1);
-                        }
-                        break;
-                    }
-                case 1:
-                    {
-                        break;
-                    }
-                case 2:
-                    {
-                        break;
-                    }
-                case 3:
-                    {
-                        break;
-                    }
-                case 5:     // M9
-                    {   
-                        if (saveDlg.ShowDialog() == true)
-                        {
-                            ExportXLS export = new ExportXLS();
-                            export.ExportWPFDataGridFromM9(TableOfM9, saveDlg.FileName, SensorDataOfM9);
-                        }
-                        break;
-                    }
-                case 6:     // ACO2
-                    {
-                        break;
-                    }
-                case 7:     // AO2
-                    {
-                        break;
-                    }
-                case 8:     // SK
-                    {
-                        break;
-                    }
-                default:
-                    {
-                        break;
-                    }
+                if (saveDlg.ShowDialog() == true)
+                {
+                    ExportXLS export = new ExportXLS();
+                    export.ExportWPFDataGrid(TableOfM1, saveDlg.FileName, SensorDataOfM1);
+                }
+            }
+           
+            if (TableM9.IsSelected == true)
+            {
+                if (saveDlg.ShowDialog() == true)
+                {
+                    ExportXLS export = new ExportXLS();
+                    export.ExportWPFDataGridFromM9(TableOfM9, saveDlg.FileName, SensorDataOfM9);
+                }
             }
         }
 
@@ -369,9 +459,9 @@ namespace SnifferGUI
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void btnSendCommand_Click(object sender, RoutedEventArgs e) {
-
-            if(btnOpenComPort.Content.ToString() == "Open")
+        private void btnSendCommand_Click(object sender, RoutedEventArgs e)
+        {
+            if (btnOpenComPort.Content.ToString() == "Open")
             {
                 return;
             }
@@ -530,7 +620,7 @@ namespace SnifferGUI
             }
 
             // 接收到数据的设备类型
-            byte Cmd = device.WorkFunction;
+            byte Cmd = device.Pattern;
             byte STP1 = device.STP;
 
             if (Cmd == 0x01 || Cmd == 0x02 || Cmd == 0x03 || Cmd == 0x04)
@@ -556,13 +646,47 @@ namespace SnifferGUI
                     //显示数据
                     if (M1.isDeviceType(device.DeviceTypeV) == true)
                     {
-                        device.DisplayID = TableLineOfM1;
-                        if (++TableLineOfM1 == 0)
+                        M1 ThisDevice = (M1)device;
+                        if (ThisDevice.GetDataPktType() == Device.DataPktType.SensorDataMax31855Debug)
                         {
-                            TableLineOfM1++;
+                            device.DisplayID = TableLineOfMAX31855;
+                            if (++TableLineOfMAX31855 == 0)
+                            {
+                                TableLineOfMAX31855++;
+                            }
+
+                            SensorDataOfMAX31855.Add(ThisDevice);
+                        }
+                        else
+                        {
+                            device.DisplayID = TableLineOfM1;
+                            if (++TableLineOfM1 == 0)
+                            {
+                                TableLineOfM1++;
+                            }
+
+                            SensorDataOfM1.Add(ThisDevice);
+                        }                        
+                    }
+                    else if (M5.isDeviceType(device.DeviceTypeV) == true)
+                    {
+                        device.DisplayID = TableLineOfM5;
+                        if (++TableLineOfM5 == 0)
+                        {
+                            TableLineOfM5++;
                         }
 
-                        SensorDataOfM1.Add((M1)device);
+                        SensorDataOfM5.Add((M5)device);
+                    }
+                    else if (M20.isDeviceType(device.DeviceTypeV) == true)
+                    {
+                        device.DisplayID = TableLineOfM20;
+                        if (++TableLineOfM20 == 0)
+                        {
+                            TableLineOfM20++;
+                        }
+
+                        SensorDataOfM20.Add((M20)device);
                     }
                     else if (M9.isDeviceType(device.DeviceTypeV) == true)
                     {
@@ -573,6 +697,16 @@ namespace SnifferGUI
                         }
 
                         SensorDataOfM9.Add((M9)device);
+                    }
+                    else if (M40.isDeviceType(device.DeviceTypeV) == true)
+                    {
+                        device.DisplayID = TableLineOfM40;
+                        if (++TableLineOfM40 == 0)
+                        {
+                            TableLineOfM40++;
+                        }
+
+                        SensorDataOfM40.Add((M40)device);
                     }
                     else if (ACO2.isDeviceType(device.DeviceTypeV) == true)
                     {
@@ -604,6 +738,16 @@ namespace SnifferGUI
 
                         SensorDataOfAO2.Add((AO2)device);
                     }
+                    else if (L1.isDeviceType(device.DeviceTypeV) == true)
+                    {
+                        device.DisplayID = TableLineOfL1;
+                        if (++TableLineOfL1 == 0)
+                        {
+                            TableLineOfL1++;
+                        }
+
+                        SensorDataOfL1.Add((L1)device);
+                    }
                 }
                 else if (STP1 == 0xAE)
                 {
@@ -615,30 +759,6 @@ namespace SnifferGUI
 
                     GroupFeedBack.Add((M1)device);
                 }
-            }
-            else if (Cmd == 0x00)
-            {                        
-                // 接收到数据的客户码
-                if (ExCustomer != 0 && ExCustomer != device.CustomerV)
-                {
-                    return -3;
-                }
-
-                // 接收到数据的Sensor ID
-                byte[] RxSensorIdByte = CommArithmetic.HexStringToByteArray(device.DeviceMacS);
-                UInt32 RxSensorId = (UInt32)(RxSensorIdByte[0] * 256 * 256 * 256 + RxSensorIdByte[1] * 256 * 256 + RxSensorIdByte[2] * 256 + RxSensorIdByte[3]);
-                if (IsExpSensorId(RxSensorId) == false)
-                {
-                    return -4;
-                }
-
-                // 显示数据
-                device.DisplayID = TableLineOfSelfTest;
-                if (++TableLineOfSelfTest == 0)
-                {
-                    TableLineOfSelfTest++;
-                }
-                SelfTestPkt.Add((M1)device);
             }
 
             return 0;
@@ -664,7 +784,7 @@ namespace SnifferGUI
                     {
                         int start = txtConsole.GetCharacterIndexFromLineIndex(ConsoleMaxLine);  // 末尾行第一个字符的索引
                         int length = txtConsole.GetLineLength(ConsoleMaxLine);                  // 末尾行字符串的长度
-                        txtConsole.Select(start, start + length);                   // 选中末尾一行
+                        txtConsole.Select(start, start + length);                               // 选中末尾一行
                         txtConsole.SelectedText = "END";                            
                     }
 

@@ -30,9 +30,11 @@ namespace SocketMonitorUI
     /// </summary>
     public partial class MainWindow : Window
     {
-        HyperWSNSocketServer server;
+        HyperWSNSocketServer ThisServer;
 
         IServerConfig m_Config;
+
+        bool ServerInitSuc = false;
 
         public MainWindow()
         {
@@ -47,46 +49,42 @@ namespace SocketMonitorUI
                 {
                     Port = Convert.ToInt16(txtPort.Text.ToString()),
                     Ip = "Any",
-                    //Ip = "192.168.2.196",
                     MaxConnectionNumber = 200,
                     Mode = SocketMode.Tcp,
                     Name = "HyperWSNSocketServer",
                     IdleSessionTimeOut = 120,
                     ClearIdleSession = true,
                     ClearIdleSessionInterval = 5
-                    //ReceiveBufferSize
                 };
 
-                //保证启动时，前面AppServer对象已经释放
-                if (server != null)
+                // 保证启动时，前面AppServer对象已经释放
+                if (ThisServer != null)
                 {
-                    server.Dispose();
-                    server = null;
+                    ThisServer.Dispose();
+                    ThisServer = null;
                 }
 
-                server = new HyperWSN.Socket.HyperWSNSocketServer();
-                server.NewSessionConnected += Server_NewSessionConnected; ;
-                //server.NewRequestReceived += Server_NewRequestReceived; ;
-                server.SessionClosed += Server_SessionClosed; ;
+                ThisServer = new HyperWSN.Socket.HyperWSNSocketServer();
+                ThisServer.NewSessionConnected += Server_NewSessionConnected;
+                //server.NewRequestReceived += Server_NewRequestReceived; 
+                ThisServer.SessionClosed += Server_SessionClosed; ;
 
 
-                //如果执行2次Setup , 会抛出错误
-                server.Setup(new RootConfig(), m_Config);
-                //server.Setup("192.168.2.196", 11030);
+                // 如果执行2次Setup , 会抛出错误
+                ServerInitSuc = ThisServer.Setup(new RootConfig(), m_Config);
 
-                //AppServer对象的基础设置
+                // AppServer对象的基础设置
 
-
-                //服务器状态设置
+                // 服务器状态设置
                 ServiceStatus.ResponsePing = cbPing.IsChecked.Value;
                 ServiceStatus.ResponseGatewayReport = cbGatewayReport.IsChecked.Value;
                 ServiceStatus.ResponseNTP = cbNTP.IsChecked.Value;
                 ServiceStatus.ResponseSensorData = cbSensorData.IsChecked.Value;
                 ServiceStatus.SaveToSQLServer = chkDataBase.IsChecked.Value;
 
+                ThisServer.Start();
 
-                server.Start();
-                if (server.State == ServerState.Running)
+                if (ThisServer.State == ServerState.Running)
                 {
                     txtConsole.Text = DateTime.Now.ToString("HH:mm:ss.fff") + " :\tService Started \r\n" + txtConsole.Text;
 
@@ -100,11 +98,11 @@ namespace SocketMonitorUI
             }
             else
             {
-                if (server != null)
+                if (ThisServer != null)
                 {
-                    server.Stop();
-                    server.Dispose();
-                    server = null;
+                    ThisServer.Stop();
+                    ThisServer.Dispose();
+                    ThisServer = null;
                     txtConsole.Text = DateTime.Now.ToString("HH:mm:ss.fff") + " :\tService Stopped \r\n" + txtConsole.Text;
                     btnStartService.Content = "Start Service";
                     if (chkLog.IsChecked == true)
@@ -138,7 +136,7 @@ namespace SocketMonitorUI
                     throw;
                 }
 
-                if (chkShowTextBox.IsChecked == true)
+                if (cbLogConsole.IsChecked == true)
                 {
                     txtConsole.Text = DateTime.Now.ToString("HH:mm:ss.fff") + " :\tClient Disconnect:\t " + session.RemoteEndPoint.Address.ToString() + " :"
                     + session.RemoteEndPoint.Port.ToString() + "\t Reason:" + value.ToString() + " \r\n" + txtConsole.Text;
@@ -159,7 +157,7 @@ namespace SocketMonitorUI
             Dispatcher.BeginInvoke(new Action(delegate
             {
                 session.Send(requestInfo.Body, 0, requestInfo.Body.Length);
-                if (chkShowTextBox.IsChecked == true)
+                if (cbLogConsole.IsChecked == true)
                 {
                     txtConsole.Text = DateTime.Now.ToString("HH:mm:ss.fff") + " :\tReceived:" + session.RemoteEndPoint.Address.ToString() + " :\t"
                + CommArithmetic.ToHexString(requestInfo.Body) + " \r\n" + txtConsole.Text;
@@ -173,15 +171,17 @@ namespace SocketMonitorUI
             }));
         }
 
+        /// <summary>
+        /// 客户端连接成功
+        /// </summary>
+        /// <param name="session"></param>
         private void Server_NewSessionConnected(HyperWSNSession session)
         {
-            //throw new NotImplementedException();
-            //客户端连接成功
             Dispatcher.BeginInvoke(new Action(delegate
             {
                 //MQ 相关操作
                 try
-                { 
+                {
                     //session.ConnectQueue("HyperWSNQueue",session.RemoteEndPoint.Address.ToString()+"."+session.RemoteEndPoint.Port.ToString());
                 }
                 catch (Exception)
@@ -189,14 +189,17 @@ namespace SocketMonitorUI
 
                 }
 
-                //connection to database
+                // connection to database
 
-                //MQ 相关操作结束
+                // MQ 相关操作结束
 
-                if (chkShowTextBox.IsChecked == true)
+                // 是否在Console显示日志
+                if (cbLogConsole.IsChecked == true)
                 {
                     txtConsole.Text = DateTime.Now.ToString("HH:mm:ss.fff") + " :\tClient Connect:      \t" + session.RemoteEndPoint.Address.ToString() + " :" + session.RemoteEndPoint.Port.ToString() + " \r\n" + txtConsole.Text;
                 }
+
+                // 是否记录日志到文件中去
                 if (chkLog.IsChecked == true)
                 {
                     Logger.AddLog(DateTime.Now.ToString("HH:mm:ss.fff") + " :\tClient Connect:      \t" + session.RemoteEndPoint.Address.ToString() + " :" + session.RemoteEndPoint.Port.ToString());
@@ -210,6 +213,7 @@ namespace SocketMonitorUI
                 {
                     Logger.AddLog(DateTime.Now.ToString("HH:mm:ss.fff") + " :\tConnect Database Error" + ex.Message);
                 }
+
             }));
         }
 
@@ -257,6 +261,36 @@ namespace SocketMonitorUI
             System.Configuration.Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
             config.AppSettings.Settings["port"].Value = txtPort.Text;
             config.Save(ConfigurationSaveMode.Modified);
+        }
+
+        private void btnReadDeptCode_Click(object sender, RoutedEventArgs e)
+        {
+            byte[] ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxMacOfDesGateway.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+            {
+                MessageBox.Show("网关MAC号错误！");
+                return;
+            }
+
+            ServiceStatus.MacOfDesGateway = ((UInt32)ByteBufTmp[0] << 24) | ((UInt32)ByteBufTmp[1] << 16) | ((UInt32)ByteBufTmp[2] << 8) | ((UInt32)ByteBufTmp[3] << 0);
+            ServiceStatus.ExeCmd = 0xA3;
+            ServiceStatus.ExeResult = 0;
+            ServiceStatus.Serial = 0;
+            ServiceStatus.DeptCode = "";
+        }
+
+        private void btnSetDeptCode_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void btnReadResult_Click(object sender, RoutedEventArgs e)
+        {
+            tbkRunning.Text = ServiceStatus.ExeResult.ToString();
+            if(ServiceStatus.ExeResult == 2)
+            {
+                tbkDeptCode.Text = ServiceStatus.DeptCode;
+            }
         }
     }
 }

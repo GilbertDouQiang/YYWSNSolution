@@ -189,7 +189,7 @@ namespace YyWsnDeviceLibrary
             return null;
         }
 
-        public static string ToHexString(byte[] bytes) // 0xae00cf => "AE00CF "
+        public static string ToHexString(byte[] bytes) 
         {
             string hexString = string.Empty;
             if (bytes != null)
@@ -202,39 +202,25 @@ namespace YyWsnDeviceLibrary
                 }
                 hexString = strB.ToString();
             }
+
             return hexString;
         }
 
-        /// <summary>
-        /// 计算CRC
-        /// </summary>
-        /// <param name="polynomial"></param>
-        /// <param name="seed"></param>
-        /// <param name="input"></param>
-        /// <param name="nbrOfBytes"></param>
-        /// <returns></returns>
-        public static UInt16 CRC16(UInt16 polynomial, UInt16 seed, byte[] input, UInt16 nbrOfBytes)
+        public static string ToHexString(byte[] bytes, int StartIndex, int length) 
         {
-            UInt16 crc = seed, bit = 0, byteCtr = 0;
-
-            for (byteCtr = 0; byteCtr < nbrOfBytes; byteCtr++)
+            string hexString = string.Empty;
+            if (bytes != null)
             {
-                crc ^= (UInt16)(input[byteCtr] << 8);
+                StringBuilder strB = new StringBuilder();
 
-                for (bit = 8; bit > 0; bit--)
+                for (int i = 0; i < length; i++)
                 {
-                    if ((crc & 0x8000) == 0)
-                    {
-                        crc <<= 1;
-                    }
-                    else
-                    {
-                        crc = (UInt16)((crc << 1) ^ polynomial);
-                    }
+                    strB.Append(bytes[StartIndex + i].ToString("X2") + " ");
                 }
+                hexString = strB.ToString();
             }
 
-            return crc;
+            return hexString;
         }
 
         /// <summary>
@@ -335,10 +321,13 @@ namespace YyWsnDeviceLibrary
         public static double DecodeTemperature(byte[] SourceData,int Start)
         {
             int tempCalc = SourceData[Start] * 256 + SourceData[Start+1];
-            if (tempCalc >= 0x8000)
-                tempCalc -= 65536;
-            return  Math.Round((Convert.ToDouble(tempCalc) / 100), 2);
 
+            if (tempCalc >= 0x8000)
+            {
+                tempCalc -= 65536;
+            }
+               
+            return  Math.Round((Convert.ToDouble(tempCalc) / 100), 2);
         }
 
         public static double DecodeHumidity(byte[] SourceData, int Start)

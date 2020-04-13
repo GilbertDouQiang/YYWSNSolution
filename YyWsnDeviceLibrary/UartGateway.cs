@@ -18,14 +18,14 @@ namespace YyWsnDeviceLibrary
             //DeviceID = SourceData[3].ToString("X2");
             DeviceMacS = CommArithmetic.DecodeMAC(SourceData, 4);
             CustomerS = CommArithmetic.DecodeClientID(SourceData, 14);
-            WorkFunction = SourceData[27];
+            Pattern = SourceData[27];
 
-            HwVersionS = CommArithmetic.DecodeMAC(SourceData, 8);
-            SwVersionS = CommArithmetic.DecodeClientID(SourceData, 12);
+            HwRevisionS = CommArithmetic.DecodeMAC(SourceData, 8);
+            SwRevisionS = CommArithmetic.DecodeClientID(SourceData, 12);
             DebugV = (UInt16)(SourceData[16] * 256 + SourceData[17]);
             Category = SourceData[18];
-            Interval = SourceData[19] * 256 + SourceData[20];
-            SymbolRate = SourceData[28];
+            Interval = (UInt16) (SourceData[19] * 256 + SourceData[20]);
+            Bps = SourceData[28];
             Calendar = CommArithmetic.DecodeDateTime(SourceData, 21);
             FrontPoint = SourceData[30] * 256 + SourceData[31];
             RearPoint = SourceData[32] * 256 + SourceData[32];

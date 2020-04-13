@@ -28,13 +28,13 @@ namespace YyWsnDeviceLibrary
             command[6] = oldmac[2];
             command[7] = oldmac[3];
 
-            byte[] newmac = CommArithmetic.HexStringToByteArray(device.DeviceNewMAC);
+            byte[] newmac = CommArithmetic.HexStringToByteArray(device.DeviceMacNewS);
             command[8] = newmac[0];
             command[9] = newmac[1];
             command[10] = newmac[2];
             command[11] = newmac[3];
 
-            byte[] hardVersion = CommArithmetic.HexStringToByteArray(device.HwVersionS);
+            byte[] hardVersion = CommArithmetic.HexStringToByteArray(device.HwRevisionS);
             command[12] = hardVersion[0];
             command[13] = hardVersion[1];
             command[14] = hardVersion[2];
@@ -53,8 +53,8 @@ namespace YyWsnDeviceLibrary
             command[21] = interval[0];
             command[22] = interval[1];
 
-            command[23] = (byte)(device.WorkFunction);
-            command[24] = (byte)(device.SymbolRate);
+            command[23] = (byte)(device.Pattern);
+            command[24] = (byte)(device.Bps);
 
             command[27] = 0xAC;
             command[28] = 0xAC;

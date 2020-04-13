@@ -35,6 +35,11 @@ namespace YyWsnDeviceLibrary
         public DateTime GWTime { get; set; }
 
         /// <summary>
+        /// 系统时间
+        /// </summary>
+        public DateTime SystemTime { get; set; }
+
+        /// <summary>
         /// 接收信号强度，单位：dBm
         /// </summary>
         public double RSSI { get; set; }
@@ -42,7 +47,7 @@ namespace YyWsnDeviceLibrary
         /// <summary>
         /// 发射功率，有符号数，单位：dBm
         /// </summary>
-        public byte TxPower { get; set; }
+        public Int16 TxPower { get; set; }
 
         public DateTime StartTime { get; set; }
 
@@ -72,5 +77,23 @@ namespace YyWsnDeviceLibrary
         /// 片内温度
         /// </summary>
         public double ICTemperature { get; set; }
+
+
+
+        /// <summary>
+        /// 设置发射功率
+        /// </summary>
+        /// <param name="txPower"></param>
+        public void SetTxPower(byte txPower)
+        {
+            if (txPower >= 0x80)
+            {
+                TxPower = (Int16)(txPower - 256);
+            }
+            else
+            {
+                TxPower = (Int16)txPower;
+            }
+        }
     }
 }

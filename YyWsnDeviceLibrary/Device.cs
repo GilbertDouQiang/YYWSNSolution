@@ -5,8 +5,6 @@ using System.Text;
 
 namespace YyWsnDeviceLibrary
 {
-    
-
     /// <summary>
     /// 所有设备的父类，抽象类，不能直接实例化
     /// </summary>
@@ -60,6 +58,18 @@ namespace YyWsnDeviceLibrary
             M30 = 0x79,                 // M30:MSP432+CC1310+W25Q256FV+LCD+CP2102
             AO2 = 0x7A,                 // AO2:CC1310+W25Q16CL+SHT30+LMP91000+02
             RT = 0x7B,                  // RT:CC1352P+W25Q16CL+TPL5010
+            GMP = 0x7C,                 // GMP:CC1352P+GD25VQ32C+TPL5010，支持蓝牙
+            ZQM1 = 0x7D,                // ZQM1:CC1310+GD25VQ32C+SHT30
+            M5 = 0x7E,                  // M5:CC1310+GD25VQ32C+HP303S(BMP280) 
+            M40 = 0x7F,                 // （门磁）M40: CC1310+GD25VQ32C+干簧管
+            M20 = 0x80,                 // M20:M20+3SHT30
+            M1X = 0x81,                 // M1X: CC1310+W25Q16CL+SHT30+TPL5010
+            ZQSG1CC1352P = 0x82,        // ZQSG1(CC1352P)
+            ZQSG1MSP432 = 0x83,         // ZQSG1(MSP432)
+            M10 = 0x84,                 // M10
+            L1 = 0x85,                  // L1(光照传感器)
+            ESK = 0x8A,                 // 爱立信，ESK
+            IR20 = 0x8B,                // IR20
         }
 
         /// <summary>
@@ -71,6 +81,9 @@ namespace YyWsnDeviceLibrary
             SelfTest,               // SS发出的上电自检数据包
             SensorFromSsToGw,       // SS发给GW的传感数据包
             AckFromGwToSs,          // GW发给SS的确认包
+            SensorDataFromGmToPc,   // GM反馈给上位机的Sensor数据包
+            SensorDataMax31855Debug, // MAX31855 Debug数据包
+            SelfTestFromUsbToPc,    // USB修改工具接收到的Sensor的上电自检数据包
         }
 
         /// <summary>
@@ -131,7 +144,7 @@ namespace YyWsnDeviceLibrary
         /// <summary>
         /// 设备的新的8位MAC地址
         /// </summary>
-        public string DeviceNewMAC { get; set; }
+        public string DeviceMacNewS { get; set; }
 
         /// <summary>
         /// DQ: 硬件版本
@@ -141,7 +154,7 @@ namespace YyWsnDeviceLibrary
         /// <summary>
         /// 硬件版本
         /// </summary>
-        public string HwVersionS { get; set; }
+        public string HwRevisionS { get; set; }
 
         /// <summary>
         /// DQ: 软件版本
@@ -151,7 +164,7 @@ namespace YyWsnDeviceLibrary
         /// <summary>
         /// 软件版本
         /// </summary>
-        public string SwVersionS { get; set; }
+        public string SwRevisionS { get; set; }
 
         /// <summary>
         /// DQ: 客户码
@@ -184,9 +197,24 @@ namespace YyWsnDeviceLibrary
         public byte Category { get; set; }
 
         /// <summary>
-        /// 时间间隔
+        /// 采集间隔，单位：秒
         /// </summary>
-        public int Interval { get; set; }
+        public UInt16 Interval { get; set; }
+
+        /// <summary>
+        /// 正常传输间隔，单位：秒
+        /// </summary>
+        public UInt16 NormalInterval { get; set; }
+
+        /// <summary>
+        /// 预警传输间隔，单位：秒
+        /// </summary>
+        public UInt16 WarnInterval { get; set; }
+
+        /// <summary>
+        /// 报警传输间隔，单位：秒
+        /// </summary>
+        public UInt16 AlertInterval { get; set; }
 
         /// <summary>
         /// 
@@ -204,19 +232,9 @@ namespace YyWsnDeviceLibrary
         public byte Bps { get; set; }
 
         /// <summary>
-        /// Sensor的工作模式
-        /// </summary>
-        public byte WorkFunction { get; set; } //Pattern in protocol
-
-        /// <summary>
         /// 数据包的起始位
         /// </summary>
         public byte STP { get; set; }
-
-        /// <summary>
-        /// 传输速率
-        /// </summary>
-        public byte SymbolRate { get; set; }
 
         /// <summary>
         /// 设备的最后传输日期和时间
@@ -311,7 +329,7 @@ namespace YyWsnDeviceLibrary
                     }
                 case 0x58:
                     {
-                        Name = "SK";
+                        Name = "M4(SK)";
                         break;
                     }
                 case 0x59:
@@ -409,9 +427,64 @@ namespace YyWsnDeviceLibrary
                         Name = "PM";
                         break;
                     }
+                case 0x77:
+                    {
+                        Name = "M9(振动)";
+                        break;
+                    }
+                case 0x7A:
+                    {
+                        Name = "AO2";
+                        break;
+                    }
+                case 0x7D:
+                    {
+                        Name = "M1_Zigin";
+                        break;
+                    }
+                case 0x7F:
+                    {
+                        Name = "M40（门磁）";
+                        break;
+                    }
+                case 0x80:
+                    {
+                        Name = "M20";
+                        break;
+                    }
+                case 0x81:
+                    {
+                        Name = "M1X";
+                        break;
+                    }
+                case 0x82:
+                    {
+                        Name = "ZQSG1CC1352P";
+                        break;
+                    }
+                case 0x83:
+                    {
+                        Name = "ZQSG1MSP432";
+                        break;
+                    }
+                case 0x84:
+                    {
+                        Name = "M10";
+                        break;
+                    }
+                case 0x85:
+                    {
+                        Name = "L1";
+                        break;
+                    }
+                case 0x8A:
+                    {
+                        Name = "ESK";
+                        break;
+                    }
                 default:
                     {
-                        Name = "未知设备";
+                        Name = deviceType.ToString("X2");
                         break;
                     }
             }
@@ -422,7 +495,6 @@ namespace YyWsnDeviceLibrary
         /// <summary>
         /// 设置Device的Primary Mac
         /// </summary>
-        /// <param name="deviceType"></param>
         public void SetDevicePrimaryMac(byte[] SrcData, UInt16 StartIndex)
         {
             PrimaryMacS = CommArithmetic.DecodeMAC(SrcData, StartIndex);
@@ -433,7 +505,6 @@ namespace YyWsnDeviceLibrary
         /// <summary>
         /// 设置Device Mac
         /// </summary>
-        /// <param name="deviceType"></param>
         public void SetDeviceMac(byte[] SrcData, UInt16 StartIndex)
         {
             DeviceMacS = CommArithmetic.DecodeMAC(SrcData, StartIndex);
@@ -442,14 +513,146 @@ namespace YyWsnDeviceLibrary
         }
 
         /// <summary>
+        /// 设置Haredware Revision
+        /// </summary>
+        public void SetHardwareRevision(byte[] SrcData, UInt16 StartIndex)
+        {
+            HwRevisionS = CommArithmetic.DecodeMAC(SrcData, StartIndex);
+
+            HwRevisionV = (UInt32)(SrcData[StartIndex] * 256 * 256 * 256 + SrcData[StartIndex + 1] * 256 * 256 + SrcData[StartIndex + 2] * 256 + SrcData[StartIndex + 3]);
+        }
+
+
+        /// <summary>
+        /// 设置Software Revision
+        /// </summary>
+        public void SetSoftwareRevision(byte[] SrcData, UInt16 StartIndex)
+        {
+            SwRevisionS = CommArithmetic.DecodeClientID(SrcData, StartIndex);
+
+            SwRevisionV = (UInt16)(SrcData[StartIndex] * 256 + SrcData[StartIndex + 1]);
+        }
+
+        /// <summary>
         /// 设置Device的客户码
         /// </summary>
-        /// <param name="deviceType"></param>
         public void SetDeviceCustomer(byte[] SrcData, UInt16 StartIndex)
         {
             CustomerS = CommArithmetic.DecodeClientID(SrcData, StartIndex);
 
             CustomerV = (UInt16)(SrcData[StartIndex] * 256 + SrcData[StartIndex + 1]);
+        }
+
+        /// <summary>
+        /// 设置Device的Debug
+        /// </summary>
+        public void SetDeviceDebug(byte[] SrcData, UInt16 StartIndex)
+        {
+            DebugS = CommArithmetic.DecodeClientID(SrcData, StartIndex);
+
+            DebugV = (UInt16)(SrcData[StartIndex] * 256 + SrcData[StartIndex + 1]);
+        }
+
+        /// <summary>
+        /// 判断数据包是否是USB监控到的Sensor上电自检数据包
+        /// </summary>
+        static public Int16 IsPowerOnSelfTestPktFromUsbToPc(byte[] SrcData, UInt16 StartIndex)
+        {
+            // 确保数据包长度达到最小长度要求
+            if(SrcData.Length - StartIndex < 5)
+            {
+                return -1;
+            }
+
+            // 起始位
+            if (SrcData[StartIndex] != 0xEC)
+            {
+                return -2;
+            }
+
+            // 长度位
+            byte pktLen = SrcData[StartIndex + 1];
+            if(pktLen + 5 > SrcData.Length - StartIndex)
+            {
+                return -3;
+            }
+
+            // 结束位
+            if(SrcData[StartIndex + 2 + pktLen + 2] != 0xCE)
+            {
+                return -4;
+            }
+
+            // CRC16
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, SrcData, (UInt16)(StartIndex + 2), pktLen);
+            UInt16 crc_chk = (UInt16)(((UInt16)SrcData[StartIndex + 2 + pktLen] << 8) | ((UInt16)SrcData[StartIndex + 2 + pktLen + 1] << 0));
+            if(crc != crc_chk && crc_chk != 0)
+            {
+                return -5;
+            }
+
+            // Cmd
+            if(SrcData[StartIndex + 2] != 0x01)
+            {
+                return -6;
+            }
+
+            // 设备类型
+            byte deviceType = SrcData[StartIndex + 4];
+
+            // Protocol
+            byte protocol = SrcData[StartIndex + 5];
+            if (protocol == 0)
+            {
+                // 空
+            }
+
+            return (Int16)deviceType;
+        }
+
+
+        /// <summary>
+        /// 判断数据包是否是服务器收到的网关上传的数据包
+        /// </summary>
+        /// <param name="SrcData"></param>
+        /// <param name="StartIndex"></param>
+        /// <returns></returns>
+        static public Int16 IsPktFromGatewayToServer(byte[] SrcData)
+        {
+            // 确保数据包长度达到最小长度要求
+            if (SrcData.Length < 9)
+            {
+                return -1;
+            }
+
+            // 起始位
+            if (SrcData[0] != 0xBE || SrcData[1] != 0xBE)
+            {
+                return -2;
+            }
+
+            // 长度位
+            byte pktLen = SrcData[2];
+            if (pktLen + 7 > SrcData.Length)
+            {
+                return -3;
+            }
+
+            // 结束位
+            if (SrcData[3 + pktLen + 2] != 0xEB || SrcData[3 + pktLen + 3] != 0xEB)
+            {
+                return -4;
+            }
+
+            // CRC16
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, SrcData, 3, pktLen);
+            UInt16 crc_chk = (UInt16)(((UInt16)SrcData[3 + pktLen] << 8) | ((UInt16)SrcData[3 + pktLen + 1] << 0));
+            if (crc != crc_chk && crc_chk != 0)
+            {
+                return -5;
+            }
+
+            return 0;
         }
     }
 }

@@ -15,6 +15,7 @@ using YyWsnCommunicatonLibrary;
 using YyWsnDeviceLibrary;
 using System.Timers;
 using System.Windows.Threading;
+using System.Configuration;
 
 namespace DeviceSetup_HyperWSN
 {
@@ -23,14 +24,10 @@ namespace DeviceSetup_HyperWSN
     /// </summary>
     public partial class MainWindow : Window
     {
-        SerialPortHelper comport;
-        String UartCommand;
-        Timer monitorTimer;
-        M1 m1Device;
-        M2 m2Device;
-        Socket1 socket1Device;
-        bool continueFlag = false; //是否需要继续监听的控制位
+        SerialPortHelper SerialPort;
 
+        Timer TimeoutTimer;
+        bool TimeoutElapsed = true;                // 是否已经超时
 
         public MainWindow()
         {
@@ -39,16 +36,20 @@ namespace DeviceSetup_HyperWSN
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            this.Title = ConfigurationManager.AppSettings["Title"] + " v" +
+                System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+                    
             FindComport();
-            CBLoop.IsChecked = true;
             DisableControl();
-            cbUserParameter.Items.Clear();
-            //临时
-            cbUserParameter.Items.Add("标准配置");
-            cbUserApplication.Items.Add("标准配置");
 
-            cbUserParameterSocket1.Items.Add("标准配置");
-            cbUserApplicationSocket1.Items.Add("标准配置");
+            dtimer = new DispatcherTimer();
+            dtimer.Interval = TimeSpan.FromSeconds(5);
+            dtimer.Tick += Dtimer_Tick; ;
+
+            TimeoutTimer = new Timer();
+            TimeoutTimer.Elapsed += Timeout_Elapsed;
+            TimeoutTimer.Interval = 3050;
+            TimeoutTimer.Enabled = false;
         }
 
         private void FindComport()
@@ -70,29 +71,27 @@ namespace DeviceSetup_HyperWSN
         private void btnFindComport_Click(object sender, RoutedEventArgs e)
         {
             FindComport();
-
         }
-        
+
         private void btnOpenComport_Click(object sender, RoutedEventArgs e)
         {
-            //btnOpenComport.Content.ToString();
             if (btnOpenComport.Content.ToString() == "Open")
             {
-                comport = new SerialPortHelper();
-                comport.SerialPortReceived += Comport_SerialPortReceived;
+                SerialPort = new SerialPortHelper();
+                SerialPort.SerialPortReceived += Comport_SerialPortReceived;
                 string portname = SerialPortHelper.GetSerialPortName(cbSerialPort.SelectedValue.ToString());
-                comport.InitCOM(portname);
-                if (comport.OpenPort())
+                SerialPort.InitCOM(portname);
+                if (SerialPort.OpenPort())
                 {
+                    btnStartMonitor.IsEnabled = true;
                     btnOpenComport.Content = "Close";
-                    EnableControls();
                 }
             }
             else
             {
-                if (comport != null)
+                if (SerialPort != null)
                 {
-                    comport.ClosePort();
+                    SerialPort.ClosePort();
                     btnOpenComport.Content = "Open";
                     DisableControl();
                 }
@@ -101,19 +100,53 @@ namespace DeviceSetup_HyperWSN
 
         private void DisableControl()
         {
-            //throw new NotImplementedException();
             btnStartMonitor.IsEnabled = false;
             btnStopMonitor.IsEnabled = false;
-            CBLoop.IsEnabled = false;
         }
 
-        private void EnableControls()
+        /// <summary>
+        /// 显示M9的灵敏度
+        /// </summary>
+        /// <param name="RxMoveDetectThr"></param>
+        /// <param name="RxStaticDetectThr"></param>
+        /// <returns></returns>
+        private Int16 DisplaySensitivityOfM9(UInt16 RxMoveDetectThr, UInt16 RxStaticDetectThr)
         {
-            //throw new NotImplementedException();
-            btnStartMonitor.IsEnabled = true;
-            CBLoop.IsEnabled = true;
+            UInt16 MoveDetectThr = 0;
+            UInt16 StaticDetectThr = 0;
+
+            for (byte Sensitivity = 0; Sensitivity < 100; Sensitivity++)
+            {
+                MoveDetectThr = Convert.ToUInt16(ConfigurationManager.AppSettings["M9_MoveDetectThr_" + Sensitivity.ToString()]);
+                StaticDetectThr = Convert.ToUInt16(ConfigurationManager.AppSettings["M9_StaticDetectThr_" + Sensitivity.ToString()]);
+
+                if (MoveDetectThr == 0 || StaticDetectThr == 0)
+                {
+                    break;
+                }
+
+                if(RxMoveDetectThr != MoveDetectThr || RxStaticDetectThr != StaticDetectThr)
+                {
+                    continue;
+                }
+
+                tbkSensitivityDetailOfM9.Text = "";
+                tbxSensitivityOfM9.Text = Sensitivity.ToString();
+                return 0;
+            }
+
+            // 定义的灵敏度列表里没有与之相匹配的内容，则显示详细内容
+            tbkSensitivityDetailOfM9.Text = "运动检测阈值：" + RxMoveDetectThr.ToString() + "mg, 静止检测阈值：" + RxStaticDetectThr.ToString() + "mg;";
+            tbxSensitivityOfM9.Text = "";
+
+            return 1;
         }
 
+        /// <summary>
+        /// 收到Comport反馈的数据
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Comport_SerialPortReceived(object sender, SerialPortEventArgs e)
         {
             Dispatcher.BeginInvoke(new Action(delegate
@@ -123,85 +156,356 @@ namespace DeviceSetup_HyperWSN
                 // 未收到任何反馈
                 if (e.ReceivedBytes == null)
                 {
-                    if (CBLoop.IsChecked == true)
-                    {
-                        continueFlag = true;
-                    }
                     return;
                 }
 
+                //
                 if (e.ReceivedBytes.Length == 8)
                 {
                     //收到更新反馈报
-                    if (e.ReceivedBytes[2]==0xA1 || e.ReceivedBytes[2] == 0xA2 
+                    if (e.ReceivedBytes[2] == 0xA1 || e.ReceivedBytes[2] == 0xA2
                     || e.ReceivedBytes[2] == 0xA3 || e.ReceivedBytes[2] == 0xA4)
                     {
                         //立即进入读取状态
-                        btnStartMonitor_Click(this,null);                        
+                        btnStartMonitor_Click(this, null);
                     }
 
-                    if (CBLoop.IsChecked == true)
-                    {
-                        continueFlag = true;
-                    }
                     return;
                 }
             }));
 
-            //处理 M1 M1P M4的上电自检数据
-            if (e.ReceivedBytes.Length == 0x52)
+            Dispatcher.BeginInvoke(new Action(delegate
             {
-                continueFlag = false;
-                Dispatcher.BeginInvoke(new Action(delegate
+                txtConsole.Text += Logger.GetTimeString() + "\t" + CommArithmetic.ToHexString(e.ReceivedBytes) + "\r\n";
+
+                bool ReceivedOk = false;
+
+                for (UInt16 iX = 0; iX < e.ReceivedBytes.Length; iX++)
                 {
-                    txtConsole.Text += Logger.GetTimeString() + "\t" + CommArithmetic.ToHexString(e.ReceivedBytes) + "\r\n";
-                    //需要过滤掉不符合长度
-                    Device device = DeviceFactory.CreateDevice(e.ReceivedBytes);
-                    if (device != null && device.GetType() == typeof(M1))
+                    // 判断是否是上电自检数据包
+                    Int16 Error = Device.IsPowerOnSelfTestPktFromUsbToPc(e.ReceivedBytes, iX);
+                    if (Error < 0)
                     {
-                        m1Device = (M1)device;
-                        StackM1.DataContext = m1Device;
+                        continue;
                     }
 
-                    if (device != null && device.GetType() == typeof(Socket1))
+                    // 根据不同的设备类型来实例
+                    Device.DeviceType deviceType = (Device.DeviceType)Error;
+                    switch (deviceType)
                     {
-                        socket1Device = (Socket1)device;
-                        StackSocket1.DataContext = socket1Device;
+                        case Device.DeviceType.M1:
+                        case Device.DeviceType.M1_NTC:
+                        case Device.DeviceType.M1_Beetech:
+                        case Device.DeviceType.M2:
+                        case Device.DeviceType.S1P:
+                        case Device.DeviceType.ZQM1:
+                        case Device.DeviceType.M10:
+                        case Device.DeviceType.M6:
+                        case Device.DeviceType.M20:
+                        case Device.DeviceType.M1X:
+                            {
+                                M1 aM1 = new M1(e.ReceivedBytes, iX, Device.DataPktType.SelfTestFromUsbToPc, deviceType);
+                                if (aM1 != null)
+                                {
+                                    TableOfM1.IsSelected = true;
+                                    StackOfM1.DataContext = aM1;
+                                }
+                                break;
+                            }
+                        case Device.DeviceType.SK:
+                            {
+                                SK aSK = new SK(e.ReceivedBytes, iX, Device.DataPktType.SelfTestFromUsbToPc);
+                                if (aSK != null)
+                                {
+                                    TableOfM4.IsSelected = true;
+                                    StackOfSK.DataContext = aSK;
+                                    ReceivedOk = true;
+                                }
+                                break;
+                            }
+                        case Device.DeviceType.ESK:
+                            {
+                                ESK aESK = new ESK(e.ReceivedBytes, iX, Device.DataPktType.SelfTestFromUsbToPc);
+                                if (aESK != null)
+                                {
+                                    TableOfEsk.IsSelected = true;
+                                    StackOfEsk.DataContext = aESK;
+                                    ReceivedOk = true;
+                                }
+                                break;
+                            }
+                        case Device.DeviceType.AO2:
+                            {
+                                AO2 aAO2 = new AO2(e.ReceivedBytes, iX, Device.DataPktType.SelfTestFromUsbToPc, Device.DeviceType.AO2);
+                                if (aAO2 != null)
+                                {
+                                    TableOfAO2.IsSelected = true;
+                                    StackOfAO2.DataContext = aAO2;
+                                    ReceivedOk = true;
+                                }
+                                break;
+                            }
+                        case Device.DeviceType.M9:
+                            {
+                                M9 aM9 = new M9(e.ReceivedBytes, iX, Device.DataPktType.SelfTestFromUsbToPc);
+                                if (aM9 != null)
+                                {
+                                    tbxSensitivityOfM9.IsEnabled = true;
+                                    tbxNewSensitivityOfM9.IsEnabled = true;
+                                    tbxMoveDetectTimeOfM9.IsEnabled = true;
+                                    tbxNewMoveDetectTimeOfM9.IsEnabled = true;
+                                    tbxStaticDetectTimeOfM9.IsEnabled = true;
+                                    tbxNewStaticDetectTimeOfM9.IsEnabled = true;
+
+                                    cbxAlertCfgStaticOfM9.Content = "静止";
+                                    cbxAlertCfgMoveOfM9.Content = "运动";
+                                    cbxAlertCfgMoveStaticOfM9.Content = "动->静";
+                                    cbxAlertCfgStaticMoveOfM9.Content = "静->动";
+
+                                    tbkMoveStateOfM9.Text = "运动状态";
+
+                                    TableOfM9.IsSelected = true;
+                                    StackOfM9.DataContext = aM9;
+
+                                    // 显示灵敏度
+                                    DisplaySensitivityOfM9(aM9.MoveDetectThr, aM9.StaticDetectThr);
+
+                                    tbxMoveStateOfM9.Text = aM9.moveStateS;
+
+                                    if (cbxAlertCfgLockOfM9.IsChecked == false)
+                                    {
+                                        if (0 != (aM9.AlertCfg & 0x01))
+                                        {   // 静止报警
+                                            cbxAlertCfgStaticOfM9.IsChecked = true;
+                                        }
+                                        else
+                                        {
+                                            cbxAlertCfgStaticOfM9.IsChecked = false;
+                                        }
+
+                                        if (0 != (aM9.AlertCfg & 0x02))
+                                        {   // 运动报警
+                                            cbxAlertCfgMoveOfM9.IsChecked = true;
+                                        }
+                                        else
+                                        {
+                                            cbxAlertCfgMoveOfM9.IsChecked = false;
+                                        }
+
+                                        if (0 != (aM9.AlertCfg & 0x04))
+                                        {   // 动->静报警
+                                            cbxAlertCfgMoveStaticOfM9.IsChecked = true;
+                                        }
+                                        else
+                                        {
+                                            cbxAlertCfgMoveStaticOfM9.IsChecked = false;
+                                        }
+
+                                        if (0 != (aM9.AlertCfg & 0x08))
+                                        {   // 静->动报警
+                                            cbxAlertCfgStaticMoveOfM9.IsChecked = true;
+                                        }
+                                        else
+                                        {
+                                            cbxAlertCfgStaticMoveOfM9.IsChecked = false;
+                                        }
+
+                                        if (0 != (aM9.AlertCfg & 0x10))
+                                        {   // 异常报警
+                                            cbxAlertCfgExceptionOfM9.IsChecked = true;
+                                        }
+                                        else
+                                        {
+                                            cbxAlertCfgExceptionOfM9.IsChecked = false;
+                                        }
+                                    }
+                                }
+                                break;
+                            }
+                        case Device.DeviceType.M40:
+                            {
+                                M40 aM40 = new M40(e.ReceivedBytes, iX, Device.DataPktType.SelfTestFromUsbToPc);
+                                if (aM40 != null)
+                                {
+                                    tbxSensitivityOfM9.IsEnabled = false;
+                                    tbxNewSensitivityOfM9.IsEnabled = false;
+                                    tbxMoveDetectTimeOfM9.IsEnabled = false;
+                                    tbxNewMoveDetectTimeOfM9.IsEnabled = false;
+                                    tbxStaticDetectTimeOfM9.IsEnabled = false;
+                                    tbxNewStaticDetectTimeOfM9.IsEnabled = false;
+
+                                    cbxAlertCfgStaticOfM9.Content = "关门";
+                                    cbxAlertCfgMoveOfM9.Content = "开门";
+                                    cbxAlertCfgMoveStaticOfM9.Content = "开->关";
+                                    cbxAlertCfgStaticMoveOfM9.Content = "关->开";
+
+                                    tbkMoveStateOfM9.Text = "门状态";
+
+                                    TableOfM9.IsSelected = true;
+                                    StackOfM9.DataContext = aM40;
+
+                                    tbxMoveStateOfM9.Text = aM40.openStateS;
+
+                                    if (cbxAlertCfgLockOfM9.IsChecked == false)
+                                    {
+                                        if (0 != (aM40.AlertCfg & 0x01))
+                                        {   // 关门报警
+                                            cbxAlertCfgStaticOfM9.IsChecked = true;
+                                        }
+                                        else
+                                        {
+                                            cbxAlertCfgStaticOfM9.IsChecked = false;
+                                        }
+
+                                        if (0 != (aM40.AlertCfg & 0x02))
+                                        {   // 开门报警
+                                            cbxAlertCfgMoveOfM9.IsChecked = true;
+                                        }
+                                        else
+                                        {
+                                            cbxAlertCfgMoveOfM9.IsChecked = false;
+                                        }
+
+                                        if (0 != (aM40.AlertCfg & 0x04))
+                                        {   // 开->关报警
+                                            cbxAlertCfgMoveStaticOfM9.IsChecked = true;
+                                        }
+                                        else
+                                        {
+                                            cbxAlertCfgMoveStaticOfM9.IsChecked = false;
+                                        }
+
+                                        if (0 != (aM40.AlertCfg & 0x08))
+                                        {   // 关->开报警
+                                            cbxAlertCfgStaticMoveOfM9.IsChecked = true;
+                                        }
+                                        else
+                                        {
+                                            cbxAlertCfgStaticMoveOfM9.IsChecked = false;
+                                        }
+
+                                        if (0 != (aM40.AlertCfg & 0x10))
+                                        {   // 异常报警
+                                            cbxAlertCfgExceptionOfM9.IsChecked = true;
+                                        }
+                                        else
+                                        {
+                                            cbxAlertCfgExceptionOfM9.IsChecked = false;
+                                        }
+                                    }
+                                }
+                                break;
+                            }
+                        case Device.DeviceType.L1:
+                            {
+                                L1 aL1 = new L1(e.ReceivedBytes, iX, Device.DataPktType.SelfTestFromUsbToPc);
+                                if (aL1 != null)
+                                {
+                                    TableOfL1.IsSelected = true;
+                                    StackOfL1.DataContext = aL1;
+                                }
+                                break;
+                            }
+                        default:
+                            {
+                                break;
+                            }
                     }
+                }
 
-                    //enable monitor
-                    btnStopMonitor_Click(this, null);                   
-                }));
-            }
-
-
-            //处理M2上电自检数据
-            if (e.ReceivedBytes.Length == 0x46)
-            {
-                continueFlag = false;
-                Dispatcher.BeginInvoke(new Action(delegate
+                if (ReceivedOk == false)
                 {
-                    txtConsole.Text += Logger.GetTimeString() + "\t" + CommArithmetic.ToHexString(e.ReceivedBytes) + "\r\n";
-                    //需要过滤掉不符合长度
-                    Device device = DeviceFactory.CreateDevice(e.ReceivedBytes);
-                    if (device != null && device.GetType() == typeof(M2))
-                    {
-                        m2Device = (M2)device;
-                        StackM1.DataContext = m2Device;
-                    }
+                    ReceivedOk = false;
+                }
 
-                    //enable monitor
-                    btnStopMonitor_Click(this, null);
-
-
-                }));
-
-            }
-
-
+            }));
         }
 
-        
+        /// <summary>
+        /// 开始接收上电自检数据包
+        /// </summary>
+        /// <returns></returns>
+        private Int16 StartReceive()
+        {
+            try
+            {
+                byte[] TxBuf = new byte[16];
+                UInt16 TxLen = 0;
+
+                bool ExistRssiThr = false;
+                Int16 RssiThr = 0;
+
+                if (tbxRssiThr.Text == "")
+                {
+                    ExistRssiThr = false;
+                }
+                else
+                {
+                    ExistRssiThr = true;
+                    RssiThr = Convert.ToInt16(tbxRssiThr.Text);
+                }
+
+                // Start
+                TxBuf[TxLen++] = 0xCE;
+
+                // Length
+                TxBuf[TxLen++] = 0x00;
+
+                // Cmd
+                TxBuf[TxLen++] = 0x01;
+
+                // USB Protocol
+                if (ExistRssiThr == false)
+                {
+                    TxBuf[TxLen++] = 0x01;
+                }
+                else
+                {
+                    TxBuf[TxLen++] = 0x02;
+                }
+
+                // Timeout
+                TxBuf[TxLen++] = 0x03;
+
+
+                if (ExistRssiThr == false)
+                {
+
+                }
+                else
+                {
+                    // RSSI 阈值
+                    TxBuf[TxLen++] = (byte)RssiThr;
+
+                    // 保留
+                    TxBuf[TxLen++] = 0x00;
+                    TxBuf[TxLen++] = 0x00;
+                    TxBuf[TxLen++] = 0x00;
+                    TxBuf[TxLen++] = 0x00;
+                }
+
+                // CRC16
+                UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 2, (UInt16)(TxLen - 2));
+                TxBuf[TxLen++] = (byte)((crc & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((crc & 0x00FF) >> 0);
+
+                // End
+                TxBuf[TxLen++] = 0xEC;
+
+                // 重写长度位
+                TxBuf[1] = (byte)(TxLen - 5);
+
+                SerialPort_Send(TxBuf, 0, TxLen);
+
+                return 0;
+            }
+            catch (Exception)
+            {
+                return -1000;
+            }
+        }
+
+
         /// <summary>
         /// 启动串口监听，如果选中循环监听，则持续监听
         /// </summary>
@@ -209,85 +513,47 @@ namespace DeviceSetup_HyperWSN
         /// <param name="e"></param>
         private void btnStartMonitor_Click(object sender, RoutedEventArgs e)
         {
-
-            //clear contorl 
-            txtPrimaryMAC.Text = "";
-            txtDeviceMAC.Text = "";
-            txtDeviceName.Text = "";
-            txtSoftwareVersion.Text = "";
-            txtHarewareVersion.Text = "";
-
-            //clear contorl 
-
-            txtPrimaryMACSocket1.Text = "";
-            txtDeviceMACSocket1.Text = "";
-            txtDeviceNameSocket1.Text = "";
-            txtSoftwareVersionSocket1.Text = "";
-            txtHarewareVersionSocket1.Text = "";
-
-            DoEvents();
-
-
-            UartCommand = "CE 03 01 01 03 00 00 EC";
-
-            byte[] command = CommArithmetic.HexStringToByteArray(UartCommand);
-            //启动第一次监听
-            if (comport!=null)
+            if (SerialPort == null)
             {
-                int result = comport.SendCommand(command);
-            }
-            if(CBLoop.IsChecked==true)
-            {
-                monitorTimer = new Timer();
-                monitorTimer.Elapsed += MonitorTimer_Elapsed;
-                monitorTimer.Interval = 3050;
-                monitorTimer.Enabled = true;
-                btnStartMonitor.IsEnabled = false;
-                btnStopMonitor.IsEnabled = true;
-
+                return;
             }
 
-            
+            if (TimeoutElapsed == false)
+            {
+                return;
+            }
 
+            btnClear_Click(sender, e);              // 清空上次的结果
 
+            StartReceive();                         // 开始监听
 
+            if (TimeoutTimer != null)
+            {
+                TimeoutElapsed = false;
+                TimeoutTimer.Enabled = true;
+            }
+
+            //btnStartMonitor.IsEnabled = false;
+            btnStopMonitor.IsEnabled = true;
 
         }
 
-        private void MonitorTimer_Elapsed(object sender, ElapsedEventArgs e)
+        private void Timeout_Elapsed(object sender, ElapsedEventArgs e)
         {
-            //只有必要的时候才启动
-            if (continueFlag)
-                StartMonitor();
-            else
-                monitorTimer.Enabled = false;
-
-        }
-
-        private void StartMonitor()
-        {
-            // new NotImplementedException();
-            UartCommand = "CE 03 01 01 03 00 00 EC";
-
-            byte[] command = CommArithmetic.HexStringToByteArray(UartCommand);
-            //启动循环监听
-            if (comport != null)
-            {
-                int result = comport.SendCommand(command);
-            }
+            TimeoutTimer.Enabled = false;
+            TimeoutElapsed = true;
         }
 
         private void btnStopMonitor_Click(object sender, RoutedEventArgs e)
         {
-            if (monitorTimer!=null)
+            if (TimeoutTimer != null)
             {
-                monitorTimer.Enabled = false;
-                monitorTimer.Dispose();
-                btnStartMonitor.IsEnabled = true;
-                btnStopMonitor.IsEnabled = false;
-
+                TimeoutTimer.Enabled = false;
+                TimeoutElapsed = true;
             }
 
+            btnStartMonitor.IsEnabled = true;
+            btnStopMonitor.IsEnabled = false;
         }
 
         /// <summary>
@@ -295,72 +561,205 @@ namespace DeviceSetup_HyperWSN
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void btnUpdateFactory_Click(object sender, RoutedEventArgs e)
+        private void btnUpdateFactoryOfM1_Click(object sender, RoutedEventArgs e)
         {
             M1 updateDevice = new M1();
             try
             {
-                updateDevice.DeviceMacS = txtDeviceMAC.Text;
-                updateDevice.DeviceNewMAC = txtNewDeviceMAC.Text;
-                updateDevice.HwVersionS = txtNewHardwareVersion.Text;
-                //兼容M1 and M1P
-                if (txtDeviceName.Text== "M1")
-                {
-                    updateDevice.DeviceTypeS = "51";
-                }
-                else if (txtDeviceName.Text == "M1P")
-                {
-                    updateDevice.DeviceTypeS = "53";
-                }
-                else if (txtDeviceName.Text == "M2")
-                {
-                    updateDevice.DeviceTypeS = "57";
-                }
-
-                //
+                updateDevice.DeviceTypeS = tbxDeviceNameOfM1.Text;
+                updateDevice.DeviceMacS = tbxDeviceMacOfM1.Text;
+                updateDevice.DeviceMacNewS = tbxNewDeviceMacOfM1.Text;
+                updateDevice.HwRevisionS = tbxNewHwRevisionOfM1.Text;
 
                 byte[] updateCommand = updateDevice.UpdateFactory();
                 string updateString = CommArithmetic.ToHexString(updateCommand);
-                comport.SendCommand(updateCommand);
-                System.Threading.Thread.Sleep(200); //界面会卡 
+                SerialPort.SendCommand(updateCommand);
+                System.Threading.Thread.Sleep(200);     //界面会卡
             }
             catch (Exception ex)
             {
-
                 MessageBox.Show("参数错误" + ex.Message);
             }
-           
-
-
-            //comport.SendCommand(updateCommand);
-
-            //updateDevice.UpdateFactory
-
-
-
         }
 
-        private void cbUserParameter_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        /// <summary>
+        /// M1: 修改用户配置
+        /// </summary>
+        /// <returns></returns>
+        private Int16 WriteUserCfgOfM1()
         {
-            //TODO: 临时配置
-            if (cbUserParameter.SelectedIndex==0)
+            byte[] TxBuf = new byte[38];
+            UInt16 TxLen = 0;
+
+            byte[] ByteBufTmp = null;
+
+            // 设备类型
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceTypeOfM1.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 1)
             {
-                txtNewClientID.Text = "D3 9A";
-                txtNewDebug.Text = "00 02";
-                txtNewCategory.Text = "0";
-                txtNewWorkFunction.Text = "1";
-                txtNewBPS.Text = "0";
-                txtNewTXPower.Text = "13";
-                txtNewMaxLength.Text = "4";
-                txtNewTemperatureCompensation.Text = "0";
-                txtNewHumidityCompensation.Text = "0";
-                txtNewFrequency.Text = "0";
-
-
+                return -1;
             }
-            
+            Device.DeviceType deviceType = (Device.DeviceType)ByteBufTmp[0];
 
-             
+            // Protocol
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxProtocolOfM1.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 1)
+            {
+                return -2;
+            }
+            byte Protocol = ByteBufTmp[0];
+
+            // Start
+            TxBuf[TxLen++] = 0xCE;
+
+            // Length
+            TxBuf[TxLen++] = 0x00;
+
+            // Cmd
+            TxBuf[TxLen++] = 0xA2;
+
+            // USB Protocol
+            if (Protocol == 0x02)
+            {
+                TxBuf[TxLen++] = 0x01;
+            }
+            else
+            {
+                TxBuf[TxLen++] = 0x02;
+            }
+
+            // 设备类型
+            TxBuf[TxLen++] = (byte)deviceType;
+
+            // Protocol
+            TxBuf[TxLen++] = Protocol;
+
+            // Sensor Mac
+            if (cbxIsAllOfM1.IsChecked == true)
+            {
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+            }
+            else
+            {
+                ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfM1.Text);
+                if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+                {
+                    return -1;
+                }
+                TxBuf[TxLen++] = ByteBufTmp[0];
+                TxBuf[TxLen++] = ByteBufTmp[1];
+                TxBuf[TxLen++] = ByteBufTmp[2];
+                TxBuf[TxLen++] = ByteBufTmp[3];
+            }
+
+            // Customer
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxNewCustomerOfM1.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 2)
+            {
+                return -1;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+
+            // Debug
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxNewDebugOfM1.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 2)
+            {
+                return -1;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+
+            // Category
+            TxBuf[TxLen++] = Convert.ToByte(tbxNewCategoryOfM1.Text);
+
+            // Pattern
+            TxBuf[TxLen++] = Convert.ToByte(tbxNewPatternOfM1.Text);
+
+            // bps
+            TxBuf[TxLen++] = Convert.ToByte(tbxNewBpsOfM1.Text);
+
+            // Tx Power
+            Int16 txPower = Convert.ToInt16(tbxNewTxPowerOfM1.Text);
+            TxBuf[TxLen++] = (byte)txPower;
+
+            // channel
+            TxBuf[TxLen++] = Convert.ToByte(tbxNewChannelOfM1.Text);
+
+            if (Protocol == 0x02)
+            {
+                // 温度补偿 
+                double tempCompF = Convert.ToDouble(tbxNewTemperatureCompensationOfM1.Text);    // 单位：℃
+                Int16 tempComp = (Int16)Math.Round(tempCompF * 100.0f);                         // 单位：0.01℃
+                TxBuf[TxLen++] = (byte)((tempComp & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((tempComp & 0x00FF) >> 0);
+
+                if (deviceType == Device.DeviceType.M2)
+                {   // M2数据包里没有湿度补偿
+
+                }
+                else
+                {
+                    // 湿度补偿
+                    double humCompF = Convert.ToDouble(tbxNewHumidityCompensationOfM1.Text);        // 单位：%
+                    Int16 humComp = (Int16)Math.Round(humCompF * 100.0f);                           // 单位：0.01%
+                    TxBuf[TxLen++] = (byte)((humComp & 0xFF00) >> 8);
+                    TxBuf[TxLen++] = (byte)((humComp & 0x00FF) >> 0);
+                }
+
+                // MaxLength
+                TxBuf[TxLen++] = Convert.ToByte(tbxNewMaxLengthOfM1.Text);
+            }
+            else if (Protocol == 0x03)
+            {
+                // MaxLength
+                TxBuf[TxLen++] = Convert.ToByte(tbxNewMaxLengthOfM1.Text);
+
+                // 日期和时间
+                tbxCalendarOfM1.Text = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                DateTime ThisCalendar = Convert.ToDateTime(tbxCalendarOfM1.Text);
+                ByteBufTmp = MyCustomFxn.DataTimeToByteArray(ThisCalendar);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[0]);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[1]);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[2]);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[3]);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[4]);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[5]);
+
+                // 温度补偿 
+                double tempCompF = Convert.ToDouble(tbxNewTemperatureCompensationOfM1.Text);    // 单位：℃
+                Int16 tempComp = (Int16)Math.Round(tempCompF * 100.0f);                         // 单位：0.01℃
+                TxBuf[TxLen++] = (byte)((tempComp & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((tempComp & 0x00FF) >> 0);
+
+                // 湿度补偿
+                double humCompF = Convert.ToDouble(tbxNewHumidityCompensationOfM1.Text);        // 单位：%
+                Int16 humComp = (Int16)Math.Round(humCompF * 100.0f);                           // 单位：0.01%
+                TxBuf[TxLen++] = (byte)((humComp & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((humComp & 0x00FF) >> 0);
+
+                // Reserved
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+            }
+
+            // CRC16
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 2, (UInt16)(TxLen - 2));
+            TxBuf[TxLen++] = (byte)((crc & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((crc & 0x00FF) >> 0);
+
+            // End
+            TxBuf[TxLen++] = 0xEC;
+
+            // 重写长度位
+            TxBuf[1] = (byte)(TxLen - 5);
+
+            SerialPort_Send(TxBuf, 0, TxLen);
+
+            return 0;
         }
 
         /// <summary>
@@ -368,200 +767,475 @@ namespace DeviceSetup_HyperWSN
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void btnUpdateUser_Click(object sender, RoutedEventArgs e)
+        private void btnUpdateUserOfM1_Click(object sender, RoutedEventArgs e)
         {
-
-            M1 updateDevice = new M1();
             try
             {
-                updateDevice.DeviceMacS = txtDeviceMAC.Text;
-                //兼容M1 and M1P
-                if (txtDeviceName.Text == "M1")
-                {
-                    updateDevice.DeviceTypeS = "51";
-
-                }
-                else if (txtDeviceName.Text == "M1P")
-                {
-                    updateDevice.DeviceTypeS = "53";
-                }
-
-                else if (txtDeviceName.Text == "M2")
-                {
-                    updateDevice.DeviceTypeS = "57";
-                }
-                updateDevice.CustomerS = txtNewClientID.Text;
-                updateDevice.DebugS = txtNewDebug.Text;
-                updateDevice.Category = Convert.ToByte(txtNewCategory.Text);
-                updateDevice.WorkFunction = Convert.ToByte(txtNewWorkFunction.Text);
-                updateDevice.SymbolRate = Convert.ToByte(txtNewBPS.Text);
-                updateDevice.TxPower = Convert.ToByte(txtNewTXPower.Text);
-                updateDevice.Channel = Convert.ToByte(txtNewFrequency.Text);
-                updateDevice.TemperatureCompensation = Convert.ToDouble(txtNewTemperatureCompensation.Text);
-                if (updateDevice.DeviceTypeS !="57")
-                {
-                    updateDevice.HumidityCompensation = Convert.ToDouble(txtNewHumidityCompensation.Text);
-
-                }
-
-                updateDevice.MaxLength = Convert.ToByte(txtNewMaxLength.Text);
-
-
-                byte[] updateCommand = updateDevice.UpdateUserConfig();
-                string updateString = CommArithmetic.ToHexString(updateCommand);
-
-                //monitorTimer.Enabled = false;
-
-                //System.Threading.Thread.Sleep(2000); //界面会卡
-
-                comport.SendCommand(updateCommand);
-
-                System.Threading.Thread.Sleep(200); //界面会卡
-
-                
-                //monitorTimer.Enabled = true;
-
-
-
-
-
-
+                WriteUserCfgOfM1();
             }
             catch (Exception ex)
             {
-
-                MessageBox.Show("参数错误：" + ex.Message);
+                MessageBox.Show("参数错误" + ex.Message);
             }
-
-         
-
         }
 
-        private void btnUpdateApplication_Click(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// M1: 修改应用配置
+        /// </summary>
+        /// <returns></returns>
+        private Int16 WriteAppCfgOfM1()
         {
+            byte[] TxBuf = new byte[50];
+            UInt16 TxLen = 0;
+
+            byte[] ByteBufTmp = null;
+
+            // 设备类型
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceTypeOfM1.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 1)
+            {
+                return -1;
+            }
+            Device.DeviceType deviceType = (Device.DeviceType)ByteBufTmp[0];
+
+            // Protocol
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxProtocolOfM1.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 1)
+            {
+                return -2;
+            }
+            byte Protocol = ByteBufTmp[0];
+
+            // Start
+            TxBuf[TxLen++] = 0xCE;
+
+            // Length
+            TxBuf[TxLen++] = 0x00;
+
+            // Cmd
+            TxBuf[TxLen++] = 0xA3;
+
+            // USB Protocol
+            if (Protocol == 0x02)
+            {
+                TxBuf[TxLen++] = 0x01;
+            }
+            else
+            {
+                TxBuf[TxLen++] = 0x02;
+            }            
+
+            // 设备类型
+            TxBuf[TxLen++] = (byte)deviceType;
+
+            // Protocol
+            TxBuf[TxLen++] = Protocol;
+
+            // Sensor Mac
+            if (cbxIsAllOfM1.IsChecked == true)
+            {
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+            }
+            else
+            {
+                ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfM1.Text);
+                if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+                {
+                    return -1;
+                }
+                TxBuf[TxLen++] = ByteBufTmp[0];
+                TxBuf[TxLen++] = ByteBufTmp[1];
+                TxBuf[TxLen++] = ByteBufTmp[2];
+                TxBuf[TxLen++] = ByteBufTmp[3];
+            }
+
+            if (Protocol == 0x02)
+            {
+                // 采集间隔
+                UInt16 Interval = Convert.ToUInt16(tbxNewIntervalOfM1.Text);
+                TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+                // 日期和时间
+                tbxCalendarOfM1.Text = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                DateTime ThisCalendar = Convert.ToDateTime(tbxCalendarOfM1.Text);
+                ByteBufTmp = MyCustomFxn.DataTimeToByteArray(ThisCalendar);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[0]);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[1]);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[2]);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[3]);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[4]);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[5]);
+
+                // 采发倍数
+                TxBuf[TxLen++] = Convert.ToByte(tbxNewSampleSendOfM1.Text);
+
+                if (deviceType == Device.DeviceType.M2)
+                {
+                    // 温度预警上限
+                    double tempF = Convert.ToDouble(tbxNewTemperatureWarnHighOfM1.Text);        // 单位：℃
+                    Int16 temp = (Int16)Math.Round(tempF * 100.0f);                             // 单位：0.01℃
+                    TxBuf[TxLen++] = (byte)((temp & 0xFF00) >> 8);
+                    TxBuf[TxLen++] = (byte)((temp & 0x00FF) >> 0);
+
+                    // 温度预警下限
+                    tempF = Convert.ToDouble(tbxNewTemperatureWarnLowOfM1.Text);                // 单位：℃
+                    temp = (Int16)Math.Round(tempF * 100.0f);                                   // 单位：0.01℃
+                    TxBuf[TxLen++] = (byte)((temp & 0xFF00) >> 8);
+                    TxBuf[TxLen++] = (byte)((temp & 0x00FF) >> 0);
+
+                    // 温度阈值上限
+                    tempF = Convert.ToDouble(tbxNewTemperatureAlertHighOfM1.Text);              // 单位：℃
+                    temp = (Int16)Math.Round(tempF * 100.0f);                                   // 单位：0.01℃
+                    TxBuf[TxLen++] = (byte)((temp & 0xFF00) >> 8);
+                    TxBuf[TxLen++] = (byte)((temp & 0x00FF) >> 0);
+
+                    // 温度阈值下限
+                    tempF = Convert.ToDouble(tbxNewTemperatureAlertLowOfM1.Text);               // 单位：℃
+                    temp = (Int16)Math.Round(tempF * 100.0f);                                   // 单位：0.01℃
+                    TxBuf[TxLen++] = (byte)((temp & 0xFF00) >> 8);
+                    TxBuf[TxLen++] = (byte)((temp & 0x00FF) >> 0);
+                }
+                else
+                {
+                    // 温度预警上限
+                    double tempF = Convert.ToDouble(tbxNewTemperatureWarnHighOfM1.Text);        // 单位：℃
+                    Int16 temp = (Int16)Math.Round(tempF * 100.0f);                             // 单位：0.01℃
+                    TxBuf[TxLen++] = (byte)((temp & 0xFF00) >> 8);
+                    TxBuf[TxLen++] = (byte)((temp & 0x00FF) >> 0);
+
+                    // 温度预警下限
+                    tempF = Convert.ToDouble(tbxNewTemperatureWarnLowOfM1.Text);                // 单位：℃
+                    temp = (Int16)Math.Round(tempF * 100.0f);                                   // 单位：0.01℃
+                    TxBuf[TxLen++] = (byte)((temp & 0xFF00) >> 8);
+                    TxBuf[TxLen++] = (byte)((temp & 0x00FF) >> 0);
+
+                    // 湿度预警上限
+                    double humF = Convert.ToDouble(tbxNewHumidityWarnHighOfM1.Text);            // 单位：%
+                    UInt16 hum = (UInt16)Math.Round(humF * 100.0f);                             // 单位：0.01%
+                    TxBuf[TxLen++] = (byte)((hum & 0xFF00) >> 8);
+                    TxBuf[TxLen++] = (byte)((hum & 0x00FF) >> 0);
+
+                    // 湿度预警下限
+                    humF = Convert.ToDouble(tbxNewHumidityWarnLowOfM1.Text);                    // 单位：%
+                    hum = (UInt16)Math.Round(humF * 100.0f);                                    // 单位：0.01%
+                    TxBuf[TxLen++] = (byte)((hum & 0xFF00) >> 8);
+                    TxBuf[TxLen++] = (byte)((hum & 0x00FF) >> 0);
+
+                    // 温度阈值上限
+                    tempF = Convert.ToDouble(tbxNewTemperatureAlertHighOfM1.Text);              // 单位：℃
+                    temp = (Int16)Math.Round(tempF * 100.0f);                                   // 单位：0.01℃
+                    TxBuf[TxLen++] = (byte)((temp & 0xFF00) >> 8);
+                    TxBuf[TxLen++] = (byte)((temp & 0x00FF) >> 0);
+
+                    // 温度阈值下限
+                    tempF = Convert.ToDouble(tbxNewTemperatureAlertLowOfM1.Text);               // 单位：℃
+                    temp = (Int16)Math.Round(tempF * 100.0f);                                   // 单位：0.01℃
+                    TxBuf[TxLen++] = (byte)((temp & 0xFF00) >> 8);
+                    TxBuf[TxLen++] = (byte)((temp & 0x00FF) >> 0);
+
+                    // 湿度阈值上限
+                    humF = Convert.ToDouble(tbxNewHumidityAlertHighOfM1.Text);                  // 单位：%
+                    hum = (UInt16)Math.Round(humF * 100.0f);                                    // 单位：0.01%
+                    TxBuf[TxLen++] = (byte)((hum & 0xFF00) >> 8);
+                    TxBuf[TxLen++] = (byte)((hum & 0x00FF) >> 0);
+
+                    // 湿度阈值下限
+                    humF = Convert.ToDouble(tbxNewHumidityAlertLowOfM1.Text);                   // 单位：%
+                    hum = (UInt16)Math.Round(humF * 100.0f);                                    // 单位：0.01%
+                    TxBuf[TxLen++] = (byte)((hum & 0xFF00) >> 8);
+                    TxBuf[TxLen++] = (byte)((hum & 0x00FF) >> 0);
+                }
+            }
+            else if (Protocol == 0x03)
+            {
+                // 日期和时间
+                tbxCalendarOfM1.Text = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                DateTime ThisCalendar = Convert.ToDateTime(tbxCalendarOfM1.Text);
+                ByteBufTmp = MyCustomFxn.DataTimeToByteArray(ThisCalendar);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[0]);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[1]);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[2]);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[3]);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[4]);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[5]);
+
+                // 采集间隔
+                UInt16 Interval = Convert.ToUInt16(tbxNewIntervalOfM1.Text);
+                TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+                // 正常间隔
+                Interval = Convert.ToUInt16(tbxNewNormalIntervalOfM1.Text);
+                TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+                // 预警间隔
+                Interval = Convert.ToUInt16(tbxNewWarnIntervalOfM1.Text);
+                TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+                // 报警间隔
+                Interval = Convert.ToUInt16(tbxNewAlertIntervalOfM1.Text);
+                TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+                // 温度预警上限
+                double tempF = Convert.ToDouble(tbxNewTemperatureWarnHighOfM1.Text);        // 单位：℃
+                Int16 temp = (Int16)Math.Round(tempF * 100.0f);                             // 单位：0.01℃
+                TxBuf[TxLen++] = (byte)((temp & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((temp & 0x00FF) >> 0);
+
+                // 温度预警下限
+                tempF = Convert.ToDouble(tbxNewTemperatureWarnLowOfM1.Text);                // 单位：℃
+                temp = (Int16)Math.Round(tempF * 100.0f);                                   // 单位：0.01℃
+                TxBuf[TxLen++] = (byte)((temp & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((temp & 0x00FF) >> 0);
+
+                // 湿度预警上限
+                double humF = Convert.ToDouble(tbxNewHumidityWarnHighOfM1.Text);            // 单位：%
+                UInt16 hum = (UInt16)Math.Round(humF * 100.0f);                             // 单位：0.01%
+                TxBuf[TxLen++] = (byte)((hum & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((hum & 0x00FF) >> 0);
+
+                // 湿度预警下限
+                humF = Convert.ToDouble(tbxNewHumidityWarnLowOfM1.Text);                    // 单位：%
+                hum = (UInt16)Math.Round(humF * 100.0f);                                    // 单位：0.01%
+                TxBuf[TxLen++] = (byte)((hum & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((hum & 0x00FF) >> 0);
+
+                // 温度阈值上限
+                tempF = Convert.ToDouble(tbxNewTemperatureAlertHighOfM1.Text);              // 单位：℃
+                temp = (Int16)Math.Round(tempF * 100.0f);                                   // 单位：0.01℃
+                TxBuf[TxLen++] = (byte)((temp & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((temp & 0x00FF) >> 0);
+
+                // 温度阈值下限
+                tempF = Convert.ToDouble(tbxNewTemperatureAlertLowOfM1.Text);               // 单位：℃
+                temp = (Int16)Math.Round(tempF * 100.0f);                                   // 单位：0.01℃
+                TxBuf[TxLen++] = (byte)((temp & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((temp & 0x00FF) >> 0);
+
+                // 湿度阈值上限
+                humF = Convert.ToDouble(tbxNewHumidityAlertHighOfM1.Text);                  // 单位：%
+                hum = (UInt16)Math.Round(humF * 100.0f);                                    // 单位：0.01%
+                TxBuf[TxLen++] = (byte)((hum & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((hum & 0x00FF) >> 0);
+
+                // 湿度阈值下限
+                humF = Convert.ToDouble(tbxNewHumidityAlertLowOfM1.Text);                   // 单位：%
+                hum = (UInt16)Math.Round(humF * 100.0f);                                    // 单位：0.01%
+                TxBuf[TxLen++] = (byte)((hum & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((hum & 0x00FF) >> 0);
+
+                // Reserved
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+            }            
+
+            // CRC16
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 2, (UInt16)(TxLen - 2));
+            TxBuf[TxLen++] = (byte)((crc & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((crc & 0x00FF) >> 0);
+
+            // End
+            TxBuf[TxLen++] = 0xEC;
+
+            // 重写长度位
+            TxBuf[1] = (byte)(TxLen - 5);
+
+            SerialPort_Send(TxBuf, 0, TxLen);
+
+            return 0;
+        }
+
+        private void btnUpdateApplicationOfM1_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                WriteAppCfgOfM1();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("参数错误" + ex.Message);
+            }
+
+            /*
             M1 updateDevice = new M1();
 
             try
             {
-                updateDevice.DeviceMacS = txtDeviceMAC.Text;
-                //兼容M1 and M1P
-                if (txtDeviceName.Text == "M1")
+                updateDevice.DeviceMacS = tbxDeviceMacOfM1.Text;
+
+                if (tbxDeviceNameOfM1.Text == "M1")
                 {
                     updateDevice.DeviceTypeS = "51";
                 }
-                else if (txtDeviceName.Text == "M1P")
+                else if (tbxDeviceNameOfM1.Text == "M1P")
                 {
                     updateDevice.DeviceTypeS = "53";
                 }
-                else if (txtDeviceName.Text == "M2")
+                else if (tbxDeviceNameOfM1.Text == "M1_Beetech")
+                {
+                    updateDevice.DeviceTypeS = "5D";
+                }
+                else if (tbxDeviceNameOfM1.Text == "M2")
                 {
                     updateDevice.DeviceTypeS = "57";
                 }
-                updateDevice.Interval = Convert.ToInt32(txtNewInterval.Text);
+                else if (tbxDeviceNameOfM1.Text == "M1_ZheQin")
+                {
+                    updateDevice.DeviceTypeS = "7D";
+                }
+
+                updateDevice.ProtocolVersion = 2;
+                updateDevice.Interval = Convert.ToUInt16(txtNewInterval.Text);
                 updateDevice.SampleSend = Convert.ToByte(txtNewTXTimers.Text);
-                txtCalendar.Text = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-                updateDevice.Calendar = Convert.ToDateTime(txtCalendar.Text);
+                tbxCalendarOfM1.Text = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                updateDevice.Calendar = Convert.ToDateTime(tbxCalendarOfM1.Text);
 
-                updateDevice.TemperatureInfoLow = Convert.ToDouble(txtTemperatureInfoLow.Text);
-                updateDevice.TemperatureInfoHigh = Convert.ToDouble(txtTemperatureInfoHigh.Text);
-                updateDevice.TemperatureWarnLow = Convert.ToDouble(txtTemperatureWarnLow.Text);
-                updateDevice.TemperatureWarnHigh = Convert.ToDouble(txtTemperatureWarnHigh.Text);
+                updateDevice.TempWarnLow = Convert.ToDouble(txtTemperatureInfoLow.Text);
+                updateDevice.TempWarnHigh = Convert.ToDouble(txtTemperatureInfoHigh.Text);
+                updateDevice.TempAlertLow = Convert.ToDouble(txtTemperatureWarnLow.Text);
+                updateDevice.TempAlertHigh = Convert.ToDouble(txtTemperatureWarnHigh.Text);
 
-                updateDevice.HumidityInfoLow = Convert.ToDouble(txtHumidityInfoLow.Text);
-                updateDevice.HumidityInfoHigh = Convert.ToDouble(txtHumidityInfoHigh.Text);
-                updateDevice.HumidityWarnLow = Convert.ToDouble(txtHumidityWarnLow.Text);
-                updateDevice.HumidityWarnHigh = Convert.ToDouble(txtHumidityWarnHigh.Text);
+                updateDevice.HumWarnLow = Convert.ToDouble(txtHumidityInfoLow.Text);
+                updateDevice.HumWarnHigh = Convert.ToDouble(txtHumidityInfoHigh.Text);
+                updateDevice.HumAlertLow = Convert.ToDouble(txtHumidityWarnLow.Text);
+                updateDevice.HumAlertHigh = Convert.ToDouble(txtHumidityWarnHigh.Text);
+
+                if (tbxProtocolOfM1.Text == "3")
+                {
+                    updateDevice.ProtocolVersion = 3;
+                    updateDevice.Interval = Convert.ToUInt16(txtNewInterval.Text);
+                    updateDevice.NormalInterval = Convert.ToUInt16(txtIntervalNormal.Text);
+                    updateDevice.WarnInterval = Convert.ToUInt16(txtIntervalWarning.Text);
+                    updateDevice.AlertInterval = Convert.ToUInt16(txtIntervalAlarm.Text);
+                }
 
                 byte[] updateCommand = updateDevice.UpdateApplicationConfig();
+
+                if (cbxIsAllOfM1.IsChecked == true)
+                {
+                    updateCommand[6] = 0x00;
+                    updateCommand[7] = 0x00;
+                    updateCommand[8] = 0x00;
+                    updateCommand[9] = 0x00;
+                }
+
                 string updateString = CommArithmetic.ToHexString(updateCommand);
 
                 // monitorTimer.Enabled = false;
 
                 //System.Threading.Thread.Sleep(2000); //界面会卡
 
-                comport.SendCommand(updateCommand);
+                SerialPort.SendCommand(updateCommand);
 
                 System.Threading.Thread.Sleep(250); //界面会卡
 
                 btnStartMonitor_Click(this, null);
-
-
-
-
             }
             catch (Exception ex)
             {
-
                 MessageBox.Show("参数错误：" + ex.Message);
             }
-          
+            */
         }
 
-        private void cbUserApplication_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        /// <summary>
+        /// M1: 删除历史数据
+        /// </summary>
+        /// <returns></returns>
+        private Int16 DeleteHistoryOfM1()
         {
+            byte[] TxBuf = new byte[21];
+            UInt16 TxLen = 0;
 
-            if (cbUserApplication.SelectedIndex == 0)
+            byte[] ByteBufTmp = null;
+
+            // Start
+            TxBuf[TxLen++] = 0xCE;
+
+            // Length
+            TxBuf[TxLen++] = 0x00;
+
+            // Cmd
+            TxBuf[TxLen++] = 0xA4;
+
+            // USB Protocol
+            TxBuf[TxLen++] = 0x01;
+
+            // 设备类型
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceTypeOfM1.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 1)
             {
-                txtNewInterval.Text = "30";
-                txtNewTXTimers.Text = "1";
-                txtTemperatureInfoLow.Text = "-15";
-                txtTemperatureInfoHigh.Text = "55";
-                txtTemperatureWarnLow.Text = "-25";
-                txtTemperatureWarnHigh.Text = "55";
-                txtHumidityInfoLow.Text = "30";
-                txtHumidityInfoHigh.Text = "80";
-                txtHumidityWarnLow.Text = "15";
-                txtHumidityWarnHigh.Text = "90";
-
-
-
+                return -1;
             }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+
+            // Protocol
+            TxBuf[TxLen++] = 0x02;
+
+            // Sensor Mac
+            if (cbxIsAllOfM1.IsChecked == true)
+            {
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+            }
+            else
+            {
+                ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfM1.Text);
+                if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+                {
+                    return -1;
+                }
+                TxBuf[TxLen++] = ByteBufTmp[0];
+                TxBuf[TxLen++] = ByteBufTmp[1];
+                TxBuf[TxLen++] = ByteBufTmp[2];
+                TxBuf[TxLen++] = ByteBufTmp[3];
+            }
+
+            // Front
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+
+            // Rear
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+
+            // CRC16
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 2, (UInt16)(TxLen - 2));
+            TxBuf[TxLen++] = (byte)((crc & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((crc & 0x00FF) >> 0);
+
+            // End
+            TxBuf[TxLen++] = 0xEC;
+
+            // 重写长度位
+            TxBuf[1] = (byte)(TxLen - 5);
+
+            SerialPort_Send(TxBuf, 0, TxLen);
+
+            return 0;
         }
 
-        private void btnDeleteData_Click(object sender, RoutedEventArgs e)
+        private void btnDeleteDataOfM1_Click(object sender, RoutedEventArgs e)
         {
-            M1 updateDevice = new M1();
-
             try
             {
-                updateDevice.DeviceMacS = txtDeviceMAC.Text;
-                //兼容M1 and M1P
-                if (txtDeviceName.Text == "M1")
-                {
-                    updateDevice.DeviceTypeS = "51";
-
-                }
-                else if (txtDeviceName.Text == "M1P")
-                {
-                    updateDevice.DeviceTypeS = "53";
-                }
-                else if (txtDeviceName.Text == "M2")
-                {
-                    updateDevice.DeviceTypeS = "57";
-                }
-
-                byte[] updateCommand = updateDevice.DeleteData();
-                string updateString = CommArithmetic.ToHexString(updateCommand);
-
-               
-
-
-
-
-                comport.SendCommand(updateCommand);
-
-                System.Threading.Thread.Sleep(300); //界面会卡
-
-                btnStartMonitor_Click(this, null);
-
-
+                DeleteHistoryOfM1();
             }
             catch (Exception ex)
             {
-
                 MessageBox.Show("参数错误：" + ex.Message);
             }
-
         }
 
         public void DoEvents()
@@ -578,176 +1252,3113 @@ namespace DeviceSetup_HyperWSN
             Dispatcher.PushFrame(frame);
         }
 
-        private void btnUpdateFactorySocket1_Click(object sender, RoutedEventArgs e)
-        {
-            Socket1 updateDevice = new Socket1();
-            try
-            {
-                updateDevice.DeviceMacS = txtDeviceMACSocket1.Text;
-                updateDevice.DeviceNewMAC = txtNewDeviceMACSocket1.Text;
-                updateDevice.HwVersionS = txtNewHardwareVersionSocket1.Text;
-
-                byte[] updateCommand = updateDevice.UpdateFactory();
-                string updateString = CommArithmetic.ToHexString(updateCommand);
-                comport.SendCommand(updateCommand);
-                System.Threading.Thread.Sleep(200); //界面会卡
-
-            }
-            catch (Exception ex)
-            {
-
-                MessageBox.Show("参数错误" + ex.Message);
-            }
-
-
-
-        }
-
-        private void cbUserParameterSocket1_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (cbUserParameterSocket1.SelectedIndex == 0)
-            {
-                txtNewClientIDSocket1.Text = "D3 9A";
-                txtNewDebugSocket1.Text = "00 02";
-                txtNewCategorySocket1.Text = "0";
-                txtNewWorkFunctionSocket1.Text = "1";
-                txtNewBPSSocket1.Text = "0";
-                txtNewTXPowerSocket1.Text = "13";
-                txtNewMaxLengthSocket1.Text = "4";
-                //.Text = "0";
-                //txtNewHumidityCompensationSocket1.Text = "0";
-                txtNewFrequencySocket1.Text = "0";
-
-
-            }
-
-
-        }
-
-        private void btnUpdateUserSocket1_Click(object sender, RoutedEventArgs e)
-        {
-            Socket1 updateDevice = new Socket1();
-            try
-            {
-                updateDevice.DeviceMacS = txtDeviceMACSocket1.Text;
-
-                updateDevice.CustomerS = txtNewClientIDSocket1.Text;
-                updateDevice.DebugS = txtNewDebugSocket1.Text;
-                updateDevice.Category = Convert.ToByte(txtNewCategorySocket1.Text);
-                updateDevice.WorkFunction = Convert.ToByte(txtNewWorkFunctionSocket1.Text);
-                updateDevice.SymbolRate = Convert.ToByte(txtNewBPSSocket1.Text);
-                updateDevice.TxPower = Convert.ToByte(txtNewTXPowerSocket1.Text);
-                updateDevice.Channel = Convert.ToByte(txtNewFrequencySocket1.Text);
-                //updateDevice.TemperatureCompensation = Convert.ToDouble(txtNewTemperatureCompensation.Text);
-                //updateDevice.HumidityCompensation = Convert.ToDouble(txtNewHumidityCompensation.Text);
-                updateDevice.MaxLength = Convert.ToByte(txtNewMaxLengthSocket1.Text);
-
-
-                byte[] updateCommand = updateDevice.UpdateUserConfig();
-                string updateString = CommArithmetic.ToHexString(updateCommand);
-
-                //monitorTimer.Enabled = false;
-
-                System.Threading.Thread.Sleep(500); //界面会卡
-
-                comport.SendCommand(updateCommand);
-
-                System.Threading.Thread.Sleep(200); //界面会卡
-
-                btnStartMonitor_Click(this, null);
-
-
-                //monitorTimer.Enabled = true;
-
-
-
-
-
-
-            }
-            catch (Exception ex)
-            {
-
-                MessageBox.Show("参数错误：" + ex.Message);
-            }
-
-        }
-
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        private void cbUserApplicationSocket1_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-
-            if (cbUserApplicationSocket1.SelectedIndex == 0)
-            {
-                txtNewIntervalSocket1.Text = "4";
-                txtNewTXTimersSocket1.Text = "5";
-                txtPowerMeasureInfoLow.Text = "0";
-                txtPowerMeasureInfoHigh.Text = "2200";
-                txtPowerMeasureWarnLow.Text = "0";
-                txtPowerMeasureWarnHigh.Text = "3000";
-                txtVoltageMeasureInfoLow.Text = "200";
-                txtVoltageMeasureInfoHigh.Text = "240";
-                txtVoltageMeasureWarnLow.Text = "180";
-                txtVoltageMeasureWarnHigh.Text = "245";
-
-
-
-            }
-
-        }
-
 
         /// <summary>
-        /// 更新报警器用户配置信息
+        /// M4: 发送串口指令，修改出厂配置
+        /// </summary>
+        private Int16 WriteFactoryCfgOfM4()
+        {
+            byte[] TxBuf = new byte[25];
+            UInt16 TxLen = 0;
+
+            // Start
+            TxBuf[TxLen++] = 0xCE;
+
+            // Length
+            TxBuf[TxLen++] = 0x00;
+
+            // Cmd
+            TxBuf[TxLen++] = 0xA1;
+
+            // USB Protocol
+            TxBuf[TxLen++] = 0x01;
+
+            // 设备类型
+            TxBuf[TxLen++] = 0x58;
+
+            // Protocol
+            TxBuf[TxLen++] = 0x02;
+
+            // Sensor Mac
+            byte[] ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfM4.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+            {
+                return -1;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+            TxBuf[TxLen++] = ByteBufTmp[2];
+            TxBuf[TxLen++] = ByteBufTmp[3];
+
+            // New Sensor Mac
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxNewDeviceMacOfM4.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+            {
+                return -2;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+            TxBuf[TxLen++] = ByteBufTmp[2];
+            TxBuf[TxLen++] = ByteBufTmp[3];
+
+            // Hardware Revision
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxNewHwRevisionOfM4.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+            {
+                return -3;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+            TxBuf[TxLen++] = ByteBufTmp[2];
+            TxBuf[TxLen++] = ByteBufTmp[3];
+
+            // CRC16
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 2, (UInt16)(TxLen - 2));
+            TxBuf[TxLen++] = (byte)((crc & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((crc & 0x00FF) >> 0);
+
+            // End
+            TxBuf[TxLen++] = 0xEC;
+
+            // 重写长度位
+            TxBuf[1] = (byte)(TxLen - 5);
+
+            SerialPort_Send(TxBuf, 0, TxLen);
+
+            return 0;
+        }
+
+        /// <summary>
+        /// M4: 修改出厂配置
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void btnUpdateApplicationSocket1_Click(object sender, RoutedEventArgs e)
+        private void btnUpdateFactoryOfM4_Click(object sender, RoutedEventArgs e)
         {
-            Socket1 updateDevice = new Socket1();
-
             try
             {
-                updateDevice.DeviceMacS = txtDeviceMACSocket1.Text;
-                
-                updateDevice.Interval = Convert.ToInt32(txtNewIntervalSocket1.Text);
-                updateDevice.SampleSend = Convert.ToByte(txtNewTXTimersSocket1.Text);
-                txtCalendarSocket1.Text = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-                updateDevice.Calendar = Convert.ToDateTime(txtCalendarSocket1.Text);
-
-                updateDevice.PowerMeasureInfoLow = Convert.ToInt16(txtPowerMeasureInfoLow.Text);
-                updateDevice.PowerMeasureInfoHigh = Convert.ToInt16(txtPowerMeasureInfoHigh.Text);
-                updateDevice.PowerMeasureWarnLow = Convert.ToInt16(txtPowerMeasureWarnLow.Text);
-                updateDevice.PowerMeasureWarnHigh = Convert.ToInt16(txtPowerMeasureWarnHigh.Text);
-
-                updateDevice.VoltageMeasureInfoLow = Convert.ToInt16(txtVoltageMeasureInfoLow.Text);
-                updateDevice.VoltageMeasureInfoHigh = Convert.ToInt16(txtVoltageMeasureInfoHigh.Text);
-                updateDevice.VoltageMeasureWarnLow = Convert.ToInt16(txtVoltageMeasureWarnLow.Text);
-                updateDevice.VoltageMeasureWarnHigh = Convert.ToInt16(txtVoltageMeasureWarnHigh.Text);
-
-                byte[] updateCommand = updateDevice.UpdateApplicationConfig();
-                string updateString = CommArithmetic.ToHexString(updateCommand);
-
-                // monitorTimer.Enabled = false;
-
-                //System.Threading.Thread.Sleep(2000); //界面会卡
-
-                comport.SendCommand(updateCommand);
-
-                System.Threading.Thread.Sleep(250); //界面会卡
-
-                btnStartMonitor_Click(this, null);
+                WriteFactoryCfgOfM4();
             }
             catch (Exception ex)
-            {           
-                MessageBox.Show("参数错误：" + ex.Message);
+            {
+                MessageBox.Show("参数错误" + ex.Message);
             }
+        }
+
+        /// <summary>
+        /// M4: 修改用户
+        /// </summary>
+        /// <returns></returns>
+        private Int16 WriteUserCfgOfM4()
+        {
+            byte[] TxBuf = new byte[36];
+            UInt16 TxLen = 0;
+
+            byte[] ByteBufTmp = null;
+
+            // Start
+            TxBuf[TxLen++] = 0xCE;
+
+            // Length
+            TxBuf[TxLen++] = 0x00;
+
+            // Cmd
+            TxBuf[TxLen++] = 0xA2;
+
+            // USB Protocol
+            TxBuf[TxLen++] = 0x01;          // 由于老版USB修改工具的问题，此USB Porotocol必须是1，否则修改失败；
+
+            // 设备类型
+            TxBuf[TxLen++] = 0x58;
+
+            // Protocol
+            byte Protocol = Convert.ToByte(tbxProtocolOfM4.Text);
+            TxBuf[TxLen++] = Protocol;
+
+            // Sensor Mac
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfM4.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+            {
+                return -2;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+            TxBuf[TxLen++] = ByteBufTmp[2];
+            TxBuf[TxLen++] = ByteBufTmp[3];
+
+            // Customer
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxNewCustomerOfM4.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 2)
+            {
+                return -2;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+
+            // Debug
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxNewDebugOfM4.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 2)
+            {
+                return -2;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+
+            // Category
+            TxBuf[TxLen++] = Convert.ToByte(tbxNewCategoryOfM4.Text);
+
+            // Pattern
+            TxBuf[TxLen++] = Convert.ToByte(tbxNewPatternOfM4.Text);
+
+            // Bps
+            TxBuf[TxLen++] = Convert.ToByte(tbxNewBpsOfM4.Text);
+
+            // TX Power
+            Int16 txPower = Convert.ToInt16(tbxNewTxPowerOfM4.Text);
+            TxBuf[TxLen++] = (byte)txPower;
+
+            // Channel
+            TxBuf[TxLen++] = Convert.ToByte(tbxNewChannelOfM4.Text);
+
+            if (Protocol == 0x02)
+            {
+                // 功率补偿
+                Int16 powerComp = Convert.ToInt16(tbxNewPowerCompensationOfM4.Text);       // 单位：V；
+                TxBuf[TxLen++] = (byte)((powerComp & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((powerComp & 0x00FF) >> 0);
+
+                // 电压补偿
+                Int16 voltComp = Convert.ToInt16(tbxNewVoltageCompensationOfM4.Text);       // 单位：V；
+                TxBuf[TxLen++] = (byte)((voltComp & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((voltComp & 0x00FF) >> 0);
+
+                // 存储容量
+                TxBuf[TxLen++] = Convert.ToByte(tbxNewMaxLengthOfM4.Text);
+            }
+            else if (Protocol == 0x03)
+            {
+                // 存储容量
+                TxBuf[TxLen++] = Convert.ToByte(tbxNewMaxLengthOfM4.Text);
+
+                // 日期和时间
+                tbxCalendarOfM4.Text = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                DateTime NowCalendar = Convert.ToDateTime(tbxCalendarOfM4.Text);
+                ByteBufTmp = MyCustomFxn.DataTimeToByteArray(NowCalendar);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[0]);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[1]);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[2]);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[3]);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[4]);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[5]);
+
+                // 功率补偿
+                Int16 powerComp = Convert.ToInt16(tbxNewPowerCompensationOfM4.Text);       // 单位：V；
+                TxBuf[TxLen++] = (byte)((powerComp & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((powerComp & 0x00FF) >> 0);
+
+                // 电压补偿
+                Int16 voltComp = Convert.ToInt16(tbxNewVoltageCompensationOfM4.Text);       // 单位：V；
+                TxBuf[TxLen++] = (byte)((voltComp & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((voltComp & 0x00FF) >> 0);
+
+                // 保留
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+            }
+            else
+            {
+                return -3;
+            }
+
+            // CRC16
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 2, (UInt16)(TxLen - 2));
+            TxBuf[TxLen++] = (byte)((crc & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((crc & 0x00FF) >> 0);
+
+            // End
+            TxBuf[TxLen++] = 0xEC;
+
+            // 重写长度位
+            TxBuf[1] = (byte)(TxLen - 5);
+
+            SerialPort_Send(TxBuf, 0, TxLen);
+
+            return 0;
+        }
+
+        /// <summary>
+        /// M4: 修改用户配置
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btnUpdateUserSK_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                WriteUserCfgOfM4();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("参数错误" + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// M4: 修改应用配置
+        /// </summary>
+        /// <returns></returns>
+        private Int16 WriteAppCfgOfM4()
+        {
+            byte[] TxBuf = new byte[58];
+            UInt16 TxLen = 0;
+
+            byte[] ByteBufTmp = null;
+
+            // Start
+            TxBuf[TxLen++] = 0xCE;
+
+            // Length
+            TxBuf[TxLen++] = 0x00;
+
+            // Cmd
+            TxBuf[TxLen++] = 0xA3;
+
+            // USB Protocol
+            TxBuf[TxLen++] = 0x01;      // 由于老版USB修改工具的问题，此USB Porotocol必须是1，否则修改失败；
+
+            // 设备类型
+            TxBuf[TxLen++] = 0x58;
+
+            // Protocol
+            byte Protocol = Convert.ToByte(tbxProtocolOfM4.Text);
+            TxBuf[TxLen++] = Protocol;
+
+            // Sensor Mac
+            if (cbxIsAllOfM4.IsChecked == true)
+            {
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+            }
+            else
+            {
+                ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfM4.Text);
+                if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+                {
+                    return -1;
+                }
+                TxBuf[TxLen++] = ByteBufTmp[0];
+                TxBuf[TxLen++] = ByteBufTmp[1];
+                TxBuf[TxLen++] = ByteBufTmp[2];
+                TxBuf[TxLen++] = ByteBufTmp[3];
+            }
+
+            if (Protocol == 0x02)
+            {
+                // 采集间隔
+                UInt16 Interval = Convert.ToUInt16(tbxNewIntervalOfM4.Text);
+                TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+                // 日期和时间
+                tbxCalendarOfM4.Text = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                DateTime ThisCalendar = Convert.ToDateTime(tbxCalendarOfM4.Text);
+                ByteBufTmp = MyCustomFxn.DataTimeToByteArray(ThisCalendar);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[0]);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[1]);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[2]);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[3]);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[4]);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[5]);
+
+                // Sample Send
+                TxBuf[TxLen++] = Convert.ToByte(tbxNewSampleSendOfM4.Text);
+
+                // 功率预警上限
+                UInt16 power = Convert.ToUInt16(tbxNewPowerWarnHighOfM4.Text);              // 单位：W
+                TxBuf[TxLen++] = (byte)((power & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((power & 0x00FF) >> 0);
+
+                // 功率预警下限
+                power = Convert.ToUInt16(tbxNewPowerWarnLowOfM4.Text);                      // 单位：W
+                TxBuf[TxLen++] = (byte)((power & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((power & 0x00FF) >> 0);
+
+                // 电压预警上限
+                UInt16 volt = Convert.ToUInt16(tbxNewVoltageWarnHighOfM4.Text);             // 单位：V
+                TxBuf[TxLen++] = (byte)((volt & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((volt & 0x00FF) >> 0);
+
+                // 电压预警下限
+                volt = Convert.ToUInt16(tbxNewVoltageWarnLowOfM4.Text);                     // 单位：V
+                TxBuf[TxLen++] = (byte)((volt & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((volt & 0x00FF) >> 0);
+
+                // 功率阈值上限
+                power = Convert.ToUInt16(tbxNewPowerAlertHighOfM4.Text);                    // 单位：W
+                TxBuf[TxLen++] = (byte)((power & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((power & 0x00FF) >> 0);
+
+                // 功率阈值下限
+                power = Convert.ToUInt16(tbxNewPowerAlertLowOfM4.Text);                     // 单位：W
+                TxBuf[TxLen++] = (byte)((power & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((power & 0x00FF) >> 0);
+
+                // 电压阈值上限
+                volt = Convert.ToUInt16(tbxNewVoltageAlertHighOfM4.Text);                   // 单位：V
+                TxBuf[TxLen++] = (byte)((volt & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((volt & 0x00FF) >> 0);
+
+                // 电压阈值下限
+                volt = Convert.ToUInt16(tbxNewVoltageAlertLowOfM4.Text);                    // 单位：V
+                TxBuf[TxLen++] = (byte)((volt & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((volt & 0x00FF) >> 0);
+            }
+            else if (Protocol == 0x03)
+            {
+                // 日期和时间
+                tbxCalendarOfM4.Text = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                DateTime ThisCalendar = Convert.ToDateTime(tbxCalendarOfM4.Text);
+                ByteBufTmp = MyCustomFxn.DataTimeToByteArray(ThisCalendar);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[0]);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[1]);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[2]);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[3]);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[4]);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[5]);
+
+                // 采集间隔
+                UInt16 Interval = Convert.ToUInt16(tbxNewIntervalOfM4.Text);
+                TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+                // 正常间隔
+                Interval = Convert.ToUInt16(tbxNewIntervalNormalOfM4.Text);
+                TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+                // 预警间隔
+                Interval = Convert.ToUInt16(tbxNewIntervalWarningOfM4.Text);
+                TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+                // 报警间隔
+                Interval = Convert.ToUInt16(tbxNewIntervalAlarmOfM4.Text);
+                TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+                // 功率预警上限
+                UInt16 power = Convert.ToUInt16(tbxNewPowerWarnHighOfM4.Text);              // 单位：W
+                TxBuf[TxLen++] = (byte)((power & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((power & 0x00FF) >> 0);
+
+                // 功率预警下限
+                power = Convert.ToUInt16(tbxNewPowerWarnLowOfM4.Text);                      // 单位：W
+                TxBuf[TxLen++] = (byte)((power & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((power & 0x00FF) >> 0);
+
+                // 电压预警上限
+                UInt16 volt = Convert.ToUInt16(tbxNewVoltageWarnHighOfM4.Text);             // 单位：V
+                TxBuf[TxLen++] = (byte)((volt & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((volt & 0x00FF) >> 0);
+
+                // 电压预警下限
+                volt = Convert.ToUInt16(tbxNewVoltageWarnLowOfM4.Text);                     // 单位：V
+                TxBuf[TxLen++] = (byte)((volt & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((volt & 0x00FF) >> 0);
+
+                // 功率阈值上限
+                power = Convert.ToUInt16(tbxNewPowerAlertHighOfM4.Text);                    // 单位：W
+                TxBuf[TxLen++] = (byte)((power & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((power & 0x00FF) >> 0);
+
+                // 功率阈值下限
+                power = Convert.ToUInt16(tbxNewPowerAlertLowOfM4.Text);                     // 单位：W
+                TxBuf[TxLen++] = (byte)((power & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((power & 0x00FF) >> 0);
+
+                // 电压阈值上限
+                volt = Convert.ToUInt16(tbxNewVoltageAlertHighOfM4.Text);                   // 单位：V
+                TxBuf[TxLen++] = (byte)((volt & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((volt & 0x00FF) >> 0);
+
+                // 电压阈值下限
+                volt = Convert.ToUInt16(tbxNewVoltageAlertLowOfM4.Text);                    // 单位：V
+                TxBuf[TxLen++] = (byte)((volt & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((volt & 0x00FF) >> 0);
+
+                // 保留位
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+            }
+            else
+            {
+                return -2;
+            }
+
+            // CRC16
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 2, (UInt16)(TxLen - 2));
+            TxBuf[TxLen++] = (byte)((crc & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((crc & 0x00FF) >> 0);
+
+            // End
+            TxBuf[TxLen++] = 0xEC;
+
+            // 重写长度位
+            TxBuf[1] = (byte)(TxLen - 5);
+
+            SerialPort_Send(TxBuf, 0, TxLen);
+
+            return 0;
+        }
+
+        /// <summary>
+        /// M4: 修改应用配置
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btnUpdateApplicationOfM4_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                WriteAppCfgOfM4();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("参数错误" + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Dtimer_Tick(object sender, EventArgs e)
+        {
+            if (updateIndex == 0)
+            {
+                btnUpdateApplicationOfM1_Click(this, null);
+                updateIndex++;
+            }
+            else if (updateIndex == 1)
+            {
+                btnUpdateUserOfM1_Click(this, null);
+                updateIndex++;
+            }
+            else if (updateIndex == 2)
+            {
+                btnDeleteDataOfM1_Click(this, null);
+                updateIndex++;
+                dtimer.IsEnabled = false;
+            }
+        }
+
+        System.Windows.Threading.DispatcherTimer dtimer;
+        int updateIndex = 0;
+
+        private void cbSerialPort_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
 
         }
 
+        /// <summary>
+        /// M4: 删除历史数据
+        /// </summary>
+        /// <returns></returns>
+        private Int16 DeleteHistoryOfM4()
+        {
+            byte[] TxBuf = new byte[21];
+            UInt16 TxLen = 0;
+
+            byte[] ByteBufTmp = null;
+
+            // Start
+            TxBuf[TxLen++] = 0xCE;
+
+            // Length
+            TxBuf[TxLen++] = 0x00;
+
+            // Cmd
+            TxBuf[TxLen++] = 0xA4;
+
+            // USB Protocol
+            TxBuf[TxLen++] = 0x01;
+
+            // 设备类型
+            TxBuf[TxLen++] = 0x58;
+
+            // Protocol
+            TxBuf[TxLen++] = 0x02;
+
+            // Sensor Mac
+            if (cbxIsAllOfM4.IsChecked == true)
+            {
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+            }
+            else
+            {
+                ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfM4.Text);
+                if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+                {
+                    return -1;
+                }
+                TxBuf[TxLen++] = ByteBufTmp[0];
+                TxBuf[TxLen++] = ByteBufTmp[1];
+                TxBuf[TxLen++] = ByteBufTmp[2];
+                TxBuf[TxLen++] = ByteBufTmp[3];
+            }
+
+            // Front
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+
+            // Rear
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+
+            // CRC16
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 2, (UInt16)(TxLen - 2));
+            TxBuf[TxLen++] = (byte)((crc & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((crc & 0x00FF) >> 0);
+
+            // End
+            TxBuf[TxLen++] = 0xEC;
+
+            // 重写长度位
+            TxBuf[1] = (byte)(TxLen - 5);
+
+            SerialPort_Send(TxBuf, 0, TxLen);
+
+            return 0;
+        }
+
+        /// <summary>
+        /// M4: 删除历史数据
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btnDeleteDataOfM4_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                DeleteHistoryOfM4();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("参数错误：" + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// AO2: 修改出厂配置
+        /// </summary>
+        /// <returns></returns>
+        private Int16 WriteFactoryCfgOfAO2()
+        {
+            byte[] TxBuf = new byte[25];
+            UInt16 TxLen = 0;
+
+            // Start
+            TxBuf[TxLen++] = 0xCE;
+
+            // Length
+            TxBuf[TxLen++] = 0x00;
+
+            // Cmd
+            TxBuf[TxLen++] = 0xA1;
+
+            // USB Protocol
+            TxBuf[TxLen++] = 0x01;
+
+            // 设备类型
+            TxBuf[TxLen++] = 0x7A;
+
+            // Protocol
+            TxBuf[TxLen++] = 0x02;
+
+            // Sensor Mac
+            byte[] ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfAO2.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+            {
+                return -1;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+            TxBuf[TxLen++] = ByteBufTmp[2];
+            TxBuf[TxLen++] = ByteBufTmp[3];
+
+            // New Sensor Mac
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxNewDeviceMacOfAO2.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+            {
+                return -2;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+            TxBuf[TxLen++] = ByteBufTmp[2];
+            TxBuf[TxLen++] = ByteBufTmp[3];
+
+            // Hardware Revision
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxNewHwRevisionOfAO2.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+            {
+                return -3;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+            TxBuf[TxLen++] = ByteBufTmp[2];
+            TxBuf[TxLen++] = ByteBufTmp[3];
+
+            // CRC16
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 2, (UInt16)(TxLen - 2));
+            TxBuf[TxLen++] = (byte)((crc & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((crc & 0x00FF) >> 0);
+
+            // End
+            TxBuf[TxLen++] = 0xEC;
+
+            // 重写长度位
+            TxBuf[1] = (byte)(TxLen - 5);
+
+            SerialPort_Send(TxBuf, 0, TxLen);
+
+            return 0;
+        }
+
+        /// <summary>
+        /// AO2: 修改出厂配置
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btnUpdateFactoryOfAO2_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                WriteFactoryCfgOfAO2();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("参数错误" + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// AO2: 修改用户配置
+        /// </summary>
+        /// <returns></returns>
+        private Int16 WriteUserCfgOfAO2()
+        {
+            byte[] TxBuf = new byte[38];
+            UInt16 TxLen = 0;
+
+            byte[] ByteBufTmp = null;
+
+            // Start
+            TxBuf[TxLen++] = 0xCE;
+
+            // Length
+            TxBuf[TxLen++] = 0x00;
+
+            // Cmd
+            TxBuf[TxLen++] = 0xA2;
+
+            // USB Protocol
+            TxBuf[TxLen++] = 0x02;
+
+            // 设备类型
+            TxBuf[TxLen++] = 0x7A;
+
+            // Protocol
+            TxBuf[TxLen++] = 0x03;
+
+            // Sensor Mac
+            if (cbxIsAllOfAO2.IsChecked == true)
+            {
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+            }
+            else
+            {
+                ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfAO2.Text);
+                if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+                {
+                    return -1;
+                }
+                TxBuf[TxLen++] = ByteBufTmp[0];
+                TxBuf[TxLen++] = ByteBufTmp[1];
+                TxBuf[TxLen++] = ByteBufTmp[2];
+                TxBuf[TxLen++] = ByteBufTmp[3];
+            }
+
+            // Customer
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxNewCustomerOfAO2.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 2)
+            {
+                return -1;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+
+            // Debug
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxNewDebugOfAO2.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 2)
+            {
+                return -1;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+
+            // Category
+            TxBuf[TxLen++] = Convert.ToByte(tbxNewCategoryOfAO2.Text);
+
+            // Pattern
+            TxBuf[TxLen++] = Convert.ToByte(tbxNewPatternOfAO2.Text);
+
+            // bps
+            TxBuf[TxLen++] = Convert.ToByte(tbxNewBpsOfAO2.Text);
+
+            // Tx Power
+            Int16 txPower = Convert.ToInt16(tbxNewTxPowerOfAO2.Text);
+            TxBuf[TxLen++] = (byte)txPower;
+
+            // channel
+            TxBuf[TxLen++] = Convert.ToByte(tbxNewChannelOfAO2.Text);
+
+            // MaxLength
+            TxBuf[TxLen++] = Convert.ToByte(tbxNewMaxLengthOfAO2.Text);
+
+            // 日期和时间
+            tbxCalendarOfAO2.Text = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            DateTime ThisCalendar = Convert.ToDateTime(tbxCalendarOfAO2.Text);
+            ByteBufTmp = MyCustomFxn.DataTimeToByteArray(ThisCalendar);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[0]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[1]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[2]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[3]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[4]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[5]);
+
+            // 温度补偿
+            double tempCompF = Convert.ToDouble(tbxNewTemperatureCompensationOfAO2.Text);   // 单位：℃
+            Int16 tempComp = (Int16)Math.Round(tempCompF * 100.0f);                         // 单位：0.01℃
+            TxBuf[TxLen++] = (byte)((tempComp & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((tempComp & 0x00FF) >> 0);
+
+            // 湿度补偿
+            double humCompF = Convert.ToDouble(tbxNewHumidityCompensationOfAO2.Text);       // 单位：%
+            Int16 humComp = (Int16)Math.Round(humCompF * 100.0f);                           // 单位：0.01%
+            TxBuf[TxLen++] = (byte)((humComp & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((humComp & 0x00FF) >> 0);
+
+            // 气体浓度补偿
+            double gasCompF = Convert.ToDouble(tbxNewGasCompensationOfAO2.Text);            // 单位：%
+            Int32 gasComp = (Int32)Math.Round(gasCompF * 10000.0f);                         // 单位：ppm
+            TxBuf[TxLen++] = (byte)((gasComp & 0x00FF0000) >> 16);
+            TxBuf[TxLen++] = (byte)((gasComp & 0x0000FF00) >> 8);
+            TxBuf[TxLen++] = (byte)((gasComp & 0x000000FF) >> 0);
+
+            // Reserved
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+
+            // CRC16
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 2, (UInt16)(TxLen - 2));
+            TxBuf[TxLen++] = (byte)((crc & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((crc & 0x00FF) >> 0);
+
+            // End
+            TxBuf[TxLen++] = 0xEC;
+
+            // 重写长度位
+            TxBuf[1] = (byte)(TxLen - 5);
+
+            SerialPort_Send(TxBuf, 0, TxLen);
+
+            return 0;
+        }
+
+        /// <summary>
+        /// AO2: 修改用户配置
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btnUpdateUserOfAO2_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                WriteUserCfgOfAO2();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("参数错误：" + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// AO2: 修改应用配置
+        /// </summary>
+        /// <returns></returns>
+        private Int16 WriteAppCfgOfAO2()
+        {
+            byte[] TxBuf = new byte[58];
+            UInt16 TxLen = 0;
+
+            byte[] ByteBufTmp = null;
+
+            // Start
+            TxBuf[TxLen++] = 0xCE;
+
+            // Length
+            TxBuf[TxLen++] = 0x00;
+
+            // Cmd
+            TxBuf[TxLen++] = 0xA3;
+
+            // USB Protocol
+            TxBuf[TxLen++] = 0x02;
+
+            // 设备类型
+            TxBuf[TxLen++] = 0x7A;
+
+            // Protocol
+            TxBuf[TxLen++] = 0x03;
+
+            // Sensor Mac
+            if (cbxIsAllOfAO2.IsChecked == true)
+            {
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+            }
+            else
+            {
+                ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfAO2.Text);
+                if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+                {
+                    return -1;
+                }
+                TxBuf[TxLen++] = ByteBufTmp[0];
+                TxBuf[TxLen++] = ByteBufTmp[1];
+                TxBuf[TxLen++] = ByteBufTmp[2];
+                TxBuf[TxLen++] = ByteBufTmp[3];
+            }
+
+            // 日期和时间
+            tbxCalendarOfAO2.Text = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            DateTime ThisCalendar = Convert.ToDateTime(tbxCalendarOfAO2.Text);
+            ByteBufTmp = MyCustomFxn.DataTimeToByteArray(ThisCalendar);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[0]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[1]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[2]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[3]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[4]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[5]);
+
+            // 采集间隔
+            UInt16 Interval = Convert.ToUInt16(tbxNewIntervalOfAO2.Text);
+            TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+            // 正常间隔
+            Interval = Convert.ToUInt16(tbxNewNormalIntervalOfAO2.Text);
+            TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+            // 预警间隔
+            Interval = Convert.ToUInt16(tbxNewWarnIntervalOfAO2.Text);
+            TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+            // 报警间隔
+            Interval = Convert.ToUInt16(tbxNewAlertIntervalOfAO2.Text);
+            TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+            // 温度预警上限
+            double tempF = Convert.ToDouble(tbxNewTemperatureWarnHighOfAO2.Text);       // 单位：℃
+            Int16 temp = (Int16)Math.Round(tempF * 100.0f);                             // 单位：0.01℃
+            TxBuf[TxLen++] = (byte)((temp & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((temp & 0x00FF) >> 0);
+
+            // 温度预警下限
+            tempF = Convert.ToDouble(tbxNewTemperatureWarnLowOfAO2.Text);               // 单位：℃
+            temp = (Int16)Math.Round(tempF * 100.0f);                                   // 单位：0.01℃
+            TxBuf[TxLen++] = (byte)((temp & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((temp & 0x00FF) >> 0);
+
+            // 湿度预警上限
+            double humF = Convert.ToDouble(tbxNewHumidityWarnHighOfAO2.Text);           // 单位：%
+            UInt16 hum = (UInt16)Math.Round(humF * 100.0f);                             // 单位：0.01%
+            TxBuf[TxLen++] = (byte)((hum & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((hum & 0x00FF) >> 0);
+
+            // 湿度预警下限
+            humF = Convert.ToDouble(tbxNewHumidityWarnLowOfAO2.Text);                   // 单位：%
+            hum = (UInt16)Math.Round(humF * 100.0f);                                    // 单位：0.01%
+            TxBuf[TxLen++] = (byte)((hum & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((hum & 0x00FF) >> 0);
+
+            // O2浓度预警上限
+            double con = Convert.ToDouble(tbxNewGasWarnHighOfAO2.Text);                 // O2浓度，单位：%
+            UInt32 conInPpm = (UInt32)Math.Round(con * 10000.0f);                       // O2浓度，单位：ppm
+            TxBuf[TxLen++] = (byte)((conInPpm & 0xFF0000) >> 16);
+            TxBuf[TxLen++] = (byte)((conInPpm & 0x00FF00) >> 8);
+            TxBuf[TxLen++] = (byte)((conInPpm & 0x0000FF) >> 0);
+
+            // O2浓度预警下限
+            con = Convert.ToDouble(tbxNewGasWarnLowOfAO2.Text);                         // O2浓度，单位：%
+            conInPpm = (UInt32)Math.Round(con * 10000.0f);                              // O2浓度，单位：ppm
+            TxBuf[TxLen++] = (byte)((conInPpm & 0xFF0000) >> 16);
+            TxBuf[TxLen++] = (byte)((conInPpm & 0x00FF00) >> 8);
+            TxBuf[TxLen++] = (byte)((conInPpm & 0x0000FF) >> 0);
+
+            // 温度阈值上限
+            tempF = Convert.ToDouble(tbxNewTemperatureAlertHighOfAO2.Text);             // 单位：℃
+            temp = (Int16)Math.Round(tempF * 100.0f);                                   // 单位：0.01℃
+            TxBuf[TxLen++] = (byte)((temp & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((temp & 0x00FF) >> 0);
+
+            // 温度阈值下限
+            tempF = Convert.ToDouble(tbxNewTemperatureAlertLowOfAO2.Text);              // 单位：℃
+            temp = (Int16)Math.Round(tempF * 100.0f);                                   // 单位：0.01℃
+            TxBuf[TxLen++] = (byte)((temp & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((temp & 0x00FF) >> 0);
+
+            // 湿度阈值上限
+            humF = Convert.ToDouble(tbxNewHumidityAlertHighOfAO2.Text);                 // 单位：%
+            hum = (UInt16)Math.Round(humF * 100.0f);                                    // 单位：0.01%
+            TxBuf[TxLen++] = (byte)((hum & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((hum & 0x00FF) >> 0);
+
+            // 湿度阈值下限
+            humF = Convert.ToDouble(tbxNewHumidityAlertLowOfAO2.Text);                  // 单位：%
+            hum = (UInt16)Math.Round(humF * 100.0f);                                    // 单位：0.01%
+            TxBuf[TxLen++] = (byte)((hum & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((hum & 0x00FF) >> 0);
+
+            // O2浓度阈值上限
+            con = Convert.ToDouble(tbxNewGasAlertHighOfAO2.Text);                       // O2浓度，单位：%
+            conInPpm = (UInt32)Math.Round(con * 10000.0f);                              // O2浓度，单位：ppm
+            TxBuf[TxLen++] = (byte)((conInPpm & 0xFF0000) >> 16);
+            TxBuf[TxLen++] = (byte)((conInPpm & 0x00FF00) >> 8);
+            TxBuf[TxLen++] = (byte)((conInPpm & 0x0000FF) >> 0);
+
+            // O2浓度阈值下限
+            con = Convert.ToDouble(tbxNewGasAlertLowOfAO2.Text);                        // O2浓度，单位：%
+            conInPpm = (UInt32)Math.Round(con * 10000.0f);                              // O2浓度，单位：ppm
+            TxBuf[TxLen++] = (byte)((conInPpm & 0xFF0000) >> 16);
+            TxBuf[TxLen++] = (byte)((conInPpm & 0x00FF00) >> 8);
+            TxBuf[TxLen++] = (byte)((conInPpm & 0x0000FF) >> 0);
+
+            // Reserved
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+
+            // CRC16
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 2, (UInt16)(TxLen - 2));
+            TxBuf[TxLen++] = (byte)((crc & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((crc & 0x00FF) >> 0);
+
+            // End
+            TxBuf[TxLen++] = 0xEC;
+
+            // 重写长度位
+            TxBuf[1] = (byte)(TxLen - 5);
+
+            SerialPort_Send(TxBuf, 0, TxLen);
+
+            return 0;
+        }
+
+        /// <summary>
+        /// AO2: 修改应用配置
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btnUpdateApplicationOfAO2_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                WriteAppCfgOfAO2();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("参数错误：" + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// AO2: 删除历史数据
+        /// </summary>
+        /// <returns></returns>
+        private Int16 DeleteHistoryOfAO2()
+        {
+            byte[] TxBuf = new byte[21];
+            UInt16 TxLen = 0;
+
+            byte[] ByteBufTmp = null;
+
+            // Start
+            TxBuf[TxLen++] = 0xCE;
+
+            // Length
+            TxBuf[TxLen++] = 0x00;
+
+            // Cmd
+            TxBuf[TxLen++] = 0xA4;
+
+            // USB Protocol
+            TxBuf[TxLen++] = 0x02;
+
+            // 设备类型
+            TxBuf[TxLen++] = 0x7A;
+
+            // Protocol
+            TxBuf[TxLen++] = 0x03;
+
+            // Sensor Mac
+            if (cbxIsAllOfAO2.IsChecked == true)
+            {
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+            }
+            else
+            {
+                ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfAO2.Text);
+                if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+                {
+                    return -1;
+                }
+                TxBuf[TxLen++] = ByteBufTmp[0];
+                TxBuf[TxLen++] = ByteBufTmp[1];
+                TxBuf[TxLen++] = ByteBufTmp[2];
+                TxBuf[TxLen++] = ByteBufTmp[3];
+            }
+
+            // Front
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+
+            // Rear
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+
+            // Reserved
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+
+            // CRC16
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 2, (UInt16)(TxLen - 2));
+            TxBuf[TxLen++] = (byte)((crc & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((crc & 0x00FF) >> 0);
+
+            // End
+            TxBuf[TxLen++] = 0xEC;
+
+            // 重写长度位
+            TxBuf[1] = (byte)(TxLen - 5);
+
+            SerialPort_Send(TxBuf, 0, TxLen);
+
+            return 0;
+        }
+
+        /// <summary>
+        /// AO2: 删除历史数据
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btnDeleteDataOfAO2_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                DeleteHistoryOfAO2();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("参数错误：" + ex.Message);
+            }
+        }
+
+        private void btnCopy_Click(object sender, RoutedEventArgs e)
+        {
+            if (TableOfM1.IsSelected == true)
+            {
+                tbxNewDeviceMacOfM1.Text = tbxDeviceMacOfM1.Text;
+                tbxNewHwRevisionOfM1.Text = tbxHwRevisionOfM1.Text;
+
+                tbxNewCustomerOfM1.Text = tbxCustomerOfM1.Text;
+                tbxNewDebugOfM1.Text = tbxDebugOfM1.Text;
+                tbxNewCategoryOfM1.Text = tbxCategoryOfM1.Text;
+                tbxNewPatternOfM1.Text = tbxPatternOfM1.Text;
+                tbxNewBpsOfM1.Text = tbxBpsOfM1.Text;
+                tbxNewTxPowerOfM1.Text = tbxTxPowerOfM1.Text;
+                tbxNewChannelOfM1.Text = tbxChannelOfM1.Text;
+                tbxNewTemperatureCompensationOfM1.Text = tbxTemperatureCompensationOfM1.Text;
+                tbxNewHumidityCompensationOfM1.Text = tbxHumidityCompensationOfM1.Text;
+                tbxNewMaxLengthOfM1.Text = tbxMaxLengthOfM1.Text;
+
+                tbxNewSampleSendOfM1.Text = tbxSampleSendOfM1.Text;
+                tbxNewIntervalOfM1.Text = tbxIntervalOfM1.Text;
+                tbxNewTemperatureWarnLowOfM1.Text = tbxTemperatureWarnLowOfM1.Text;
+                tbxNewTemperatureWarnHighOfM1.Text = tbxTemperatureWarnHighOfM1.Text;
+                tbxNewNormalIntervalOfM1.Text = tbxNormalIntervalOfM1.Text;
+                tbxNewTemperatureAlertLowOfM1.Text = tbxTemperatureAlertLowOfM1.Text;
+                tbxNewTemperatureAlertHighOfM1.Text = tbxTemperatureAlertHighOfM1.Text;
+                tbxNewWarnIntervalOfM1.Text = tbxWarnIntervalOfM1.Text;
+                tbxNewHumidityWarnLowOfM1.Text = tbxHumidityWarnLowOfM1.Text;
+                tbxNewHumidityWarnHighOfM1.Text = tbxHumidityWarnHighOfM1.Text;
+                tbxNewAlertIntervalOfM1.Text = tbxAlertIntervalOfM1.Text;
+                tbxNewHumidityAlertLowOfM1.Text = tbxHumidityAlertLowOfM1.Text;
+                tbxNewHumidityAlertHighOfM1.Text = tbxHumidityAlertHighOfM1.Text;
+            }
+            else if (TableOfAO2.IsSelected == true)
+            {
+                tbxNewDeviceMacOfAO2.Text = tbxDeviceMacOfAO2.Text;
+                tbxNewHwRevisionOfAO2.Text = tbxHwRevisionOfAO2.Text;
+
+                tbxNewCustomerOfAO2.Text = tbxCustomerOfAO2.Text;
+                tbxNewDebugOfAO2.Text = tbxDebugOfAO2.Text;
+                tbxNewCategoryOfAO2.Text = tbxCategoryOfAO2.Text;
+                tbxNewPatternOfAO2.Text = tbxPatternOfAO2.Text;
+                tbxNewBpsOfAO2.Text = tbxBpsOfAO2.Text;
+                tbxNewTxPowerOfAO2.Text = tbxTxPowerOfAO2.Text;
+                tbxNewChannelOfAO2.Text = tbxChannelOfAO2.Text;
+                tbxNewTemperatureCompensationOfAO2.Text = tbxTemperatureCompensationOfAO2.Text;
+                tbxNewHumidityCompensationOfAO2.Text = tbxHumidityCompensationOfAO2.Text;
+                tbxNewMaxLengthOfAO2.Text = tbxMaxLengthOfAO2.Text;
+                tbxNewGasCompensationOfAO2.Text = tbxGasCompensationOfAO2.Text;
+
+                tbxNewSampleSendOfAO2.Text = tbxSampleSendOfAO2.Text;
+                tbxNewIntervalOfAO2.Text = tbxIntervalOfAO2.Text;
+                tbxNewGasWarnLowOfAO2.Text = tbxGasWarnLowOfAO2.Text;
+                tbxNewGasWarnHighOfAO2.Text = tbxGasWarnHighOfAO2.Text;
+                tbxNewGasAlertLowOfAO2.Text = tbxGasAlertLowOfAO2.Text;
+                tbxNewGasAlertHighOfAO2.Text = tbxGasAlertHighOfAO2.Text;
+                tbxNewTemperatureWarnLowOfAO2.Text = tbxTemperatureWarnLowOfAO2.Text;
+                tbxNewTemperatureWarnHighOfAO2.Text = tbxTemperatureWarnHighOfAO2.Text;
+                tbxNewNormalIntervalOfAO2.Text = tbxNormalIntervalOfAO2.Text;
+                tbxNewTemperatureAlertLowOfAO2.Text = tbxTemperatureAlertLowOfAO2.Text;
+                tbxNewTemperatureAlertHighOfAO2.Text = tbxTemperatureAlertHighOfAO2.Text;
+                tbxNewWarnIntervalOfAO2.Text = tbxWarnIntervalOfAO2.Text;
+                tbxNewHumidityWarnLowOfAO2.Text = tbxHumidityWarnLowOfAO2.Text;
+                tbxNewHumidityWarnHighOfAO2.Text = tbxHumidityWarnHighOfAO2.Text;
+                tbxNewAlertIntervalOfAO2.Text = tbxAlertIntervalOfAO2.Text;
+                tbxNewHumidityAlertLowOfAO2.Text = tbxHumidityAlertLowOfAO2.Text;
+                tbxNewHumidityAlertHighOfAO2.Text = tbxHumidityAlertHighOfAO2.Text;
+            }
+            else if (TableOfM9.IsSelected == true)
+            {
+                tbxNewDeviceMacOfM9.Text = tbxDeviceMacOfM9.Text;
+                tbxNewHwRevisionOfM9.Text = tbxHwRevisionOfM9.Text;
+
+                tbxNewCustomerOfM9.Text = tbxCustomerOfM9.Text;
+                tbxNewDebugOfM9.Text = tbxDebugOfM9.Text;
+                tbxNewCategoryOfM9.Text = tbxCategoryOfM9.Text;
+                tbxNewPatternOfM9.Text = tbxPatternOfM9.Text;
+                tbxNewBpsOfM9.Text = tbxBpsOfM9.Text;
+                tbxNewTxPowerOfM9.Text = tbxTxPowerOfM9.Text;
+                tbxNewChannelOfM9.Text = tbxChannelOfM9.Text;
+                tbxNewMaxLengthOfM9.Text = tbxMaxLengthOfM9.Text;
+
+                tbxNewSampleSendOfM9.Text = tbxSampleSendOfM9.Text;
+                tbxNewIntervalOfM9.Text = tbxIntervalOfM9.Text;
+                tbxNewSensitivityOfM9.Text = tbxSensitivityOfM9.Text;
+
+                tbxNewMoveDetectTimeOfM9.Text = tbxMoveDetectTimeOfM9.Text;
+                tbxNewStaticDetectTimeOfM9.Text = tbxStaticDetectTimeOfM9.Text;
+            }
+            else if (TableOfM4.IsSelected == true)
+            {
+                tbxNewDeviceMacOfM4.Text = tbxDeviceMacOfM4.Text;
+                tbxNewHwRevisionOfM4.Text = tbxHwRevisionOfM4.Text;
+
+                tbxNewCustomerOfM4.Text = tbxCustomerOfM4.Text;
+                tbxNewDebugOfM4.Text = tbxDebugOfM4.Text;
+                tbxNewCategoryOfM4.Text = tbxCategoryOfM4.Text;
+                tbxNewPatternOfM4.Text = tbxPatternOfM4.Text;
+                tbxNewBpsOfM4.Text = tbxBpsOfM4.Text;
+                tbxNewTxPowerOfM4.Text = tbxTxPowerOfM4.Text;
+                tbxNewChannelOfM4.Text = tbxChannelOfM4.Text;
+                tbxNewPowerCompensationOfM4.Text = tbxPowerCompensationOfM4.Text;
+                tbxNewVoltageCompensationOfM4.Text = tbxVoltageCompensationOfM4.Text;
+                tbxNewMaxLengthOfM4.Text = tbxMaxLengthOfM4.Text;
+
+                tbxNewSampleSendOfM4.Text = tbxSampleSendOfM4.Text;
+                tbxNewIntervalOfM4.Text = tbxIntervalOfM4.Text;
+                tbxNewPowerWarnLowOfM4.Text = tbxPowerWarnLowOfM4.Text;
+                tbxNewPowerWarnHighOfM4.Text = tbxPowerWarnHighOfM4.Text;
+                tbxNewIntervalNormalOfM4.Text = tbxIntervalNormalOfM4.Text;
+                tbxNewPowerAlertLowOfM4.Text = tbxPowerAlertnLowOfM4.Text;
+                tbxNewPowerAlertHighOfM4.Text = tbxPowerAlertHighOfM4.Text;
+                tbxNewIntervalWarningOfM4.Text = tbxIntervalWarningOfM4.Text;
+                tbxNewVoltageWarnLowOfM4.Text = tbxVoltageWarnLowOfM4.Text;
+                tbxNewVoltageWarnHighOfM4.Text = tbxVoltageWarnHighOfM4.Text;
+                tbxNewIntervalAlarmOfM4.Text = tbxIntervalAlarmOfM4.Text;
+                tbxNewVoltageAlertLowOfM4.Text = tbxVoltageAlertLowOfM4.Text;
+                tbxNewVoltageAlertHighOfM4.Text = tbxVoltageAlertHighOfM4.Text;
+            }
+            else if (TableOfEsk.IsSelected == true)
+            {
+                tbxNewDeviceMacOfEsk.Text = tbxDeviceMacOfEsk.Text;
+                tbxNewHwRevisionOfEsk.Text = tbxHwRevisionOfEsk.Text;
+
+                tbxNewCustomerOfEsk.Text = tbxCustomerOfEsk.Text;
+                tbxNewDebugOfEsk.Text = tbxDebugOfEsk.Text;
+                tbxNewCategoryOfEsk.Text = tbxCategoryOfEsk.Text;
+                tbxNewPatternOfEsk.Text = tbxPatternOfEsk.Text;
+                tbxNewBpsOfEsk.Text = tbxBpsOfEsk.Text;
+                tbxNewTxPowerOfEsk.Text = tbxTxPowerOfEsk.Text;
+                tbxNewChannelOfEsk.Text = tbxChannelOfEsk.Text;
+                tbxNewMaxLengthOfEsk.Text = tbxMaxLengthOfEsk.Text;
+
+                tbxNewSampleSendOfEsk.Text = tbxSampleSendOfEsk.Text;
+                tbxNewCfgReservedOfEsk.Text = tbxCfgReservedOfEsk.Text;
+                tbxNewBlockCurrentOfEsk.Text = tbxBlockCurrentOfEsk.Text;
+                tbxNewBlockDurationOfEsk.Text = tbxBlockDurationOfEsk.Text;
+            }
+            else if (TableOfL1.IsSelected == true)
+            {
+                tbxNewDeviceMacOfL1.Text = tbxDeviceMacOfL1.Text;
+                tbxNewHwRevisionOfL1.Text = tbxHwRevisionOfL1.Text;
+
+                tbxNewCustomerOfL1.Text = tbxCustomerOfL1.Text;
+                tbxNewDebugOfL1.Text = tbxDebugOfL1.Text;
+                tbxNewCategoryOfL1.Text = tbxCategoryOfL1.Text;
+                tbxNewPatternOfL1.Text = tbxPatternOfL1.Text;
+                tbxNewBpsOfL1.Text = tbxBpsOfL1.Text;
+                tbxNewTxPowerOfL1.Text = tbxTxPowerOfL1.Text;
+                tbxNewChannelOfL1.Text = tbxChannelOfL1.Text;
+                tbxNewLuxCompensationOfL1.Text = tbxLuxCompensationOfL1.Text;
+                tbxNewMaxLengthOfL1.Text = tbxMaxLengthOfL1.Text;
+
+                tbxNewSampleSendOfL1.Text = tbxSampleSendOfL1.Text;
+                tbxNewIntervalOfL1.Text = tbxIntervalOfL1.Text;
+                tbxNewLuxWarnLowOfL1.Text = tbxLuxWarnLowOfL1.Text;
+                tbxNewLuxWarnHighOfL1.Text = tbxLuxWarnHighOfL1.Text;
+                tbxNewIntervalNormalOfL1.Text = tbxIntervalNormalOfL1.Text;
+                tbxNewLuxAlertLowOfL1.Text = tbxLuxAlertnLowOfL1.Text;
+                tbxNewLuxAlertHighOfL1.Text = tbxLuxAlertHighOfL1.Text;
+                tbxNewIntervalWarningOfL1.Text = tbxIntervalWarningOfL1.Text;
+                tbxNewIntervalAlarmOfL1.Text = tbxIntervalAlarmOfL1.Text;
+            }
+        }
+
+        private void btnClear_Click(object sender, RoutedEventArgs e)
+        {
+            if (TableOfM1.IsSelected == true)
+            {
+                tbxDeviceNameOfM1.Text = "";
+                tbxDeviceTypeOfM1.Text = "";
+                tbxProtocolOfM1.Text = "";
+
+                tbxPrimaryMacOfM1.Text = "";
+                tbxDeviceMacOfM1.Text = "";
+                tbxSwRevisionOfM1.Text = "";
+                tbxHwRevisionOfM1.Text = "";
+
+                tbxCustomerOfM1.Text = "";
+                tbxDebugOfM1.Text = "";
+                tbxCategoryOfM1.Text = "";
+                tbxPatternOfM1.Text = "";
+                tbxBpsOfM1.Text = "";
+                tbxTxPowerOfM1.Text = "";
+                tbxChannelOfM1.Text = "";
+                tbxTemperatureCompensationOfM1.Text = "";
+                tbxHumidityCompensationOfM1.Text = "";
+                tbxMaxLengthOfM1.Text = "";
+
+                tbxCalendarOfM1.Text = "";
+                tbxSampleSendOfM1.Text = "";
+                tbxIntervalOfM1.Text = "";
+                tbxTemperatureWarnLowOfM1.Text = "";
+                tbxTemperatureWarnHighOfM1.Text = "";
+                tbxNormalIntervalOfM1.Text = "";
+                tbxTemperatureAlertLowOfM1.Text = "";
+                tbxTemperatureAlertHighOfM1.Text = "";
+                tbxWarnIntervalOfM1.Text = "";
+                tbxHumidityWarnLowOfM1.Text = "";
+                tbxHumidityWarnHighOfM1.Text = "";
+                tbxAlertIntervalOfM1.Text = "";
+                tbxHumidityAlertLowOfM1.Text = "";
+                tbxHumidityAlertHighOfM1.Text = "";
+
+                txtICTemperature.Text = "";
+                txtTemperature.Text = "";
+                txtHumidity.Text = "";
+                txtVolt.Text = "";
+                txtRSSI.Text = "";
+                txtFlashID.Text = "";
+                txtFlashFront.Text = "";
+                txtFlashRear.Text = "";
+                txtFlashQueueLength.Text = "";
+            }
+            else if (TableOfAO2.IsSelected == true)
+            {
+                tbxDeviceNameOfAO2.Text = "";
+                tbxDeviceTypeOfAO2.Text = "";
+                tbxProtocolOfAO2.Text = "";
+
+                tbxPrimaryMacOfAO2.Text = "";
+                tbxDeviceMacOfAO2.Text = "";
+                tbxSwRevisionOfAO2.Text = "";
+                tbxHwRevisionOfAO2.Text = "";
+
+                tbxCustomerOfAO2.Text = "";
+                tbxDebugOfAO2.Text = "";
+                tbxCategoryOfAO2.Text = "";
+                tbxPatternOfAO2.Text = "";
+                tbxBpsOfAO2.Text = "";
+                tbxTxPowerOfAO2.Text = "";
+                tbxChannelOfAO2.Text = "";
+                tbxTemperatureCompensationOfAO2.Text = "";
+                tbxHumidityCompensationOfAO2.Text = "";
+                tbxMaxLengthOfAO2.Text = "";
+                tbxGasCompensationOfAO2.Text = "";
+
+                tbxCalendarOfAO2.Text = "";
+                tbxSampleSendOfAO2.Text = "";
+                tbxIntervalOfAO2.Text = "";
+                tbxGasWarnLowOfAO2.Text = "";
+                tbxGasWarnHighOfAO2.Text = "";
+                tbxGasAlertLowOfAO2.Text = "";
+                tbxGasAlertHighOfAO2.Text = "";
+                tbxTemperatureWarnLowOfAO2.Text = "";
+                tbxTemperatureWarnHighOfAO2.Text = "";
+                tbxNormalIntervalOfAO2.Text = "";
+                tbxTemperatureAlertLowOfAO2.Text = "";
+                tbxTemperatureAlertHighOfAO2.Text = "";
+                tbxWarnIntervalOfAO2.Text = "";
+                tbxHumidityWarnLowOfAO2.Text = "";
+                tbxHumidityWarnHighOfAO2.Text = "";
+                tbxAlertIntervalOfAO2.Text = "";
+                tbxHumidityAlertLowOfAO2.Text = "";
+                tbxHumidityAlertHighOfAO2.Text = "";
+
+                tbxConcentrationOfAO2.Text = "";
+                tbxTemperatureOfAO2.Text = "";
+                tbxHumidityOfAO2.Text = "";
+                tbxVoltOfAO2.Text = "";
+                tbxRssiOfAO2.Text = "";
+                tbxFlashIdOfAO2.Text = "";
+                tbxFlashFrontOfAO2.Text = "";
+                tbxFlashRearOfAO2.Text = "";
+                tbxFlashQueueLengthOfAO2.Text = "";
+                tbxIcTemperatureOfAO2.Text = "";
+            }
+            else if (TableOfM9.IsSelected == true)
+            {
+                tbxDeviceNameOfM9.Text = "";
+                tbxDeviceTypeOfM9.Text = "";
+                tbxProtocolOfM9.Text = "";
+
+                tbxPrimaryMacOfM9.Text = "";
+                tbxDeviceMacOfM9.Text = "";
+                tbxSwRevisionOfM9.Text = "";
+                tbxHwRevisionOfM9.Text = "";
+
+                tbxCustomerOfM9.Text = "";
+                tbxDebugOfM9.Text = "";
+                tbxCategoryOfM9.Text = "";
+                tbxPatternOfM9.Text = "";
+                tbxBpsOfM9.Text = "";
+                tbxTxPowerOfM9.Text = "";
+                tbxChannelOfM9.Text = "";
+                tbxMaxLengthOfM9.Text = "";
+
+                tbxCalendarOfM9.Text = "";
+                tbxSampleSendOfM9.Text = "";
+                tbxIntervalOfM9.Text = "";
+                if (cbxAlertCfgLockOfM9.IsChecked == false)
+                {
+                    cbxAlertCfgStaticOfM9.IsChecked = false;
+                    cbxAlertCfgMoveOfM9.IsChecked = false;
+                    cbxAlertCfgMoveStaticOfM9.IsChecked = false;
+                    cbxAlertCfgStaticMoveOfM9.IsChecked = false;
+                    cbxAlertCfgExceptionOfM9.IsChecked = false;
+                }
+                tbxSensitivityOfM9.Text = "";
+                tbxMoveDetectTimeOfM9.Text = "";
+                tbxStaticDetectTimeOfM9.Text = "";
+                tbkSensitivityDetailOfM9.Text = "";
+
+                tbxICTemperatureOfM9.Text = "";
+                tbxVoltOfM9.Text = "";
+                tbxRssiOfM9.Text = "";
+                tbxMoveStateOfM9.Text = "";
+                tbxFlashIdOfM9.Text = "";
+                tbxFlashFrontOfM9.Text = "";
+                tbxFlashRearOfM9.Text = "";
+                tbxFlashQueueLengthOfM9.Text = "";
+            }
+            else if (TableOfM4.IsSelected == true)
+            {
+                tbxDeviceNameOfM4.Text = "";
+                tbxDeviceTypeOfM4.Text = "";
+                tbxProtocolOfM4.Text = "";
+
+                tbxPrimaryMacOfM4.Text = "";
+                tbxDeviceMacOfM4.Text = "";
+                tbxSwRevisionOfM4.Text = "";
+                tbxHwRevisionOfM4.Text = "";
+
+                tbxCustomerOfM4.Text = "";
+                tbxDebugOfM4.Text = "";
+                tbxCategoryOfM4.Text = "";
+                tbxPatternOfM4.Text = "";
+                tbxBpsOfM4.Text = "";
+                tbxTxPowerOfM4.Text = "";
+                tbxChannelOfM4.Text = "";
+                tbxPowerCompensationOfM4.Text = "";
+                tbxVoltageCompensationOfM4.Text = "";
+                tbxMaxLengthOfM4.Text = "";
+
+                tbxCalendarOfM4.Text = "";
+                tbxSampleSendOfM4.Text = "";
+                tbxIntervalOfM4.Text = "";
+                tbxPowerWarnLowOfM4.Text = "";
+                tbxPowerWarnHighOfM4.Text = "";
+                tbxIntervalNormalOfM4.Text = "";
+                tbxPowerAlertnLowOfM4.Text = "";
+                tbxPowerAlertHighOfM4.Text = "";
+                tbxIntervalWarningOfM4.Text = "";
+                tbxVoltageWarnLowOfM4.Text = "";
+                tbxVoltageWarnHighOfM4.Text = "";
+                tbxIntervalAlarmOfM4.Text = "";
+                tbxVoltageAlertLowOfM4.Text = "";
+                tbxVoltageAlertHighOfM4.Text = "";
+
+                tbxICTemperatureOfM4.Text = "";
+                tbxLoadPowerOfM4.Text = "";
+                tbxSupplyVoltageOfM4.Text = "";
+                tbxVoltOfM4.Text = "";
+                tbxRssiOfM4.Text = "";
+                tbxFlashIdOfM4.Text = "";
+                tbxFlashFrontOfM4.Text = "";
+                tbxFlashRearOfM4.Text = "";
+                tbxFlashQueueLengthOfM4.Text = "";
+            }
+            else if (TableOfEsk.IsSelected == true)
+            {
+                tbxDeviceNameOfEsk.Text = "";
+                tbxDeviceTypeOfEsk.Text = "";
+                tbxProtocolOfEsk.Text = "";
+
+                tbxPrimaryMacOfEsk.Text = "";
+                tbxDeviceMacOfEsk.Text = "";
+                tbxSwRevisionOfEsk.Text = "";
+                tbxHwRevisionOfEsk.Text = "";
+
+                tbxCustomerOfEsk.Text = "";
+                tbxDebugOfEsk.Text = "";
+                tbxCategoryOfEsk.Text = "";
+                tbxPatternOfEsk.Text = "";
+                tbxBpsOfEsk.Text = "";
+                tbxTxPowerOfEsk.Text = "";
+                tbxChannelOfEsk.Text = "";
+                tbxMaxLengthOfEsk.Text = "";
+
+                tbxCalendarOfEsk.Text = "";
+                tbxSampleSendOfEsk.Text = "";
+                tbxCfgReservedOfEsk.Text = "";
+                tbxBlockCurrentOfEsk.Text = "";
+                tbxBlockDurationOfEsk.Text = "";
+
+                tbxIdleCurrentOfEsk.Text = "";
+                tbxStartCurrentOfEsk.Text = "";
+                tbxRaceCurrentOfEsk.Text = "";
+                tbxSupplyVoltageOfEsk.Text = "";
+
+                tbxICTemperatureOfEsk.Text = "";                
+                tbxVoltOfEsk.Text = "";
+                tbxRssiOfEsk.Text = "";
+                tbxFlashIdOfEsk.Text = "";
+                tbxFlashFrontOfEsk.Text = "";
+                tbxFlashRearOfEsk.Text = "";
+                tbxFlashQueueLengthOfEsk.Text = "";
+            }
+            else if (TableOfL1.IsSelected == true)
+            {
+                tbxDeviceTypeOfL1.Text = "";
+                tbxPrimaryMacOfL1.Text = "";
+                tbxDeviceMacOfL1.Text = "";
+                tbxProtocolOfL1.Text = "";
+                tbxSwRevisionOfL1.Text = "";
+                tbxHwRevisionOfL1.Text = "";
+
+                tbxCustomerOfL1.Text = "";
+                tbxDebugOfL1.Text = "";
+                tbxCategoryOfL1.Text = "";
+                tbxPatternOfL1.Text = "";
+                tbxBpsOfL1.Text = "";
+                tbxTxPowerOfL1.Text = "";
+                tbxChannelOfL1.Text = "";
+                tbxLuxCompensationOfL1.Text = "";
+                tbxMaxLengthOfL1.Text = "";
+
+
+                tbxCalendarOfL1.Text = "";
+                tbxSampleSendOfL1.Text = "";
+                tbxIntervalOfL1.Text = "";
+                tbxLuxWarnLowOfL1.Text = "";
+                tbxLuxWarnHighOfL1.Text = "";
+                tbxIntervalNormalOfL1.Text = "";
+                tbxLuxAlertnLowOfL1.Text = "";
+                tbxLuxAlertHighOfL1.Text = "";
+                tbxIntervalWarningOfL1.Text = "";
+                tbxIntervalAlarmOfL1.Text = "";
+
+                tbxICTemperatureOfL1.Text = "";
+                tbxLuxOfL1.Text = "";
+                tbxVoltOfL1.Text = "";
+                tbxRssiOfL1.Text = "";
+                tbxFlashIdOfL1.Text = "";
+                tbxFlashFrontOfL1.Text = "";
+                tbxFlashRearOfL1.Text = "";
+                tbxFlashQueueLengthOfL1.Text = "";
+            }
+        }
+
+        /// <summary>
+        /// 串口发送数据，并记录日志
+        /// </summary>
+        /// <param name="TxBuf"></param>
+        /// <param name="IndexOfStart"></param>
+        /// <param name="TxLen"></param>
+        private void SerialPort_Send(byte[] TxBuf, UInt16 IndexOfStart, UInt16 TxLen)
+        {
+            // 显示Log
+            // ConsoleLog("TX", TxBuf, IndexOfStart, TxLen);
+
+            // 发送数据
+            SerialPort.SendCommandByLength(TxBuf, IndexOfStart, TxLen);
+        }
+
+        /// <summary>
+        /// M9: 发送串口指令，修改出厂配置
+        /// </summary>
+        /// <param name="Cmd"></param>
+        private Int16 WriteFactoryCfgOfM9()
+        {
+            byte[] TxBuf = new byte[25];
+            UInt16 TxLen = 0;
+
+            byte[] ByteBufTmp = null;
+
+            // Start
+            TxBuf[TxLen++] = 0xCE;
+
+            // Length
+            TxBuf[TxLen++] = 0x00;
+
+            // Cmd
+            TxBuf[TxLen++] = 0xA1;
+
+            // USB Protocol
+            TxBuf[TxLen++] = 0x01;
+
+            // 设备类型
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceTypeOfM9.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 1)
+            {
+                return -1;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+
+            // Protocol
+            TxBuf[TxLen++] = 0x02;
+
+            // Sensor Mac
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfM9.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+            {
+                return -2;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+            TxBuf[TxLen++] = ByteBufTmp[2];
+            TxBuf[TxLen++] = ByteBufTmp[3];
+
+            // New Sensor Mac
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxNewDeviceMacOfM9.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+            {
+                return -3;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+            TxBuf[TxLen++] = ByteBufTmp[2];
+            TxBuf[TxLen++] = ByteBufTmp[3];
+
+            // Hardware Revision
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxNewHwRevisionOfM9.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+            {
+                return -4;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+            TxBuf[TxLen++] = ByteBufTmp[2];
+            TxBuf[TxLen++] = ByteBufTmp[3];
+
+            // CRC16
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 2, (UInt16)(TxLen - 2));
+            TxBuf[TxLen++] = (byte)((crc & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((crc & 0x00FF) >> 0);
+
+            // End
+            TxBuf[TxLen++] = 0xEC;
+
+            // 重写长度位
+            TxBuf[1] = (byte)(TxLen - 5);
+
+            SerialPort_Send(TxBuf, 0, TxLen);
+
+            return 0;
+        }
+
+        /// <summary>
+        /// M9: 修改出厂配置
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btnUpdateFactoryOfM9_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                WriteFactoryCfgOfM9();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("参数错误" + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// M9： 发送串口指令，修改用户配置
+        /// </summary>
+        /// <param name="Cmd"></param>
+        private Int16 WriteUserCfgOfM9()
+        {
+            byte[] TxBuf = new byte[32];
+            UInt16 TxLen = 0;
+
+            byte[] ByteBufTmp = null;
+
+            // Start
+            TxBuf[TxLen++] = 0xCE;
+
+            // Length
+            TxBuf[TxLen++] = 0x00;
+
+            // Cmd
+            TxBuf[TxLen++] = 0xA2;
+
+            // USB Protocol
+            TxBuf[TxLen++] = 0x02;
+
+            // 设备类型
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceTypeOfM9.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 1)
+            {
+                return -1;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+
+            // Protocol
+            TxBuf[TxLen++] = 0x03;
+
+            // Sensor Mac
+            if (cbxIsAllOfM9.IsChecked == true)
+            {
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+            }
+            else
+            {
+                ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfM9.Text);
+                if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+                {
+                    return -2;
+                }
+                TxBuf[TxLen++] = ByteBufTmp[0];
+                TxBuf[TxLen++] = ByteBufTmp[1];
+                TxBuf[TxLen++] = ByteBufTmp[2];
+                TxBuf[TxLen++] = ByteBufTmp[3];
+            }
+
+            // Customer
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxNewCustomerOfM9.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 2)
+            {
+                return -3;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+
+            // Debug
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxNewDebugOfM9.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 2)
+            {
+                return -4;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+
+            // Category
+            TxBuf[TxLen++] = Convert.ToByte(tbxNewCategoryOfM9.Text);
+
+            // Pattern
+            TxBuf[TxLen++] = Convert.ToByte(tbxNewPatternOfM9.Text);
+
+            // bps
+            TxBuf[TxLen++] = Convert.ToByte(tbxNewBpsOfM9.Text);
+
+            // Tx Power
+            Int16 txPower = Convert.ToInt16(tbxNewTxPowerOfM9.Text);
+            TxBuf[TxLen++] = (byte)txPower;
+
+            // channel
+            TxBuf[TxLen++] = Convert.ToByte(tbxNewChannelOfM9.Text);
+
+            // MaxLength
+            TxBuf[TxLen++] = Convert.ToByte(tbxNewMaxLengthOfM9.Text);
+
+            // 日期和时间
+            tbxCalendarOfM9.Text = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            DateTime ThisCalendar = Convert.ToDateTime(tbxCalendarOfM9.Text);
+            ByteBufTmp = MyCustomFxn.DataTimeToByteArray(ThisCalendar);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[0]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[1]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[2]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[3]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[4]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[5]);
+
+            // Reserved
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+
+            // CRC16
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 2, (UInt16)(TxLen - 2));
+            TxBuf[TxLen++] = (byte)((crc & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((crc & 0x00FF) >> 0);
+
+            // End
+            TxBuf[TxLen++] = 0xEC;
+
+            // 重写长度位
+            TxBuf[1] = (byte)(TxLen - 5);
+
+            SerialPort_Send(TxBuf, 0, TxLen);
+
+            return 0;
+        }
+
+        /// <summary>
+        /// M9: 修改用户配置
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btnUpdateUserOfM9_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                WriteUserCfgOfM9();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("参数错误" + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// M9: 删除历史数据
+        /// </summary>
+        /// <returns></returns>
+        private Int16 DeleteHistoryOfM9()
+        {
+            byte[] TxBuf = new byte[21];
+            UInt16 TxLen = 0;
+
+            byte[] ByteBufTmp = null;
+
+            // Start
+            TxBuf[TxLen++] = 0xCE;
+
+            // Length
+            TxBuf[TxLen++] = 0x00;
+
+            // Cmd
+            TxBuf[TxLen++] = 0xA4;
+
+            // USB Protocol
+            TxBuf[TxLen++] = 0x02;
+
+            // 设备类型
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceTypeOfM9.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 1)
+            {
+                return -1;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+
+            // Protocol
+            TxBuf[TxLen++] = 0x03;
+
+            // Sensor Mac
+            if (cbxIsAllOfM9.IsChecked == true)
+            {
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+            }
+            else
+            {
+                ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfM9.Text);
+                if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+                {
+                    return -2;
+                }
+                TxBuf[TxLen++] = ByteBufTmp[0];
+                TxBuf[TxLen++] = ByteBufTmp[1];
+                TxBuf[TxLen++] = ByteBufTmp[2];
+                TxBuf[TxLen++] = ByteBufTmp[3];
+            }
+
+            // Front
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+
+            // Rear
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+
+            // Reserved
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+
+            // CRC16
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 2, (UInt16)(TxLen - 2));
+            TxBuf[TxLen++] = (byte)((crc & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((crc & 0x00FF) >> 0);
+
+            // End
+            TxBuf[TxLen++] = 0xEC;
+
+            // 重写长度位
+            TxBuf[1] = (byte)(TxLen - 5);
+
+            SerialPort_Send(TxBuf, 0, TxLen);
+
+            return 0;
+        }
+
+        /// <summary>
+        /// M9: 删除历史数据
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btnDeleteDataOfM9_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                DeleteHistoryOfM9();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("参数错误" + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// M9: 修改应用配置
+        /// </summary>
+        /// <returns></returns>
+        private Int16 WriteAppCfgOfM9()
+        {
+            byte[] TxBuf = new byte[36];
+            UInt16 TxLen = 0;
+
+            byte[] ByteBufTmp = null;
+
+            // Start
+            TxBuf[TxLen++] = 0xCE;
+
+            // Length
+            TxBuf[TxLen++] = 0x00;
+
+            // Cmd
+            TxBuf[TxLen++] = 0xA3;
+
+            // USB Protocol
+            TxBuf[TxLen++] = 0x02;
+
+            // 设备类型
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceTypeOfM9.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 1)
+            {
+                return -1;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            byte deviceType = ByteBufTmp[0];
+
+            // Protocol
+            TxBuf[TxLen++] = 0x03;
+
+            // Sensor Mac
+            if (cbxIsAllOfM9.IsChecked == true)
+            {
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+            }
+            else
+            {
+                ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfM9.Text);
+                if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+                {
+                    return -2;
+                }
+                TxBuf[TxLen++] = ByteBufTmp[0];
+                TxBuf[TxLen++] = ByteBufTmp[1];
+                TxBuf[TxLen++] = ByteBufTmp[2];
+                TxBuf[TxLen++] = ByteBufTmp[3];
+            }
+
+            // 日期和时间
+            tbxCalendarOfM9.Text = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            DateTime ThisCalendar = Convert.ToDateTime(tbxCalendarOfM9.Text);
+            ByteBufTmp = MyCustomFxn.DataTimeToByteArray(ThisCalendar);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[0]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[1]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[2]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[3]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[4]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[5]);
+
+            // 采集间隔
+            UInt16 Interval = Convert.ToUInt16(tbxNewIntervalOfM9.Text);
+            TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+            // Sample/Send
+            TxBuf[TxLen++] = Convert.ToByte(tbxNewSampleSendOfM9.Text);
+
+            if (deviceType == (byte)Device.DeviceType.M9)
+            {
+                UInt16 MoveDetectThr = 240;
+                UInt16 MoveDetectTime = 0;
+                UInt16 StaticDetectThr = 400;
+                UInt16 StaticDetectTime = 0;
+
+                byte Sensitivity = Convert.ToByte(tbxNewSensitivityOfM9.Text);
+
+                MoveDetectThr = Convert.ToUInt16(ConfigurationManager.AppSettings["M9_MoveDetectThr_"+ Sensitivity.ToString()]);
+                StaticDetectThr = Convert.ToUInt16(ConfigurationManager.AppSettings["M9_StaticDetectThr_" + Sensitivity.ToString()]);
+
+                // 运动检测阈值，单位：mg
+                TxBuf[TxLen++] = (byte)((MoveDetectThr & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((MoveDetectThr & 0x00FF) >> 0);
+
+                // 运动检测时间，单位：ms
+                MoveDetectTime = Convert.ToUInt16(tbxNewMoveDetectTimeOfM9.Text);
+                TxBuf[TxLen++] = (byte)((MoveDetectTime & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((MoveDetectTime & 0x00FF) >> 0);
+
+                // 静止检测阈值，单位：mg
+                TxBuf[TxLen++] = (byte)((StaticDetectThr & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((StaticDetectThr & 0x00FF) >> 0);
+
+                // 静止检测时间，单位：ms
+                StaticDetectTime = Convert.ToUInt16(tbxNewStaticDetectTimeOfM9.Text);
+                TxBuf[TxLen++] = (byte)((StaticDetectTime & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((StaticDetectTime & 0x00FF) >> 0);
+            }                       
+
+            // Alert Cfg
+            byte AlertCfg = 0;
+            if (cbxAlertCfgStaticOfM9.IsChecked == true)
+            {   // 静止报警
+                AlertCfg |= 0x01;
+            }
+
+            if (cbxAlertCfgMoveOfM9.IsChecked == true)
+            {   // 运动报警
+                AlertCfg |= 0x02;
+            }
+
+            if (cbxAlertCfgMoveStaticOfM9.IsChecked == true)
+            {   // 动->静报警
+                AlertCfg |= 0x04;
+            }
+
+            if (cbxAlertCfgStaticMoveOfM9.IsChecked == true)
+            {   // 静->动报警
+                AlertCfg |= 0x08;
+            }
+
+            if (cbxAlertCfgExceptionOfM9.IsChecked == true)
+            {   // 异常报警
+                AlertCfg |= 0x10;
+            }
+            TxBuf[TxLen++] = AlertCfg;
+
+            // Reserved
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+
+            // CRC16
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 2, (UInt16)(TxLen - 2));
+            TxBuf[TxLen++] = (byte)((crc & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((crc & 0x00FF) >> 0);
+
+            // End
+            TxBuf[TxLen++] = 0xEC;
+
+            // 重写长度位
+            TxBuf[1] = (byte)(TxLen - 5);
+
+            SerialPort_Send(TxBuf, 0, TxLen);
+
+            return 0;
+        }
+
+        /// <summary>
+        /// M9: 修改应用配置
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btnUpdateApplicationOfM9_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                WriteAppCfgOfM9();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("参数错误" + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// M4: 标定
+        /// </summary>
+        /// <returns></returns>
+        private Int16 CalibrateOfM4()
+        {
+            byte[] TxBuf = new byte[24];
+            UInt16 TxLen = 0;
+
+            byte[] ByteBufTmp = null;
+
+            bool ExistVolt = false;
+            bool ExistPower = false;
+
+            // 是否存在市电电压
+            if (MyCustomFxn.HexStringToByteArray(tbxCaliVoltOfM4.Text) == null)
+            {
+                ExistVolt = false;
+            }
+            else
+            {
+                ExistVolt = true;
+            }
+
+            // 是否存在负载功率
+            if (MyCustomFxn.HexStringToByteArray(tbxCaliPowerOfM4.Text) == null)
+            {
+                ExistPower = false;
+            }
+            else
+            {
+                ExistPower = true;
+            }
+
+            if (ExistVolt == false && ExistPower == false)
+            {   // 既不存在市电电压，也不存在负载功率
+                return -1;
+            }
+
+            // Start
+            TxBuf[TxLen++] = 0xCE;
+
+            // Length
+            TxBuf[TxLen++] = 0x00;
+
+            // Cmd
+            TxBuf[TxLen++] = 0xA6;
+
+            // USB Protocol
+            TxBuf[TxLen++] = 0x02;
+
+            // 设备类型
+            TxBuf[TxLen++] = 0x58;
+
+            // Protocol
+            TxBuf[TxLen++] = 0x02;
+
+            // Sensor Mac
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfM4.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+            {
+                return -2;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+            TxBuf[TxLen++] = ByteBufTmp[2];
+            TxBuf[TxLen++] = ByteBufTmp[3];
+
+            // GW MAC
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x11;
+
+            // 标定方式
+            TxBuf[TxLen++] = 0x01;
+
+            // 标定内容
+
+            UInt16 Value = 0;
+
+            if (ExistVolt == true && ExistPower == true)
+            {   // 既存在市电电压，也存在负载功率
+                TxBuf[TxLen++] = 0x03;
+
+                // 市电电压
+                Value = Convert.ToUInt16(tbxCaliVoltOfM4.Text);
+                TxBuf[TxLen++] = (byte)((Value & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((Value & 0x00FF) >> 0);
+
+                // 负载功率
+                Value = Convert.ToUInt16(tbxCaliPowerOfM4.Text);
+                TxBuf[TxLen++] = (byte)((Value & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((Value & 0x00FF) >> 0);
+            }
+            else if (ExistVolt == true && ExistPower == false)
+            {   // 只有市电电压
+                TxBuf[TxLen++] = 0x01;
+
+                // 市电电压
+                Value = Convert.ToUInt16(tbxCaliVoltOfM4.Text);
+                TxBuf[TxLen++] = (byte)((Value & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((Value & 0x00FF) >> 0);
+            }
+            else if (ExistVolt == false && ExistPower == true)
+            {   // 只有负载功率
+                TxBuf[TxLen++] = 0x02;
+
+                // 负载功率
+                Value = Convert.ToUInt16(tbxCaliPowerOfM4.Text);
+                TxBuf[TxLen++] = (byte)((Value & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((Value & 0x00FF) >> 0);
+            }
+            else
+            {
+                return -3;
+            }
+
+            // CRC16
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 2, (UInt16)(TxLen - 2));
+            TxBuf[TxLen++] = (byte)((crc & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((crc & 0x00FF) >> 0);
+
+            // End
+            TxBuf[TxLen++] = 0xEC;
+
+            // 重写长度位
+            TxBuf[1] = (byte)(TxLen - 5);
+
+            SerialPort_Send(TxBuf, 0, TxLen);
+
+            return 0;
+        }
+
+        /// <summary>
+        /// M4: 标定
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btnCalibrateOfM4_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                CalibrateOfM4();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("参数错误" + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// L1: 发送串口指令，修改出厂配置
+        /// </summary>
+        private Int16 WriteFactoryCfgOfL1()
+        {
+            byte[] TxBuf = new byte[25];
+            UInt16 TxLen = 0;
+
+            // Start
+            TxBuf[TxLen++] = 0xCE;
+
+            // Length
+            TxBuf[TxLen++] = 0x00;
+
+            // Cmd
+            TxBuf[TxLen++] = 0xA1;
+
+            // USB Protocol
+            TxBuf[TxLen++] = 0x01;
+
+            // 设备类型
+            TxBuf[TxLen++] = 0x85;
+
+            // Protocol
+            TxBuf[TxLen++] = 0x02;
+
+            // Sensor Mac
+            byte[] ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfL1.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+            {
+                return -1;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+            TxBuf[TxLen++] = ByteBufTmp[2];
+            TxBuf[TxLen++] = ByteBufTmp[3];
+
+            // New Sensor Mac
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxNewDeviceMacOfL1.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+            {
+                return -2;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+            TxBuf[TxLen++] = ByteBufTmp[2];
+            TxBuf[TxLen++] = ByteBufTmp[3];
+
+            // Hardware Revision
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxNewHwRevisionOfL1.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+            {
+                return -3;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+            TxBuf[TxLen++] = ByteBufTmp[2];
+            TxBuf[TxLen++] = ByteBufTmp[3];
+
+            // CRC16
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 2, (UInt16)(TxLen - 2));
+            TxBuf[TxLen++] = (byte)((crc & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((crc & 0x00FF) >> 0);
+
+            // End
+            TxBuf[TxLen++] = 0xEC;
+
+            // 重写长度位
+            TxBuf[1] = (byte)(TxLen - 5);
+
+            SerialPort_Send(TxBuf, 0, TxLen);
+
+            return 0;
+        }
+
+        private void btnUpdateFactoryOfL1_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                WriteFactoryCfgOfL1();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("参数错误" + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// L1: 修改用户
+        /// </summary>
+        /// <returns></returns>
+        private Int16 WriteUserCfgOfL1()
+        {
+            byte[] TxBuf = new byte[36];
+            UInt16 TxLen = 0;
+
+            byte[] ByteBufTmp = null;
+
+            // Start
+            TxBuf[TxLen++] = 0xCE;
+
+            // Length
+            TxBuf[TxLen++] = 0x00;
+
+            // Cmd
+            TxBuf[TxLen++] = 0xA2;
+
+            // USB Protocol
+            TxBuf[TxLen++] = 0x02;
+
+            // 设备类型
+            TxBuf[TxLen++] = 0x85;
+
+            // Protocol
+            byte Protocol = Convert.ToByte(tbxProtocolOfL1.Text);
+            TxBuf[TxLen++] = Protocol;
+
+            // Sensor Mac
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfL1.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+            {
+                return -2;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+            TxBuf[TxLen++] = ByteBufTmp[2];
+            TxBuf[TxLen++] = ByteBufTmp[3];
+
+            // Customer
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxNewCustomerOfL1.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 2)
+            {
+                return -2;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+
+            // Debug
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxNewDebugOfL1.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 2)
+            {
+                return -2;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+
+            // Category
+            TxBuf[TxLen++] = Convert.ToByte(tbxNewCategoryOfL1.Text);
+
+            // Pattern
+            TxBuf[TxLen++] = Convert.ToByte(tbxNewPatternOfL1.Text);
+
+            // Bps
+            TxBuf[TxLen++] = Convert.ToByte(tbxNewBpsOfL1.Text);
+
+            // TX Power
+            Int16 txPower = Convert.ToInt16(tbxNewTxPowerOfL1.Text);
+            TxBuf[TxLen++] = (byte)txPower;
+
+            // Channel
+            TxBuf[TxLen++] = Convert.ToByte(tbxNewChannelOfL1.Text);
+
+            // 存储容量
+            TxBuf[TxLen++] = Convert.ToByte(tbxNewMaxLengthOfL1.Text);
+
+            // 日期和时间
+            tbxCalendarOfL1.Text = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            DateTime NowCalendar = Convert.ToDateTime(tbxCalendarOfL1.Text);
+            ByteBufTmp = MyCustomFxn.DataTimeToByteArray(NowCalendar);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[0]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[1]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[2]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[3]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[4]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[5]);
+
+            // 光照强度补偿
+            Int16 luxComp = Convert.ToInt16(tbxNewLuxCompensationOfL1.Text);       // 单位：V；
+            TxBuf[TxLen++] = (byte)((luxComp & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((luxComp & 0x00FF) >> 0);
+
+            // 保留
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+
+
+            // CRC16
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 2, (UInt16)(TxLen - 2));
+            TxBuf[TxLen++] = (byte)((crc & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((crc & 0x00FF) >> 0);
+
+            // End
+            TxBuf[TxLen++] = 0xEC;
+
+            // 重写长度位
+            TxBuf[1] = (byte)(TxLen - 5);
+
+            SerialPort_Send(TxBuf, 0, TxLen);
+
+            return 0;
+        }
+
+        private void btnUpdateUserOfL1_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                WriteUserCfgOfL1();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("参数错误" + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// L1: 修改应用配置
+        /// </summary>
+        /// <returns></returns>
+        private Int16 WriteAppCfgOfL1()
+        {
+            byte[] TxBuf = new byte[58];
+            UInt16 TxLen = 0;
+
+            byte[] ByteBufTmp = null;
+
+            // Start
+            TxBuf[TxLen++] = 0xCE;
+
+            // Length
+            TxBuf[TxLen++] = 0x00;
+
+            // Cmd
+            TxBuf[TxLen++] = 0xA3;
+
+            // USB Protocol
+            TxBuf[TxLen++] = 0x02;
+
+            // 设备类型
+            TxBuf[TxLen++] = (byte)Device.DeviceType.L1;
+
+            // Protocol
+            byte Protocol = Convert.ToByte(tbxProtocolOfL1.Text);
+            TxBuf[TxLen++] = Protocol;
+
+            // Sensor Mac
+            if (cbxIsAllOfL1.IsChecked == true)
+            {
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+            }
+            else
+            {
+                ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfL1.Text);
+                if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+                {
+                    return -1;
+                }
+                TxBuf[TxLen++] = ByteBufTmp[0];
+                TxBuf[TxLen++] = ByteBufTmp[1];
+                TxBuf[TxLen++] = ByteBufTmp[2];
+                TxBuf[TxLen++] = ByteBufTmp[3];
+            }
+
+            // 日期和时间
+            tbxCalendarOfL1.Text = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            DateTime ThisCalendar = Convert.ToDateTime(tbxCalendarOfL1.Text);
+            ByteBufTmp = MyCustomFxn.DataTimeToByteArray(ThisCalendar);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[0]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[1]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[2]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[3]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[4]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[5]);
+
+            // 采集间隔
+            UInt16 Interval = Convert.ToUInt16(tbxNewIntervalOfL1.Text);
+            TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+            // 正常间隔
+            Interval = Convert.ToUInt16(tbxNewIntervalNormalOfL1.Text);
+            TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+            // 预警间隔
+            Interval = Convert.ToUInt16(tbxNewIntervalWarningOfL1.Text);
+            TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+            // 报警间隔
+            Interval = Convert.ToUInt16(tbxNewIntervalAlarmOfL1.Text);
+            TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+            // 光照强度预警上限
+            UInt16 power = Convert.ToUInt16(tbxNewLuxWarnHighOfL1.Text);                // 单位：lux
+            TxBuf[TxLen++] = (byte)((power & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((power & 0x00FF) >> 0);
+
+            // 光照强度预警下限
+            power = Convert.ToUInt16(tbxNewLuxWarnLowOfL1.Text);                        // 单位：lux
+            TxBuf[TxLen++] = (byte)((power & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((power & 0x00FF) >> 0);
+
+            // 光照强度阈值上限
+            power = Convert.ToUInt16(tbxNewLuxAlertHighOfL1.Text);                      // 单位：lux
+            TxBuf[TxLen++] = (byte)((power & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((power & 0x00FF) >> 0);
+
+            // 光照强度阈值下限
+            power = Convert.ToUInt16(tbxNewLuxAlertLowOfL1.Text);                       // 单位：lux
+            TxBuf[TxLen++] = (byte)((power & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((power & 0x00FF) >> 0);
+
+            // 保留位
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+
+            // CRC16
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 2, (UInt16)(TxLen - 2));
+            TxBuf[TxLen++] = (byte)((crc & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((crc & 0x00FF) >> 0);
+
+            // End
+            TxBuf[TxLen++] = 0xEC;
+
+            // 重写长度位
+            TxBuf[1] = (byte)(TxLen - 5);
+
+            SerialPort_Send(TxBuf, 0, TxLen);
+
+            return 0;
+        }
+
+        private void btnUpdateApplicationOfL1_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                WriteAppCfgOfL1();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("参数错误" + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// L1: 删除历史数据
+        /// </summary>
+        /// <returns></returns>
+        private Int16 DeleteHistoryOfL1()
+        {
+            byte[] TxBuf = new byte[21];
+            UInt16 TxLen = 0;
+
+            byte[] ByteBufTmp = null;
+
+            // Start
+            TxBuf[TxLen++] = 0xCE;
+
+            // Length
+            TxBuf[TxLen++] = 0x00;
+
+            // Cmd
+            TxBuf[TxLen++] = 0xA4;
+
+            // USB Protocol
+            TxBuf[TxLen++] = 0x01;
+
+            // 设备类型
+            TxBuf[TxLen++] = 0x58;
+
+            // Protocol
+            TxBuf[TxLen++] = 0x02;
+
+            // Sensor Mac
+            if (cbxIsAllOfL1.IsChecked == true)
+            {
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+            }
+            else
+            {
+                ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfL1.Text);
+                if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+                {
+                    return -1;
+                }
+                TxBuf[TxLen++] = ByteBufTmp[0];
+                TxBuf[TxLen++] = ByteBufTmp[1];
+                TxBuf[TxLen++] = ByteBufTmp[2];
+                TxBuf[TxLen++] = ByteBufTmp[3];
+            }
+
+            // Front
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+
+            // Rear
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+
+            // CRC16
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 2, (UInt16)(TxLen - 2));
+            TxBuf[TxLen++] = (byte)((crc & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((crc & 0x00FF) >> 0);
+
+            // End
+            TxBuf[TxLen++] = 0xEC;
+
+            // 重写长度位
+            TxBuf[1] = (byte)(TxLen - 5);
+
+            SerialPort_Send(TxBuf, 0, TxLen);
+
+            return 0;
+        }
+
+        private void btnDeleteDataOfL1_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                DeleteHistoryOfL1();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("参数错误：" + ex.Message);
+            }
+        }
+
+        private void cbxAlertCfgLockOfM9_Click(object sender, RoutedEventArgs e)
+        {
+            if (cbxAlertCfgLockOfM9.IsChecked == false)
+            {
+                cbxAlertCfgStaticOfM9.IsEnabled = true;
+                cbxAlertCfgMoveOfM9.IsEnabled = true;
+                cbxAlertCfgMoveStaticOfM9.IsEnabled = true;
+                cbxAlertCfgStaticMoveOfM9.IsEnabled = true;
+                cbxAlertCfgExceptionOfM9.IsEnabled = true;
+            }
+            else
+            {
+                cbxAlertCfgStaticOfM9.IsEnabled = false;
+                cbxAlertCfgMoveOfM9.IsEnabled = false;
+                cbxAlertCfgMoveStaticOfM9.IsEnabled = false;
+                cbxAlertCfgStaticMoveOfM9.IsEnabled = false;
+                cbxAlertCfgExceptionOfM9.IsEnabled = false;
+            }
+        }
+
+        /// <summary>
+        /// ESK: 发送串口指令，修改出厂配置
+        /// </summary>
+        private Int16 WriteFactoryCfgOfEsk()
+        {
+            byte[] TxBuf = new byte[25];
+            UInt16 TxLen = 0;
+
+            // Start
+            TxBuf[TxLen++] = 0xCE;
+
+            // Length
+            TxBuf[TxLen++] = 0x00;
+
+            // Cmd
+            TxBuf[TxLen++] = 0xA1;
+
+            // USB Protocol
+            TxBuf[TxLen++] = 0x01;
+
+            // 设备类型
+            TxBuf[TxLen++] = (byte)Device.DeviceType.ESK;
+
+            // Protocol
+            TxBuf[TxLen++] = 0x02;
+
+            // Sensor Mac
+            byte[] ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfEsk.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+            {
+                return -1;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+            TxBuf[TxLen++] = ByteBufTmp[2];
+            TxBuf[TxLen++] = ByteBufTmp[3];
+
+            // New Sensor Mac
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxNewDeviceMacOfEsk.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+            {
+                return -2;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+            TxBuf[TxLen++] = ByteBufTmp[2];
+            TxBuf[TxLen++] = ByteBufTmp[3];
+
+            // Hardware Revision
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxNewHwRevisionOfEsk.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+            {
+                return -3;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+            TxBuf[TxLen++] = ByteBufTmp[2];
+            TxBuf[TxLen++] = ByteBufTmp[3];
+
+            // CRC16
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 2, (UInt16)(TxLen - 2));
+            TxBuf[TxLen++] = (byte)((crc & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((crc & 0x00FF) >> 0);
+
+            // End
+            TxBuf[TxLen++] = 0xEC;
+
+            // 重写长度位
+            TxBuf[1] = (byte)(TxLen - 5);
+
+            SerialPort_Send(TxBuf, 0, TxLen);
+
+            return 0;
+        }
+
+        private void btnUpdateFactoryOfEsk_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                WriteFactoryCfgOfEsk();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("参数错误" + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// ESK: 修改用户
+        /// </summary>
+        /// <returns></returns>
+        private Int16 WriteUserCfgOfEsk()
+        {
+            byte[] TxBuf = new byte[36];
+            UInt16 TxLen = 0;
+
+            byte[] ByteBufTmp = null;
+
+            // Start
+            TxBuf[TxLen++] = 0xCE;
+
+            // Length
+            TxBuf[TxLen++] = 0x00;
+
+            // Cmd
+            TxBuf[TxLen++] = 0xA2;
+
+            // USB Protocol
+            TxBuf[TxLen++] = 0x01;          // 由于老版USB修改工具的问题，此USB Porotocol必须是1，否则修改失败；
+
+            // 设备类型
+            TxBuf[TxLen++] = (byte)Device.DeviceType.ESK;
+
+            // Protocol
+            TxBuf[TxLen++] = 0x02;
+
+            // Sensor Mac
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfEsk.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+            {
+                return -2;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+            TxBuf[TxLen++] = ByteBufTmp[2];
+            TxBuf[TxLen++] = ByteBufTmp[3];
+
+            // Customer
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxNewCustomerOfEsk.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 2)
+            {
+                return -2;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+
+            // Debug
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxNewDebugOfEsk.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 2)
+            {
+                return -2;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+
+            // Category
+            TxBuf[TxLen++] = Convert.ToByte(tbxNewCategoryOfEsk.Text);
+
+            // Pattern
+            TxBuf[TxLen++] = Convert.ToByte(tbxNewPatternOfEsk.Text);
+
+            // Bps
+            TxBuf[TxLen++] = Convert.ToByte(tbxNewBpsOfEsk.Text);
+
+            // TX Power
+            Int16 txPower = Convert.ToInt16(tbxNewTxPowerOfEsk.Text);
+            TxBuf[TxLen++] = (byte)txPower;
+
+            // Channel
+            TxBuf[TxLen++] = Convert.ToByte(tbxNewChannelOfEsk.Text);
+
+            // 存储容量
+            TxBuf[TxLen++] = Convert.ToByte(tbxNewMaxLengthOfEsk.Text);
+
+            // CRC16
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 2, (UInt16)(TxLen - 2));
+            TxBuf[TxLen++] = (byte)((crc & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((crc & 0x00FF) >> 0);
+
+            // End
+            TxBuf[TxLen++] = 0xEC;
+
+            // 重写长度位
+            TxBuf[1] = (byte)(TxLen - 5);
+
+            SerialPort_Send(TxBuf, 0, TxLen);
+
+            return 0;
+        }
+
+        private void btnUpdateUserEsk_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                WriteUserCfgOfEsk();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("参数错误" + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// ESK: 修改应用配置
+        /// </summary>
+        /// <returns></returns>
+        private Int16 WriteAppCfgOfEsk()
+        {
+            byte[] TxBuf = new byte[32];
+            UInt16 TxLen = 0;
+
+            byte[] ByteBufTmp = null;
+
+            // Start
+            TxBuf[TxLen++] = 0xCE;
+
+            // Length
+            TxBuf[TxLen++] = 0x00;
+
+            // Cmd
+            TxBuf[TxLen++] = 0xA3;
+
+            // USB Protocol
+            TxBuf[TxLen++] = 0x01;      // 由于老版USB修改工具的问题，此USB Porotocol必须是1，否则修改失败；
+
+            // 设备类型
+            TxBuf[TxLen++] = (byte)Device.DeviceType.ESK;
+
+            // Protocol
+            TxBuf[TxLen++] = 0x02;
+
+            // Sensor Mac
+            if (cbxIsAllOfM4.IsChecked == true)
+            {
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+            }
+            else
+            {
+                ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfEsk.Text);
+                if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+                {
+                    return -1;
+                }
+                TxBuf[TxLen++] = ByteBufTmp[0];
+                TxBuf[TxLen++] = ByteBufTmp[1];
+                TxBuf[TxLen++] = ByteBufTmp[2];
+                TxBuf[TxLen++] = ByteBufTmp[3];
+            }
+
+            // 日期和时间
+            tbxCalendarOfEsk.Text = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            DateTime ThisCalendar = Convert.ToDateTime(tbxCalendarOfEsk.Text);
+            ByteBufTmp = MyCustomFxn.DataTimeToByteArray(ThisCalendar);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[0]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[1]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[2]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[3]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[4]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[5]);
+
+            // Sample Send
+            TxBuf[TxLen++] = Convert.ToByte(tbxNewSampleSendOfEsk.Text);
+
+            // 截停电流阈值
+            UInt16 uValue = Convert.ToUInt16(tbxNewBlockCurrentOfEsk.Text);
+            TxBuf[TxLen++] = (byte)((uValue & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((uValue & 0x00FF) >> 0);
+
+            // 截停时间阈值
+            uValue = Convert.ToUInt16(tbxNewBlockDurationOfEsk.Text);
+            TxBuf[TxLen++] = (byte)((uValue & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((uValue & 0x00FF) >> 0);
+
+            // 配置保留位
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxNewCfgReservedOfEsk.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+            {
+                return -2;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+            TxBuf[TxLen++] = ByteBufTmp[2];
+            TxBuf[TxLen++] = ByteBufTmp[3];
+
+            // CRC16
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 2, (UInt16)(TxLen - 2));
+            TxBuf[TxLen++] = (byte)((crc & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((crc & 0x00FF) >> 0);
+
+            // End
+            TxBuf[TxLen++] = 0xEC;
+
+            // 重写长度位
+            TxBuf[1] = (byte)(TxLen - 5);
+
+            SerialPort_Send(TxBuf, 0, TxLen);
+
+            return 0;
+        }
+
+        private void btnUpdateApplicationOfEsk_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                WriteAppCfgOfEsk();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("参数错误" + ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// ESK: 删除历史数据
+        /// </summary>
+        /// <returns></returns>
+        private Int16 DeleteHistoryOfEsk()
+        {
+            byte[] TxBuf = new byte[21];
+            UInt16 TxLen = 0;
+
+            byte[] ByteBufTmp = null;
+
+            // Start
+            TxBuf[TxLen++] = 0xCE;
+
+            // Length
+            TxBuf[TxLen++] = 0x00;
+
+            // Cmd
+            TxBuf[TxLen++] = 0xA4;
+
+            // USB Protocol
+            TxBuf[TxLen++] = 0x01;
+
+            // 设备类型
+            TxBuf[TxLen++] = (byte)Device.DeviceType.ESK;
+
+            // Protocol
+            TxBuf[TxLen++] = 0x02;
+
+            // Sensor Mac
+            if (cbxIsAllOfM4.IsChecked == true)
+            {
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+            }
+            else
+            {
+                ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfEsk.Text);
+                if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+                {
+                    return -1;
+                }
+                TxBuf[TxLen++] = ByteBufTmp[0];
+                TxBuf[TxLen++] = ByteBufTmp[1];
+                TxBuf[TxLen++] = ByteBufTmp[2];
+                TxBuf[TxLen++] = ByteBufTmp[3];
+            }
+
+            // Front
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+
+            // Rear
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+
+            // CRC16
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 2, (UInt16)(TxLen - 2));
+            TxBuf[TxLen++] = (byte)((crc & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((crc & 0x00FF) >> 0);
+
+            // End
+            TxBuf[TxLen++] = 0xEC;
+
+            // 重写长度位
+            TxBuf[1] = (byte)(TxLen - 5);
+
+            SerialPort_Send(TxBuf, 0, TxLen);
+
+            return 0;
+        }
+
+        private void btnDeleteDataOfEsk_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                DeleteHistoryOfEsk();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("参数错误：" + ex.Message);
+            }
+        }
     }
 }

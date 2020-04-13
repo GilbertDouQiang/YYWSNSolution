@@ -202,7 +202,7 @@ namespace YyWsnDeviceLibrary
             STP = SrcData[IndexOfStart + 0];
 
             // Cmd
-            WorkFunction = SrcData[IndexOfStart + 2];
+            Pattern = SrcData[IndexOfStart + 2];
 
             // Device Type
             SetDeviceName(SrcData[IndexOfStart + 3]);

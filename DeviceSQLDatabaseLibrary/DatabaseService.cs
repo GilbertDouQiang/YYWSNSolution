@@ -148,9 +148,9 @@ namespace DeviceSQLDatabaseLibrary
                     SqlCommand command = new SqlCommand();
                     command.Connection = myConn;
                     command.CommandText = "INSERT INTO [dbo].[GatewayStatus]([DeviceMacS],[ProtocolVersion],[SerialNo],[DeviceTypeS],[GatewayTransDateTime]" +
-                        ",[GatewayVoltage],[SwVersionS] ,[CustomerS],[RamCount],[RomCount],[GSMSignal],[BindingNumber],[TransforNumber],[SimNumber]" +
+                        ",[GatewayVoltage],[SwRevisionS] ,[CustomerS],[RamCount],[RomCount],[GSMSignal],[BindingNumber],[TransforNumber],[SimNumber]" +
                         ",[LastSuccessNumber],[LastStatus]) VALUES(@DeviceMacS,@ProtocolVersion,@SerialNo,@DeviceTypeS,@GatewayTransDateTime, " +
-                        "@GatewayVoltage,@SwVersionS,@CustomerS,@RamCount,@RomCount,@GSMSignal,@BindingNumber,@TransforNumber,@SimNumber," +
+                        "@GatewayVoltage,@SwRevisionS,@CustomerS,@RamCount,@RomCount,@GSMSignal,@BindingNumber,@TransforNumber,@SimNumber," +
                         "@LastSuccessNumber,@LastStatus)";
 
                     command.Parameters.Add("@DeviceMAC", SqlDbType.NVarChar);
@@ -159,7 +159,7 @@ namespace DeviceSQLDatabaseLibrary
                     command.Parameters.Add("@DeviceTypeS", SqlDbType.NVarChar);
                     command.Parameters.Add("@GatewayTransDateTime", SqlDbType.DateTime);
                     command.Parameters.Add("@GatewayVoltage", SqlDbType.Decimal);
-                    command.Parameters.Add("@SwVersionS", SqlDbType.NVarChar);
+                    command.Parameters.Add("@SwRevisionS", SqlDbType.NVarChar);
                     command.Parameters.Add("@CustomerS", SqlDbType.NVarChar);
                     command.Parameters.Add("@RamCount", SqlDbType.Int);
                     command.Parameters.Add("@RomCount", SqlDbType.Int);
@@ -177,7 +177,7 @@ namespace DeviceSQLDatabaseLibrary
                     command.Parameters["@DeviceTypeS"].Value = result[7].ToString("X2");
                     command.Parameters["@GatewayTransDateTime"].Value = CommArithmetic.DecodeDateTime(result, 12);
                     command.Parameters["@GatewayVoltage"].Value = CommArithmetic.DecodeVoltage(result, 18);
-                    command.Parameters["@SwVersionS"].Value = CommArithmetic.DecodeClientID(result, 20);
+                    command.Parameters["@SwRevisionS"].Value = CommArithmetic.DecodeClientID(result, 20);
                     command.Parameters["@CustomerS"].Value = CommArithmetic.DecodeClientID(result, 22);
                     command.Parameters["@RamCount"].Value = result[24];
                     command.Parameters["@RomCount"].Value = CommArithmetic.Byte2Int(result, 25, 3);

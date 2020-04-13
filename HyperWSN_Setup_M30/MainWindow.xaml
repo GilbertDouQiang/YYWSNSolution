@@ -405,11 +405,11 @@
                             </Grid.ColumnDefinitions>
 
                             <TextBlock  Grid.Column="1" Text="加热下限" Margin="0,0,4,0" HorizontalAlignment="Right"/>
-                            <TextBox Grid.Column="2" x:Name="tbxHeatLowThr" Margin="0,0,5,0" IsReadOnly="True" MaxLength="3" MaxLines="1"/>
-                            <TextBox Grid.Column="3" x:Name="tbxHeatLowThrNew" Margin="5,0,0,0" MaxLength="3" MaxLines="1"/>
+                            <TextBox Grid.Column="2" x:Name="tbxHeatLowThr" Margin="0,0,5,0" IsReadOnly="True" MaxLength="6" MaxLines="1"/>
+                            <TextBox Grid.Column="3" x:Name="tbxHeatLowThrNew" Margin="5,0,0,0" MaxLength="6" MaxLines="1"/>
                             <TextBlock  Grid.Column="5" Text="加热上限" Margin="0,0,4,0" HorizontalAlignment="Right"/>
-                            <TextBox Grid.Column="6" x:Name="tbxHeatHighThr" Margin="0,0,5,0" MaxLength="3" MaxLines="1" IsReadOnly="True"/>
-                            <TextBox Grid.Column="7" x:Name="tbxHeatHighThrNew"   Margin="5,0,0,0" MaxLength="3" MaxLines="1"/>                           
+                            <TextBox Grid.Column="6" x:Name="tbxHeatHighThr" Margin="0,0,5,0" MaxLength="6" MaxLines="1" IsReadOnly="True"/>
+                            <TextBox Grid.Column="7" x:Name="tbxHeatHighThrNew"   Margin="5,0,0,0" MaxLength="6" MaxLines="1"/>                           
                         </Grid>
 
                         <Grid Margin="0,5,0,5">
@@ -427,9 +427,12 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
 
-                            <TextBlock  Grid.Column="0" Text="配置保留位" Margin="0,0,4,0" HorizontalAlignment="Right"/>
-                            <TextBox Grid.Column="1" x:Name="tbxReservedOfCfg" Margin="0,0,5,0" MaxLength="11" IsReadOnly="True" MaxLines="1"/>
-                            <TextBox Grid.Column="2" x:Name="tbxReservedOfCfgNew" Margin="5,0,0,0" MaxLength="11" MaxLines="1"/>
+                            <TextBlock  Grid.Column="0" Text="CO2标定值" Margin="0,0,4,0" HorizontalAlignment="Right"/>
+                            <TextBox Grid.Column="1" x:Name="tbxStdCompOfCO2" Margin="0,0,5,0" IsReadOnly="True" MaxLength="8" MaxLines="1"/>
+                            <TextBox Grid.Column="2" x:Name="tbxStdCompOfCO2New" Margin="5,0,0,0" MaxLength="8" MaxLines="1"/>
+                            <TextBlock  Grid.Column="4" Text="配置保留位" Margin="0,0,4,0" HorizontalAlignment="Right"/>
+                            <TextBox Grid.Column="5" x:Name="tbxReservedOfCfg" Margin="0,0,5,0" MaxLength="11" IsReadOnly="True" MaxLines="1"/>
+                            <TextBox Grid.Column="6" x:Name="tbxReservedOfCfgNew" Margin="5,0,0,0" MaxLength="11" MaxLines="1"/>
                         </Grid>
 
                         <Grid Margin="0,20,0,5">

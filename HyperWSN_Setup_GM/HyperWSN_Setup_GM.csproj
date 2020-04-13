@@ -91,6 +91,10 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ExcelExport\ExcelExport.csproj">
+      <Project>{1f1b5aa7-d99f-4f52-8e88-87b957f13cfb}</Project>
+      <Name>ExcelExport</Name>
+    </ProjectReference>
     <ProjectReference Include="..\YyWsnCommunicatonLibrary\YyWsnCommunicatonLibrary.csproj">
       <Project>{c8166677-f261-400c-ab3a-06831d858cb6}</Project>
       <Name>YyWsnCommunicatonLibrary</Name>
