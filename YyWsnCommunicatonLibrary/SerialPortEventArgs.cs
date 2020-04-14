@@ -7,8 +7,7 @@ namespace YyWsnCommunicatonLibrary
 {
     public class SerialPortEventArgs:EventArgs
     {
-
-
+        
         public SerialPortEventArgs()
         {
             

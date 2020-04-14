@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:HyperWSN_Setup_M30"
         mc:Ignorable="d"
-        Title="HyperWSN Setup M30" Height="820" Width="1024" WindowStartupLocation="CenterScreen" >
+        Title="HyperWSN Setup M30 / M44" Height="820" Width="1024" WindowStartupLocation="CenterScreen" >
     <Grid>
 
         <Grid.RowDefinitions>
@@ -17,16 +17,19 @@
             <StackPanel Margin="0,5,0,0">
                 <Grid Margin="0,5,0,0">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="0.2*"/>
+                        <ColumnDefinition Width="0.8*"/>
                         <ColumnDefinition Width="4*"/>
+                        <ColumnDefinition Width="0.2*"/>
                         <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="0.2*"/>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="3*"/>
+                        <ColumnDefinition Width="0.2*"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Text="设备：" Grid.Column="0" FontWeight="Bold" Margin="0,0,5,0" VerticalAlignment="Center" HorizontalAlignment="Right" />
-                    <ComboBox x:Name="cbSerialPort" Margin="0 0 10 0" VerticalAlignment="Center" Grid.Column="1"/>
-                    <Button x:Name="btnOpenComport" Grid.Column="2" Content="Open" Click="btnOpenComport_Click"  Margin="0 0 10 0" VerticalAlignment="Center"/>
-                    <Button x:Name="btnFindComport" Grid.Column="3" Content="Refersh" Click="btnFindComport_Click" Margin="0 0 10 0" VerticalAlignment="Center"/>
+                    <TextBlock Text="设备：" Grid.Column="1" FontWeight="Bold" Margin="0,0,5,2" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                    <ComboBox x:Name="cbSerialPort" Grid.Column="2" Margin="0 0 0 0" VerticalAlignment="Center"/>
+                    <Button x:Name="btnOpenComport" Grid.Column="4" Content="Open" Click="btnOpenComport_Click"  Margin="0 0 0 0" VerticalAlignment="Center"/>
+                    <Button x:Name="btnFindComport" Grid.Column="6" Content="Refersh" Click="btnFindComport_Click" Margin="0 0 0 0" VerticalAlignment="Center"/>
                 </Grid>
 
                 <Grid Margin="0,5">
@@ -44,7 +47,7 @@
         </Border>
 
         <Border Padding="5" Grid.Row="2">
-            <TabControl Margin="0" SelectedIndex="1">
+            <TabControl Margin="5,5,-5,-5" SelectedIndex="1">
 
                 <TabItem x:Name="tabItemConsole" Header="  Console  ">
                     <StackPanel x:Name="Console">
@@ -104,71 +107,73 @@
                             </Grid.ColumnDefinitions>
 
                             <Button x:Name="btnClearCfg" Content="清空显示" Grid.Column="2" Click="btnClearCfg_Click"  Margin="0,0,0,0"/>
-                            <Button x:Name="btnCopyCfg" Content="复制填充" Grid.Column="6" Click="btnCopyCfg_Click"  Margin="0,0,0,0"/>                            
+                            <Button x:Name="btnCopyCfg" Content="复制填充" Grid.Column="6" Click="btnCopyCfg_Click"  Margin="0,0,0,0"/>
                             <Button x:Name="btnReadCfg" Content="读取配置" Grid.Column="10" Click="btnReadCfg_Click"  Margin="0,0,0,0"/>
 
                         </Grid>
 
                         <Grid Margin="0,20,0,5">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="0.5*"/>
-                                <ColumnDefinition Width="1.5*"/>
+                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="1*"/>
                                 <ColumnDefinition Width="2*"/>
                                 <ColumnDefinition Width="2*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="4*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="2*"/>
-                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="1*"/>
                             </Grid.ColumnDefinitions>
 
-                            <TextBlock  Grid.Column="1" Text="PrimaryMac" Margin="0,0,4,0" HorizontalAlignment="Right"/>
-                            <TextBox Grid.Column="2" x:Name="tbxPrimaryMac" Margin="0,0,5,0" MaxLines="1" MaxLength="11" IsReadOnly="True"/>
-                            <TextBlock  Grid.Column="5" Text="软件版本" Margin="0,0,4,0" HorizontalAlignment="Right"/>
-                            <TextBox Grid.Column="6" x:Name="tbxSwRevision" Margin="0,0,5,0" MaxLength="25" IsReadOnly="True" MaxLines="1"/>
+                            <TextBlock Grid.Column="1" Text="协议版本" Margin="0,0,5,0" HorizontalAlignment="Right" />
+                            <TextBox Grid.Column="2" x:Name="tbxProtocolRevision" Margin="0,0,5,0" IsReadOnly="True" MaxLength="5" MaxLines="1"/>
+                            <TextBlock  Grid.Column="3" Text="PrimaryMac" Margin="5,0,0,0" HorizontalAlignment="Right"/>
+                            <TextBox Grid.Column="4" x:Name="tbxPrimaryMac" Margin="5,0,0,0" IsReadOnly="True" MaxLength="5" MaxLines="1" />
+                            <TextBlock  Grid.Column="5" Text="Device MAC" Margin="0,0,5,0" HorizontalAlignment="Right"/>
+                            <TextBox Grid.Column="6" x:Name="tbxMac" Margin="0,0,5,0" IsReadOnly="True" MaxLength="5" MaxLines="1"/>
+                            <TextBlock  Grid.Column="7" Text="New MAC" Margin="0,0,5,0" HorizontalAlignment="Right"/>
+                            <TextBox Grid.Column="8" x:Name="tbxMacNew" Margin="0,0,5,0"  MaxLength="11" MaxLines="1"/>
                         </Grid>
-                        
+
                         <Grid Margin="0,5">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="3*"/>
+                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="1*"/>
                                 <ColumnDefinition Width="2*"/>
                                 <ColumnDefinition Width="2*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="1*"/>
                                 <ColumnDefinition Width="2*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="2*"/>
-                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="1*"/>
                             </Grid.ColumnDefinitions>
 
-                            <TextBlock  Grid.Column="1" Text="MAC" Margin="0,0,4,0" HorizontalAlignment="Right"/>
-                            <TextBox Grid.Column="2" x:Name="tbxMac" Margin="0,0,5,0" MaxLines="1" MaxLength="11" IsReadOnly="True"/>
-                            <TextBox Grid.Column="3" x:Name="tbxMacNew"   Margin="5,0,0,0" MaxLength="11" MaxLines="1"/>
-                            <TextBlock  Grid.Column="5" Text="硬件版本" Margin="0,0,4,0" HorizontalAlignment="Right"/>
-                            <TextBox Grid.Column="6" x:Name="tbxHwRevision" Margin="0,0,5,0" IsReadOnly="True" MaxLength="11" MaxLines="1"/>
-                            <TextBox Grid.Column="7" x:Name="tbxHwRevisionNew"  Margin="5,0,0,0" MaxLength="11" MaxLines="1"/>
-                            <Button Grid.Column="10" x:Name="btnSetFactoryCfg" Content="修改出厂配置"  Click="btnSetFactoryCfg_Click"  Margin="0,0,0,0"/>
+                            <TextBlock Grid.Column="1" Text="软件版本" Margin="0,0,5,0" HorizontalAlignment="Right" />
+                            <TextBox Grid.Column="2" x:Name="tbxSwRevision" Margin="0,0,5,0" IsReadOnly="True" MaxLength="5" MaxLines="1"/>
+                            <TextBlock  Grid.Column="4" Text="硬件版本" Margin="0,0,5,0" HorizontalAlignment="Right"/>
+                            <TextBox Grid.Column="5" x:Name="tbxHwRevision" Margin="0,0,5,0" IsReadOnly="True" MaxLength="5" MaxLines="1"/>
+                            <TextBlock  Grid.Column="6" Text="新硬件版本" Margin="0,0,5,0" HorizontalAlignment="Right"/>
+                            <TextBox Grid.Column="7" x:Name="tbxHwRevisionNew"  Margin="0,0,5,0" MaxLength="11" MaxLines="1"/>
+                            <Button Grid.Column="9" x:Name="btnSetFactoryCfg" Content="修改出厂配置"  Click="btnSetFactoryCfg_Click"  Margin="0,0,0,0"/>
                         </Grid>
 
                         <Grid Margin="0,20,0,5">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="2*"/>
-                                <ColumnDefinition Width="2*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="2*"/>
-                                <ColumnDefinition Width="2*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="2*"/>
-                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="59*"/>
+                                <ColumnDefinition Width="59*"/>
+                                <ColumnDefinition Width="118"/>
+                                <ColumnDefinition Width="118*"/>
+                                <ColumnDefinition Width="59*"/>
+                                <ColumnDefinition Width="58*"/>
+                                <ColumnDefinition Width="118*"/>
+                                <ColumnDefinition Width="117*"/>
+                                <ColumnDefinition Width="59*"/>
+                                <ColumnDefinition Width="58*"/>
+                                <ColumnDefinition Width="118*"/>
+                                <ColumnDefinition Width="59*"/>
                             </Grid.ColumnDefinitions>
 
                             <TextBlock  Grid.Column="1" Text="客户码" Margin="0,0,4,0" HorizontalAlignment="Right"/>
@@ -200,7 +205,7 @@
                             <TextBox Grid.Column="3" x:Name="tbxCategoryNew" Margin="5,0,0,0" MaxLength="2" MaxLines="1"/>
                             <TextBlock  Grid.Column="5" Text="工作模式" Margin="0,0,4,0" HorizontalAlignment="Right"/>
                             <TextBox Grid.Column="6" x:Name="tbxPattern" Margin="0,0,5,0" IsReadOnly="True" MaxLength="2" MaxLines="1"/>
-                            <TextBox Grid.Column="7" x:Name="tbxPatternNew" Margin="5,0,0,0" MaxLength="2" MaxLines="1"/>                            
+                            <TextBox Grid.Column="7" x:Name="tbxPatternNew" Margin="5,0,0,0" MaxLength="2" MaxLines="1"/>
                         </Grid>
 
                         <Grid Margin="0,5,0,5">
@@ -221,7 +226,12 @@
 
                             <TextBlock  Grid.Column="1" Text="传输速率" Margin="0,0,4,0" HorizontalAlignment="Right"/>
                             <TextBox Grid.Column="2" x:Name="tbxBps" Margin="0,0,5,0" IsReadOnly="True" MaxLength="2" MaxLines="1"/>
-                            <TextBox Grid.Column="3" x:Name="tbxBpsNew"   Margin="5,0,0,0" MaxLength="2" MaxLines="1"/>
+                            <ComboBox Grid.Column="3" x:Name="tbxBpsNew" Margin="5,0,0,0" VerticalAlignment="Center" SelectedIndex="0" >
+                                <ListBoxItem Content="50kbps2gfsk" />
+                                <ListBoxItem Content="5kbpsLrm" />
+                                <ListBoxItem Content="38.4kbpsWhiten" />
+                                <ListBoxItem Content="5kbpsLrmW" />
+                            </ComboBox>
                             <TextBlock  Grid.Column="5" Text="传输频段" Margin="0,0,4,0" HorizontalAlignment="Right"/>
                             <TextBox Grid.Column="6" x:Name="tbxChannel" Margin="0,0,5,0" IsReadOnly="True" MaxLength="3" MaxLines="1" Height="18"/>
                             <TextBox Grid.Column="7" x:Name="tbxChannelNew"    Margin="5,0,0,0" MaxLines="1" MaxLength="3"/>
@@ -272,7 +282,7 @@
                             <TextBox Grid.Column="4" x:Name="tbxHeatInterval" Margin="0,0,5,0" MaxLength="5" MaxLines="1" IsReadOnly="True"/>
                             <TextBox Grid.Column="5" x:Name="tbxHeatIntervalNew"   Margin="5,0,0,0" MaxLength="5" MaxLines="1"/>
                         </Grid>
-                        
+
                         <Grid Margin="0,5,0,5">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="2*"/>
@@ -361,7 +371,10 @@
                             <TextBox Grid.Column="2" x:Name="tbxCO2CompensateNew" Margin="5,0,0,0" MaxLength="8" MaxLines="1"/>
                             <TextBlock  Grid.Column="4" Text="时间来源" Margin="0,0,4,0" HorizontalAlignment="Right"/>
                             <TextBox Grid.Column="5" x:Name="tbxTimeSource" Margin="0,0,5,0" MaxLength="3" MaxLines="1" IsReadOnly="True"/>
-                            <TextBox Grid.Column="6" x:Name="tbxTimeSourceNew"   Margin="5,0,0,0" MaxLength="3" MaxLines="1"/>
+                            <ComboBox Grid.Column="6" x:Name="tbxTimeSourceNew" Margin="5,0,0,0" VerticalAlignment="Center" SelectedIndex="0" >
+                                <ListBoxItem Content="采集时间" />
+                                <ListBoxItem Content="系统时间" />
+                            </ComboBox>
                         </Grid>
 
                         <Grid Margin="0,5,0,5">
@@ -382,10 +395,19 @@
 
                             <TextBlock  Grid.Column="1" Text="报警方式" Margin="0,0,4,0" HorizontalAlignment="Right"/>
                             <TextBox Grid.Column="2" x:Name="tbxAlertWay" Margin="0,0,5,0" MaxLength="3" MaxLines="1" IsReadOnly="True"/>
-                            <TextBox Grid.Column="3" x:Name="tbxAlertWayNew" Margin="5,0,0,0" MaxLength="3" MaxLines="1"/>
+                            <ComboBox Grid.Column="3" x:Name="tbxAlertWayNew" Margin="5,0,0,0" VerticalAlignment="Center" SelectedIndex="0" >
+                                <ListBoxItem Content="静音" />
+                                <ListBoxItem Content="声报警" />
+                                <ListBoxItem Content="光报警" />
+                                <ListBoxItem Content="声光报警" />
+                            </ComboBox>
                             <TextBlock  Grid.Column="5" Text="亮屏策略" Margin="0,0,4,0" HorizontalAlignment="Right"/>
                             <TextBox Grid.Column="6" x:Name="tbxLcdPolicy" Margin="0,0,5,0" MaxLength="3" MaxLines="1" IsReadOnly="True"/>
-                            <TextBox Grid.Column="7" x:Name="tbxLcdPolicyNew"   Margin="5,0,0,0" MaxLength="3" MaxLines="1"/>
+                            <ComboBox Grid.Column="7" x:Name="tbxLcdPolicyNew" Margin="5,0,0,0" VerticalAlignment="Center" SelectedIndex="0" >
+                                <ListBoxItem Content="自动息屏" />
+                                <ListBoxItem Content="常亮屏幕" />
+                                <ListBoxItem Content="接电常亮" />
+                            </ComboBox>
                         </Grid>
 
                         <Grid Margin="0,5,0,5">
@@ -405,11 +427,11 @@
                             </Grid.ColumnDefinitions>
 
                             <TextBlock  Grid.Column="1" Text="加热下限" Margin="0,0,4,0" HorizontalAlignment="Right"/>
-                            <TextBox Grid.Column="2" x:Name="tbxHeatLowThr" Margin="0,0,5,0" IsReadOnly="True" MaxLength="6" MaxLines="1"/>
-                            <TextBox Grid.Column="3" x:Name="tbxHeatLowThrNew" Margin="5,0,0,0" MaxLength="6" MaxLines="1"/>
+                            <TextBox Grid.Column="2" x:Name="tbxHeatLowThr" Margin="0,0,5,0" IsReadOnly="True" MaxLength="7" MaxLines="1"/>
+                            <TextBox Grid.Column="3" x:Name="tbxHeatLowThrNew" Margin="5,0,0,0" MaxLength="7" MaxLines="1" />
                             <TextBlock  Grid.Column="5" Text="加热上限" Margin="0,0,4,0" HorizontalAlignment="Right"/>
-                            <TextBox Grid.Column="6" x:Name="tbxHeatHighThr" Margin="0,0,5,0" MaxLength="6" MaxLines="1" IsReadOnly="True"/>
-                            <TextBox Grid.Column="7" x:Name="tbxHeatHighThrNew"   Margin="5,0,0,0" MaxLength="6" MaxLines="1"/>                           
+                            <TextBox Grid.Column="6" x:Name="tbxHeatHighThr" Margin="0,0,5,0" MaxLength="7" MaxLines="1" IsReadOnly="True"/>
+                            <TextBox Grid.Column="7" x:Name="tbxHeatHighThrNew"   Margin="5,0,0,0" MaxLength="7" MaxLines="1"/>
                         </Grid>
 
                         <Grid Margin="0,5,0,5">
@@ -428,9 +450,9 @@
                             </Grid.ColumnDefinitions>
 
                             <TextBlock  Grid.Column="0" Text="CO2标定值" Margin="0,0,4,0" HorizontalAlignment="Right"/>
-                            <TextBox Grid.Column="1" x:Name="tbxStdCompOfCO2" Margin="0,0,5,0" IsReadOnly="True" MaxLength="8" MaxLines="1"/>
-                            <TextBox Grid.Column="2" x:Name="tbxStdCompOfCO2New" Margin="5,0,0,0" MaxLength="8" MaxLines="1"/>
-                            <TextBlock  Grid.Column="4" Text="配置保留位" Margin="0,0,4,0" HorizontalAlignment="Right"/>
+                            <TextBox Grid.Column="1" x:Name="tbxStdCaliOfCO2" Margin="0,0,5,0" IsReadOnly="True" MaxLength="8" MaxLines="1"/>
+                            <TextBox Grid.Column="2" x:Name="tbxStdCaliOfCO2New" Margin="5,0,0,0" MaxLength="8" MaxLines="1"/>
+                            <TextBlock  Grid.Column="3" Text="配置保留位" Margin="0,0,4,0" HorizontalAlignment="Right" Grid.ColumnSpan="2" Width="60"/>
                             <TextBox Grid.Column="5" x:Name="tbxReservedOfCfg" Margin="0,0,5,0" MaxLength="11" IsReadOnly="True" MaxLines="1"/>
                             <TextBox Grid.Column="6" x:Name="tbxReservedOfCfgNew" Margin="5,0,0,0" MaxLength="11" MaxLines="1"/>
                         </Grid>
@@ -596,6 +618,67 @@
                         </Grid>
 
                     </StackPanel>
+                </TabItem>
+
+                <TabItem x:Name="tabItemUpdate" Header="  升级固件  ">
+                    <StackPanel x:Name="BSL">
+
+                        <Grid Margin="0,30,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="0.2*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="4.9*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="0.9*"/>
+                                <ColumnDefinition Width="0.6*"/>
+                                <ColumnDefinition Width="0.2*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Button Grid.Column="1" x:Name="btnClearLoadStatus" Margin="0,0,5,0" Content="Clear Status"  Click="btnClearLoadStatus_Click" />
+                            <TextBlock  Grid.Column="2" Text="Flash Image" Margin="0,3,4,0" HorizontalAlignment="Right" Padding="0,0,0,0" />
+                            <TextBox Grid.Column="3" x:Name="tbxLoadImage"  Margin="0,0,0,0" MaxLines="1" IsReadOnly="True" Background="#FFF5F0F0" />
+                            <Button Grid.Column="4" x:Name="btnBrowse" Margin="10,0,5,0" Content="Browse"  Click="btnBrowse_Click"  />
+                            <Button Grid.Column="5" x:Name="btnLoadImage" Margin="5,0,10,0" Content="Load Image"  Click="btnLoadImage_Click" />
+                            <CheckBox Grid.Column="6" x:Name="cbxOnlyLoadImage" Content="跳过查询" Margin="8,3,0,0"/>
+                            <TextBlock  Grid.Column="7" x:Name="tbkCount" Text="0" Margin="0,1,4,0" HorizontalAlignment="Right" Padding="0,0,0,0" FontSize="16" />
+                        </Grid>
+
+                        <Grid Margin="0,20,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="0.2*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="5*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="0.8*"/>
+                                <ColumnDefinition Width="0.6*"/>
+                                <ColumnDefinition Width="0.2*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBox Grid.Column="1" x:Name="tbxLoadStatus"  Margin="0,0,0,-200" Grid.ColumnSpan="7" VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="False" IsReadOnly="True" MaxLines="6" HorizontalScrollBarVisibility="Auto" Background="#FFF5F0F0"/>
+                        </Grid>
+
+                        <Grid Margin="0,220,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="0.2*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="5*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="0.8*"/>
+                                <ColumnDefinition Width="0.6*"/>
+                                <ColumnDefinition Width="0.2*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBox Grid.Column="1" x:Name="tbxLoadStatus2"  Margin="0,0,0,-360" Grid.ColumnSpan="7" VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="False" IsReadOnly="True" MaxLines="16" HorizontalScrollBarVisibility="Auto" Background="#FFF5F0F0" />
+                        </Grid>
+
+                    </StackPanel>
+
                 </TabItem>
 
             </TabControl>

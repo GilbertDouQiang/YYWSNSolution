@@ -15,21 +15,19 @@ namespace YyWsnDeviceLibrary.Tests
         [TestMethod()]
         public void ReadInfoTest()
         {
-            
-            SerialPortHelper serial = new SerialPortHelper();
-            serial.InitCOM("COM10");
-            serial.OpenPort();
 
-            UartGatewayCommand command = new UartGatewayCommand();
-            byte[] resultBytes= serial.SendCommand(command.ReadInfo(),500);
+            SerialPortHelper Serial = new SerialPortHelper();
 
-            UartGateway device = (UartGateway)DeviceFactory.CreateDevice(resultBytes);
+            Serial.InitCOM("COM5");
+            Serial.OpenPort();
 
-            Assert.AreEqual("F1 76 D7 DB ", device.DeviceMacS);
-            serial.ClosePort();
+            byte[] TxBuf = { 1, 2, 3, 4 };
 
+            byte[] RxBuf = Serial.SendReceive(TxBuf, 0, (UInt16)TxBuf.Length, 500);
 
-            
+            Serial.ClosePort();
+
+            Assert.AreEqual("F1 76 D7 DB", RxBuf);
         }
     }
 }

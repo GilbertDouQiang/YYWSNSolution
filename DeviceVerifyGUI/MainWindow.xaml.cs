@@ -102,7 +102,7 @@ namespace DeviceVerifyGUI
         {
             if (comport != null)
             {
-                comport.SendCommand(txtSendCommand.Text);
+                comport.Send(txtSendCommand.Text);
             }
         }
     }

@@ -102,7 +102,7 @@ namespace HyperWSN_Setup_IR20
             ConsoleLog("TX", TxBuf, IndexOfStart, TxLen);
 
             // 发送数据
-            SerialPort.SendCommandByLength(TxBuf, IndexOfStart, TxLen);
+            SerialPort.Send(TxBuf, IndexOfStart, TxLen);
         }
 
         private void btnSwitchCmdMode_Click(object sender, RoutedEventArgs e)

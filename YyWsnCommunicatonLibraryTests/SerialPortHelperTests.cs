@@ -18,7 +18,8 @@ namespace YyWsnCommunicatonLibrary.Tests
             serial.SerialPortReceived += Serial_SerialPortReceived;
             serial.InitCOM("COM3");
             serial.OpenPort();
-            serial.SendCommand("CA CA 05 01 00 00 00 00 00 00 AC AC");
+
+            serial.Send("CA CA 05 01 00 00 00 00 00 00 AC AC");
 
             Thread.Sleep(2000);      
         }

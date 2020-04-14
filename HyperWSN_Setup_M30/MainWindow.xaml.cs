@@ -31,12 +31,18 @@ namespace HyperWSN_Setup_M30
     {
         SerialPortHelper SerialPort;
 
+        System.Timers.Timer TimerOfBsl;
+        UInt16 TimeCntOfBsl = 0;
+
         public MainWindow()
         {
             InitializeComponent();
 
-            this.Title += " v" +
+            this.Title += "  v" +
            System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+
+            TimerOfBsl = new System.Timers.Timer(1000);
+            TimerOfBsl.Elapsed += TimerEventOfBsl;
 
             FindComport();
         }
@@ -63,7 +69,6 @@ namespace HyperWSN_Setup_M30
 
         private void btnOpenComport_Click(object sender, RoutedEventArgs e)
         {
-            //btnOpenComport.Content.ToString();
             if (btnOpenComport.Content.ToString() == "Open")
             {
                 SerialPort = new SerialPortHelper();
@@ -130,6 +135,52 @@ namespace HyperWSN_Setup_M30
         }
 
         /// <summary>
+        /// 复位原因选择
+        /// </summary>
+        private string SelectResetSource(byte ResetSource)
+        {
+            switch (ResetSource)
+            {
+                case 0x00:
+                    {
+                        return "掉电/复位";
+                    }
+                case 0x01:
+                    {
+                        return "关机再开机";
+                    }
+                case 0x02:
+                    {
+                        return "低电关机长按开机";
+                    }
+                case 0x04:
+                    {
+                        return "低电关机接电开机";
+                    }
+                case 0x08:
+                    {
+                        return "系统保护";
+                    }
+                case 0x10:
+                    {
+                        return "自动重启";
+                    }
+                case 0x20:
+                    {
+                        return "系统退出";
+                    }
+                case 0x40:
+                    {
+                        return "系统错误";
+                    }
+                default:
+                    {
+                        return "未知重启";
+                    }
+            }
+        }
+
+        /// <summary>
         /// 查询本地配置
         /// </summary>
         /// <param name="SrcData"></param>
@@ -149,6 +200,8 @@ namespace HyperWSN_Setup_M30
             // Protocol
             if (SrcData[IndexOfStart + 5] == 0x01)
             {
+                tbxProtocolRevision.Text = SrcData[IndexOfStart + 5].ToString("D");
+
                 tbxPrimaryMac.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 1].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 2].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 3].ToString("X2");
                 iCnt += 4;
 
@@ -179,7 +232,7 @@ namespace HyperWSN_Setup_M30
                 tbxPattern.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2");
                 iCnt += 1;
 
-                tbxBps.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2");
+                tbxBps.Text = ((dynamic)tbxBpsNew.Items[SrcData[IndexOfStart + iCnt + 0]]).Content;
                 iCnt += 1;
 
                 tbxChannel.Text = SrcData[IndexOfStart + iCnt + 0].ToString("D");
@@ -224,13 +277,16 @@ namespace HyperWSN_Setup_M30
                 tbxCO2Compensate.Text = CompensateOfCO2.ToString("D");
                 iCnt += 3;
 
-                tbxTimeSource.Text = SrcData[IndexOfStart + iCnt + 0].ToString("D");
+                Int32 CalibrationOfCO2 = 0;
+                tbxStdCaliOfCO2.Text = CalibrationOfCO2.ToString("F2");
+
+                tbxTimeSource.Text = ((dynamic)tbxTimeSourceNew.Items[SrcData[IndexOfStart + iCnt + 0]]).Content;
                 iCnt += 1;
 
-                tbxAlertWay.Text = SrcData[IndexOfStart + iCnt + 0].ToString("D");
+                tbxAlertWay.Text = ((dynamic)tbxAlertWayNew.Items[SrcData[IndexOfStart + iCnt + 0]]).Content;
                 iCnt += 1;
 
-                tbxLcdPolicy.Text = SrcData[IndexOfStart + iCnt + 0].ToString("D");
+                tbxLcdPolicy.Text = ((dynamic)tbxLcdPolicyNew.Items[SrcData[IndexOfStart + iCnt + 0]]).Content;
                 iCnt += 1;
 
                 tbxHeatLowThr.Text = SrcData[IndexOfStart + iCnt + 0].ToString("D");
@@ -242,7 +298,8 @@ namespace HyperWSN_Setup_M30
                 tbxReservedOfCfg.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 1].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 2].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 3].ToString("X2");
                 iCnt += 4;
 
-                tbxResetSource.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2");
+                byte resetSource = SrcData[IndexOfStart + iCnt + 0];
+                tbxResetSource.Text = SelectResetSource(resetSource);
                 iCnt += 1;
 
                 UInt16 voltMv = (UInt16)(SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]);
@@ -314,7 +371,7 @@ namespace HyperWSN_Setup_M30
                 tbxReservedOfProtocol.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 1].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 2].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 3].ToString("X2");
                 iCnt += 4;
 
-                tbxStdCompOfCO2.Text = "";
+                tbxStdCaliOfCO2.Text = "";
             }
             else if (SrcData[IndexOfStart + 5] == 0x02)
             {
@@ -323,6 +380,8 @@ namespace HyperWSN_Setup_M30
                 {
                     return -1;
                 }
+
+                tbxProtocolRevision.Text = SrcData[IndexOfStart + 5].ToString("D");
 
                 tbxPrimaryMac.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 1].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 2].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 3].ToString("X2");
                 iCnt += 4;
@@ -354,7 +413,9 @@ namespace HyperWSN_Setup_M30
                 tbxPattern.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2");
                 iCnt += 1;
 
-                tbxBps.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2");
+                //Object Bps = tbxBpsNew.Items[SrcData[IndexOfStart + iCnt + 0]];
+                //dynamic bps = ((dynamic)Bps).Content;
+                tbxBps.Text = ((dynamic)tbxBpsNew.Items[SrcData[IndexOfStart + iCnt + 0]]).Content;
                 iCnt += 1;
 
                 tbxChannel.Text = SrcData[IndexOfStart + iCnt + 0].ToString("D");
@@ -399,31 +460,32 @@ namespace HyperWSN_Setup_M30
                 tbxCO2Compensate.Text = CompensateOfCO2.ToString("D");
                 iCnt += 3;
 
-                Int32 StdCompensateOfCO2 = (Int32)(SrcData[IndexOfStart + iCnt + 0] * 256 * 256 + SrcData[IndexOfStart + iCnt + 1] * 256 + SrcData[IndexOfStart + iCnt + 2]);
-                tbxStdCompOfCO2.Text = StdCompensateOfCO2.ToString("D");
+                double CalibrationOfCO2 = (double)(SrcData[IndexOfStart + iCnt + 0] * 256 * 256 + SrcData[IndexOfStart + iCnt + 1] * 256 + SrcData[IndexOfStart + iCnt + 2]) / 10000.0f;
+                tbxStdCaliOfCO2.Text = CalibrationOfCO2.ToString("F2");
                 iCnt += 3;
 
-                tbxTimeSource.Text = SrcData[IndexOfStart + iCnt + 0].ToString("D");
+                tbxTimeSource.Text = ((dynamic)tbxTimeSourceNew.Items[SrcData[IndexOfStart + iCnt + 0]]).Content;
                 iCnt += 1;
 
-                tbxAlertWay.Text = SrcData[IndexOfStart + iCnt + 0].ToString("D");
+                tbxAlertWay.Text = ((dynamic)tbxAlertWayNew.Items[SrcData[IndexOfStart + iCnt + 0]]).Content;
                 iCnt += 1;
 
-                tbxLcdPolicy.Text = SrcData[IndexOfStart + iCnt + 0].ToString("D");
+                tbxLcdPolicy.Text = ((dynamic)tbxLcdPolicyNew.Items[SrcData[IndexOfStart + iCnt + 0]]).Content;
                 iCnt += 1;
 
-                double HeatLowThr = (double)(SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1])/100.0f;
-                tbxHeatLowThr.Text = HeatLowThr.ToString("F2");
+                double HeatLowThr = (double)(SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]);
+                tbxHeatLowThr.Text = (HeatLowThr / 100.0f).ToString("F2");
                 iCnt += 2;
 
-                double HeatHighThr = (double)(SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]) / 100.0f;
-                tbxHeatHighThr.Text = HeatHighThr.ToString("F2");
+                double HeatHighThr = (double)(SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]);
+                tbxHeatHighThr.Text = (HeatHighThr / 100.0f).ToString("F2");
                 iCnt += 2;
 
                 tbxReservedOfCfg.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 1].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 2].ToString("X2") + " " + SrcData[IndexOfStart + iCnt + 3].ToString("X2");
                 iCnt += 4;
 
-                tbxResetSource.Text = SrcData[IndexOfStart + iCnt + 0].ToString("X2");
+                byte resetSource = SrcData[IndexOfStart + iCnt + 0];
+                tbxResetSource.Text = SelectResetSource(resetSource);
                 iCnt += 1;
 
                 UInt16 voltMv = (UInt16)(SrcData[IndexOfStart + iCnt + 0] * 256 + SrcData[IndexOfStart + iCnt + 1]);
@@ -551,7 +613,7 @@ namespace HyperWSN_Setup_M30
             }
 
             // Protocol
-            if (SrcData[IndexOfStart + 5] != 0x01)
+            if (SrcData[IndexOfStart + 5] != 0x01 && SrcData[IndexOfStart + 5] != 0x02)
             {
                 return -2;
             }
@@ -559,7 +621,7 @@ namespace HyperWSN_Setup_M30
             // Error
             if (SrcData[IndexOfStart + 10] != 0x00)
             {
-                return -2;
+                return -3;
             }
 
             // 重新读取配置
@@ -602,42 +664,203 @@ namespace HyperWSN_Setup_M30
         }
 
         /// <summary>
-        /// 记录日志
+        /// 查询是否支持Bootloader，若是支持，则直接进入Bootloader状态
         /// </summary>
-        /// <param name=""></param>
-        /// <param name=""></param>
-        private void ConsoleLog(string direct, byte[] Txt, UInt16 IndexOfStart, UInt16 TxtLen)
+        /// <param name="SrcData"></param>
+        /// <param name="IndexOfStart"></param>
+        /// <returns></returns>
+        private Int16 RxPkt_Bootloader(byte[] SrcData, UInt16 IndexOfStart)
         {
-            if (Txt.Length != 0 && chkLockLog.IsChecked == false)
+            // 数据包的总长度
+            UInt16 SrcLen = (UInt16)(SrcData.Length - IndexOfStart);
+            if (SrcLen < 19)
             {
-                // TODO: 2019-07-09 日志记录有问题
-
-                tbxConsole.Text = Logger.GetTimeString() + "\t" + direct + "\t" + MyCustomFxn.ToHexString(Txt, IndexOfStart, TxtLen) + "\r\n" + tbxConsole.Text;
-
-                UInt16 ConsoleMaxLine = Convert.ToUInt16(txtLogLineLimit.Text);
-                if (tbxConsole.LineCount > ConsoleMaxLine)
-                {
-                    int start = tbxConsole.GetCharacterIndexFromLineIndex(ConsoleMaxLine);  // 末尾行第一个字符的索引
-                    int length = tbxConsole.GetLineLength(ConsoleMaxLine);                  // 末尾行字符串的长度
-                    tbxConsole.Select(start, start + length);                               // 选中末尾一行
-                    tbxConsole.SelectedText = "END";
-                }
+                return -1;
             }
+
+            // Protocol
+            if (SrcData[IndexOfStart + 5] != 0x01)
+            {
+                return -2;
+            }
+
+            // State
+            if (SrcData[IndexOfStart + 10] == 1)
+            {
+                SupportBsl = true;      // 支持BootLoader
+            }
+
+            return 0;
         }
 
         /// <summary>
-        /// 串口发送数据，并记录日志
+        /// 在Console显示日志
+        /// </summary>
+        /// <param name=""></param>
+        /// <param name=""></param>
+        private void ConsoleLog(string direct, byte[] Buf, UInt16 Start, UInt16 Len)
+        {
+            if (Buf == null)
+            {
+                return;
+            }
+
+            if (Buf.Length == 0 || Len == 0)
+            {
+                return;
+            }
+
+            if (chkLockLog.IsChecked == true)
+            {
+                return;
+            }
+
+            tbxConsole.Text = Logger.GetTimeString() + "\t" + direct + "\t" + MyCustomFxn.ToHexString(Buf, Start, Len) + "\r\n" + tbxConsole.Text;
+
+            UInt16 ConsoleMaxLine = Convert.ToUInt16(txtLogLineLimit.Text);
+            if (tbxConsole.LineCount > ConsoleMaxLine)
+            {
+                int start = tbxConsole.GetCharacterIndexFromLineIndex(ConsoleMaxLine);  // 末尾行第一个字符的索引
+                int length = tbxConsole.GetLineLength(ConsoleMaxLine);                  // 末尾行字符串的长度
+                tbxConsole.Select(start, start + length);                               // 选中末尾一行
+                tbxConsole.SelectedText = "END";
+            }
+        }
+
+        private int SerialPort_isReady()
+        {
+            if (SerialPort == null)
+            {
+                MessageBox.Show("请初始化串口！");
+                return -1;
+            }
+
+            if (SerialPort.IsOpen() == false)
+            {
+                MessageBox.Show("请打开串口！");
+                return -2;
+            }
+
+            return 0;
+        }
+
+        /// <summary>
+        /// 串口发送数据，并在Console显示日志
         /// </summary>
         /// <param name="TxBuf"></param>
         /// <param name="IndexOfStart"></param>
         /// <param name="TxLen"></param>
         private void SerialPort_Send(byte[] TxBuf, UInt16 IndexOfStart, UInt16 TxLen)
         {
-            // 显示Log
+            if (SerialPort_isReady() < 0)
+            {
+                return;
+            }
+
+            // 在Console显示Log
             ConsoleLog("TX", TxBuf, IndexOfStart, TxLen);
 
             // 发送数据
-            SerialPort.SendCommandByLength(TxBuf, IndexOfStart, TxLen);
+            SerialPort.Send(TxBuf, IndexOfStart, TxLen);
+        }
+
+        private byte[] SerialPort_SendReceive(byte[] TxBuf, UInt16 IndexOfStart, UInt16 TxLen, UInt16 RxTimeoutMs)
+        {
+            if (SerialPort_isReady() < 0)
+            {
+                return null;
+            }
+
+            // 在Console显示Log
+            ConsoleLog("TX", TxBuf, IndexOfStart, TxLen);
+
+            // 发送数据
+            byte[] RxBuf = SerialPort.SendReceive(TxBuf, IndexOfStart, TxLen, RxTimeoutMs);
+
+            // 在Console显示Log
+            ConsoleLog("RX", RxBuf, 0, (UInt16)RxBuf.Length);
+
+            return RxBuf;
+        }
+
+        /// <summary>
+        /// 处理接收到的数据
+        /// </summary>
+        /// <param name="SrcData"></param>
+        /// <returns></returns>
+        private Int16 RxPkt_Handle(byte[] SrcData)
+        {
+            if (SrcData == null)
+            {
+                return -1;
+            }
+
+            UInt16 SrcLen = (UInt16)SrcData.Length;
+
+            Int16 HandleLen = 0;
+            Int16 ExeError = 0;
+
+            for (UInt16 iCnt = 0; iCnt < SrcLen; iCnt++)
+            {
+                try
+                {
+                    HandleLen = RxPkt_IsRight(SrcData, iCnt);
+                    if (HandleLen < 0)
+                    {
+                        continue;
+                    }
+
+                    switch (SrcData[iCnt + 4])
+                    {
+                        case 0x00:
+                            {
+                                ExeError = RxPkt_ReadCfg(SrcData, iCnt);
+                                break;
+                            }
+                        case 0x01:
+                            {
+                                ExeError = RxPkt_SetFactoryCfg(SrcData, iCnt);
+                                break;
+                            }
+                        case 0x02:
+                            {
+                                ExeError = RxPkt_SetAppCfg(SrcData, iCnt);
+                                break;
+                            }
+                        case 0x03:
+                            {
+                                ExeError = RxPkt_DeleteHistory(SrcData, iCnt);
+                                break;
+                            }
+                        case 0x38:
+                            {
+                                ExeError = RxPkt_Bootloader(SrcData, iCnt);
+                                break;
+                            }
+                        default:
+                            {
+                                break;
+                            }
+                    }
+
+                    if (ExeError < 0)
+                    {
+                        continue;
+                    }
+
+                    if (HandleLen > 0)
+                    {
+                        HandleLen--;        // 因为马上就要执行iCnt++
+                    }
+
+                    iCnt = (UInt16)(iCnt + HandleLen);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("处理接收数据包错误" + ex.Message);
+                }
+            }
+            return 0;
         }
 
         private void Comport_SerialPortReceived(object sender, SerialPortEventArgs e)
@@ -655,66 +878,7 @@ namespace HyperWSN_Setup_M30
                 // 显示Log
                 ConsoleLog("RX", e.ReceivedBytes, 0, (UInt16)e.ReceivedBytes.Length);
 
-                UInt16 SrcLen = (UInt16)e.ReceivedBytes.Length;
-
-                Int16 HandleLen = 0;
-                Int16 ExeError = 0;
-
-                for (UInt16 iCnt = 0; iCnt < SrcLen; iCnt++)
-                {
-                    try
-                    {
-                        HandleLen = RxPkt_IsRight(e.ReceivedBytes, iCnt);
-                        if (HandleLen < 0)
-                        {
-                            continue;
-                        }
-
-                        switch (e.ReceivedBytes[iCnt + 4])
-                        {
-                            case 0x00:
-                                {
-                                    ExeError = RxPkt_ReadCfg(e.ReceivedBytes, iCnt);
-                                    break;
-                                }
-                            case 0x01:
-                                {
-                                    ExeError = RxPkt_SetFactoryCfg(e.ReceivedBytes, iCnt);
-                                    break;
-                                }
-                            case 0x02:
-                                {
-                                    ExeError = RxPkt_SetAppCfg(e.ReceivedBytes, iCnt);
-                                    break;
-                                }
-                            case 0x03:
-                                {
-                                    ExeError = RxPkt_DeleteHistory(e.ReceivedBytes, iCnt);
-                                    break;
-                                }
-                            default:
-                                {
-                                    break;
-                                }
-                        }
-
-                        if (ExeError < 0)
-                        {
-                            continue;
-                        }
-
-                        if (HandleLen > 0)
-                        {
-                            HandleLen--;        // 因为马上就要执行iCnt++
-                        }
-
-                        iCnt = (UInt16)(iCnt + HandleLen);
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show("处理接收数据包错误" + ex.Message);
-                    }
-                }
+                RxPkt_Handle(e.ReceivedBytes);
 
             }));
         }
@@ -811,7 +975,7 @@ namespace HyperWSN_Setup_M30
             tbxLcdPolicyNew.Text = tbxLcdPolicy.Text;
             tbxHeatLowThrNew.Text = tbxHeatLowThr.Text;
             tbxHeatHighThrNew.Text = tbxHeatHighThr.Text;
-            tbxStdCompOfCO2New.Text = tbxStdCompOfCO2.Text;
+            tbxStdCaliOfCO2New.Text = tbxStdCaliOfCO2.Text;
             tbxReservedOfCfgNew.Text = tbxReservedOfCfg.Text;
         }
 
@@ -822,6 +986,9 @@ namespace HyperWSN_Setup_M30
         /// <param name="e"></param>
         private void btnClearCfg_Click(object sender, RoutedEventArgs e)
         {
+            tbxProtocolRevision.Text = "";
+            tbxPrimaryMac.Text = "";
+
             tbxMac.Text = "";
             tbxSwRevision.Text = "";
             tbxHwRevision.Text = "";
@@ -847,7 +1014,7 @@ namespace HyperWSN_Setup_M30
             tbxLcdPolicy.Text = "";
             tbxHeatLowThr.Text = "";
             tbxHeatHighThr.Text = "";
-            tbxStdCompOfCO2.Text = "";
+            tbxStdCaliOfCO2.Text = "";
             tbxReservedOfCfg.Text = "";
 
             tbxResetSource.Text = "";
@@ -866,7 +1033,7 @@ namespace HyperWSN_Setup_M30
             tbxFlashOfCH1.Text = "";
             tbxFlashOfCH2.Text = "";
             tbxFlashOfACO2.Text = "";
-            tbxReservedOfProtocol.Text = "";          
+            tbxReservedOfProtocol.Text = "";
         }
 
         /// <summary>
@@ -940,178 +1107,380 @@ namespace HyperWSN_Setup_M30
         }
 
         /// <summary>
+        /// M30:修改应用配置，协议版本V1
+        /// </summary>
+        private Int16 SetAppCfg_V1()
+        {
+            byte[] TxBuf = new byte[60];
+            UInt16 TxLen = 0;
+
+            // Start
+            TxBuf[TxLen++] = 0xCB;
+            TxBuf[TxLen++] = 0xCB;
+
+            // Length
+            TxBuf[TxLen++] = 0x00;
+
+            // Device Type
+            TxBuf[TxLen++] = 0x00;
+
+            // Cmd
+            TxBuf[TxLen++] = 0x02;
+
+            // Protocol
+            TxBuf[TxLen++] = 0x02;
+
+            // Customer
+            byte[] ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxCustomerNew.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 2)
+            {
+                return -1;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+
+            // Debug
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDebugNew.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 2)
+            {
+                return -2;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+
+            // Category
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxCategoryNew.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 1)
+            {
+                return -3;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+
+            // Pattern
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxPatternNew.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 1)
+            {
+                return -4;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+
+            // Bps
+            TxBuf[TxLen++] = (byte)tbxBpsNew.SelectedIndex;
+
+            // channel
+            TxBuf[TxLen++] = Convert.ToByte(tbxChannelNew.Text);
+
+            // TxPower 
+            TxBuf[TxLen++] = (byte)Convert.ToInt16(tbxTxPowerNew.Text);
+
+            // Sample Interval 1
+            UInt16 Interval = Convert.ToUInt16(tbxSampleInterval1New.Text);
+            TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+            // Sample Interval 2
+            Interval = Convert.ToUInt16(tbxSampleInterval2New.Text);
+            TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+            // Sample Interval ACO2
+            Interval = Convert.ToUInt16(tbxSampleIntervalACO2New.Text);
+            TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+            // Transfer Interval 
+            Interval = Convert.ToUInt16(tbxTransferIntervalNew.Text);
+            TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+            // Heat Interval 
+            Interval = Convert.ToUInt16(tbxHeatIntervalNew.Text);
+            TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+            // Cool Interval 
+            Interval = Convert.ToUInt16(tbxCoolIntervalNew.Text);
+            TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+            // Carousel Interval 
+            Interval = Convert.ToUInt16(tbxCarouselIntervalNew.Text);
+            TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+            // Alert Interval 
+            Interval = Convert.ToUInt16(tbxAlertIntervalNew.Text);
+            TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+            // 日期和时间
+            tbxCalendar.Text = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
+            DateTime ThisCalendar = Convert.ToDateTime(tbxCalendar.Text);
+            ByteBufTmp = MyCustomFxn.DataTimeToByteArray(ThisCalendar);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[0]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[1]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[2]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[3]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[4]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[5]);
+
+            // Time Source
+            TxBuf[TxLen++] = (byte)tbxTimeSourceNew.SelectedIndex;
+
+            // Alert Way
+            TxBuf[TxLen++] = (byte)(tbxAlertWayNew.SelectedIndex);
+
+            // Lcd Policy
+            TxBuf[TxLen++] = (byte)(tbxLcdPolicyNew.SelectedIndex);
+
+            // CO2 Compensate
+            Int32 CompensateOfCO2 = Convert.ToInt32(tbxCO2CompensateNew.Text);
+            TxBuf[TxLen++] = (byte)((CompensateOfCO2 & 0xFF0000) >> 16);
+            TxBuf[TxLen++] = (byte)((CompensateOfCO2 & 0x00FF00) >> 8);
+            TxBuf[TxLen++] = (byte)((CompensateOfCO2 & 0x0000FF) >> 0);
+
+            // 加热下限
+            TxBuf[TxLen++] = Convert.ToByte(tbxHeatLowThrNew.Text);
+
+            // 加热上限
+            TxBuf[TxLen++] = Convert.ToByte(tbxHeatHighThrNew.Text);
+
+            // Reserved of Cfg
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxReservedOfCfgNew.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+            {
+                return -6;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+            TxBuf[TxLen++] = ByteBufTmp[2];
+            TxBuf[TxLen++] = ByteBufTmp[3];
+
+            // CRC16
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 3, (UInt16)(TxLen - 3));
+            TxBuf[TxLen++] = (byte)((crc & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((crc & 0x00FF) >> 0);
+
+            // End
+            TxBuf[TxLen++] = 0xBC;
+            TxBuf[TxLen++] = 0xBC;
+
+            // 重写长度位
+            TxBuf[2] = (byte)(TxLen - 7);
+
+            SerialPort_Send(TxBuf, 0, TxLen);
+
+            return 0;
+        }
+
+        /// <summary>
+        /// M30:修改应用配置，协议版本V2
+        /// </summary>
+        private Int16 SetAppCfg_V2()
+        {
+            byte[] TxBuf = new byte[60];
+            UInt16 TxLen = 0;
+
+            // Start
+            TxBuf[TxLen++] = 0xCB;
+            TxBuf[TxLen++] = 0xCB;
+
+            // Length
+            TxBuf[TxLen++] = 0x00;
+
+            // Device Type
+            TxBuf[TxLen++] = 0x00;
+
+            // Cmd
+            TxBuf[TxLen++] = 0x02;
+
+            // Protocol
+            TxBuf[TxLen++] = 0x02;
+
+            // Customer
+            byte[] ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxCustomerNew.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 2)
+            {
+                return -1;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+
+            // Debug
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDebugNew.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 2)
+            {
+                return -2;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+
+            // Category
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxCategoryNew.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 1)
+            {
+                return -3;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+
+            // Pattern
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxPatternNew.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 1)
+            {
+                return -4;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+
+            // Bps
+            TxBuf[TxLen++] = (byte)(tbxBpsNew.SelectedIndex);
+
+            // channel
+            TxBuf[TxLen++] = Convert.ToByte(tbxChannelNew.Text);
+
+            // TxPower 
+            TxBuf[TxLen++] = (byte)Convert.ToInt16(tbxTxPowerNew.Text);
+
+            // Sample Interval 1
+            UInt16 Interval = Convert.ToUInt16(tbxSampleInterval1New.Text);
+            TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+            // Sample Interval 2
+            Interval = Convert.ToUInt16(tbxSampleInterval2New.Text);
+            TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+            // Sample Interval ACO2
+            Interval = Convert.ToUInt16(tbxSampleIntervalACO2New.Text);
+            TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+            // Transfer Interval 
+            Interval = Convert.ToUInt16(tbxTransferIntervalNew.Text);
+            TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+            // Heat Interval 
+            Interval = Convert.ToUInt16(tbxHeatIntervalNew.Text);
+            TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+            // Cool Interval 
+            Interval = Convert.ToUInt16(tbxCoolIntervalNew.Text);
+            TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+            // Carousel Interval 
+            Interval = Convert.ToUInt16(tbxCarouselIntervalNew.Text);
+            TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+            // Alert Interval 
+            Interval = Convert.ToUInt16(tbxAlertIntervalNew.Text);
+            TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+            // 日期和时间
+            tbxCalendar.Text = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
+            DateTime ThisCalendar = Convert.ToDateTime(tbxCalendar.Text);
+            ByteBufTmp = MyCustomFxn.DataTimeToByteArray(ThisCalendar);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[0]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[1]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[2]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[3]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[4]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[5]);
+
+            // Time Source
+            TxBuf[TxLen++] = (byte)(tbxTimeSourceNew.SelectedIndex);
+
+            // Alert Way
+            TxBuf[TxLen++] = (byte)(tbxAlertWayNew.SelectedIndex);
+
+            // Lcd Policy
+            TxBuf[TxLen++] = (byte)(tbxLcdPolicyNew.SelectedIndex);
+
+            // CO2 Compensate
+            Int32 CompensateOfCO2 = Convert.ToInt32(tbxCO2CompensateNew.Text);
+            TxBuf[TxLen++] = (byte)((CompensateOfCO2 & 0xFF0000) >> 16);
+            TxBuf[TxLen++] = (byte)((CompensateOfCO2 & 0x00FF00) >> 8);
+            TxBuf[TxLen++] = (byte)((CompensateOfCO2 & 0x0000FF) >> 0);
+
+            // CO2 Calibration
+            Int32 CalibrationOfCO2 = (Int32)(Convert.ToDouble(tbxStdCaliOfCO2New.Text) * 10000.0f);
+            TxBuf[TxLen++] = (byte)((CalibrationOfCO2 & 0xFF0000) >> 16);
+            TxBuf[TxLen++] = (byte)((CalibrationOfCO2 & 0x00FF00) >> 8);
+            TxBuf[TxLen++] = (byte)((CalibrationOfCO2 & 0x0000FF) >> 0);
+
+            // 加热下限
+            Int16 HratLow = (Int16)(Convert.ToDouble(tbxHeatLowThrNew.Text) * 100.0f);
+            TxBuf[TxLen++] = (byte)((HratLow & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((HratLow & 0x00FF) >> 0);
+
+            // 加热上限
+            Int16 HratHigh = (Int16)(Convert.ToDouble(tbxHeatHighThrNew.Text) * 100.0f);
+            TxBuf[TxLen++] = (byte)((HratHigh & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((HratHigh & 0x00FF) >> 0);
+
+            // Reserved of Cfg
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxReservedOfCfgNew.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+            {
+                return -6;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+            TxBuf[TxLen++] = ByteBufTmp[2];
+            TxBuf[TxLen++] = ByteBufTmp[3];
+
+            // CRC16
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 3, (UInt16)(TxLen - 3));
+            TxBuf[TxLen++] = (byte)((crc & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((crc & 0x00FF) >> 0);
+
+            // End
+            TxBuf[TxLen++] = 0xBC;
+            TxBuf[TxLen++] = 0xBC;
+
+            // 重写长度位
+            TxBuf[2] = (byte)(TxLen - 7);
+
+            SerialPort_Send(TxBuf, 0, TxLen);
+
+            return 0;
+        }
+
+        /// <summary>
         /// 修改应用配置
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void btnSetAppCfg_Click(object sender, RoutedEventArgs e)
         {
+            Int16 error = 0;
+
             try
             {
-                byte[] TxBuf = new byte[60];
-                UInt16 TxLen = 0;
+                byte Protocol = Convert.ToByte(tbxProtocolRevision.Text);
 
-                // Start
-                TxBuf[TxLen++] = 0xCB;
-                TxBuf[TxLen++] = 0xCB;
-
-                // Length
-                TxBuf[TxLen++] = 0x00;
-
-                // Device Type
-                TxBuf[TxLen++] = 0x00;
-
-                // Cmd
-                TxBuf[TxLen++] = 0x02;
-
-                // Protocol
-                TxBuf[TxLen++] = 0x01;
-
-                // Customer
-                byte[]  ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxCustomerNew.Text);
-                if (ByteBufTmp == null || ByteBufTmp.Length < 2)
+                if (Protocol == 0x01)
                 {
-                    return;
+                    error = SetAppCfg_V1();
+                    if (error < 0)
+                    {
+                        return;
+                    }
                 }
-                TxBuf[TxLen++] = ByteBufTmp[0];
-                TxBuf[TxLen++] = ByteBufTmp[1];
-
-                // Debug
-                ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDebugNew.Text);
-                if (ByteBufTmp == null || ByteBufTmp.Length < 2)
+                else if (Protocol == 0x02)
                 {
-                    return;
+                    error = SetAppCfg_V2();
+                    if (error < 0)
+                    {
+                        return;
+                    }
                 }
-                TxBuf[TxLen++] = ByteBufTmp[0];
-                TxBuf[TxLen++] = ByteBufTmp[1];
-
-                // Category
-                ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxCategoryNew.Text);
-                if (ByteBufTmp == null || ByteBufTmp.Length < 1)
-                {
-                    return;
-                }
-                TxBuf[TxLen++] = ByteBufTmp[0];
-
-                // Pattern
-                ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxPatternNew.Text);
-                if (ByteBufTmp == null || ByteBufTmp.Length < 1)
-                {
-                    return;
-                }
-                TxBuf[TxLen++] = ByteBufTmp[0];
-
-                // Bps
-                ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxBpsNew.Text);
-                if (ByteBufTmp == null || ByteBufTmp.Length < 1)
-                {
-                    return;
-                }
-                TxBuf[TxLen++] = ByteBufTmp[0];
-
-                // channel
-                TxBuf[TxLen++] = Convert.ToByte(tbxChannelNew.Text);
-
-                // TxPower 
-                TxBuf[TxLen++] = (byte)Convert.ToInt16(tbxTxPowerNew.Text);
-
-                // Sample Interval 1
-                UInt16 Interval = Convert.ToUInt16(tbxSampleInterval1New.Text);
-                TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
-                TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
-
-                // Sample Interval 2
-                Interval = Convert.ToUInt16(tbxSampleInterval2New.Text);
-                TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
-                TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
-
-                // Sample Interval ACO2
-                Interval = Convert.ToUInt16(tbxSampleIntervalACO2New.Text);
-                TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
-                TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
-
-                // Transfer Interval 
-                Interval = Convert.ToUInt16(tbxTransferIntervalNew.Text);
-                TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
-                TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
-
-                // Heat Interval 
-                Interval = Convert.ToUInt16(tbxHeatIntervalNew.Text);
-                TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
-                TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
-
-                // Cool Interval 
-                Interval = Convert.ToUInt16(tbxCoolIntervalNew.Text);
-                TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
-                TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
-
-                // Carousel Interval 
-                Interval = Convert.ToUInt16(tbxCarouselIntervalNew.Text);
-                TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
-                TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
-
-                // Alert Interval 
-                Interval = Convert.ToUInt16(tbxAlertIntervalNew.Text);
-                TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
-                TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
-
-                // 日期和时间
-                tbxCalendar.Text = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-
-                DateTime ThisCalendar = Convert.ToDateTime(tbxCalendar.Text);
-                ByteBufTmp = MyCustomFxn.DataTimeToByteArray(ThisCalendar);
-                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[0]);
-                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[1]);
-                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[2]);
-                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[3]);
-                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[4]);
-                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[5]);
-
-                // Time Source
-                TxBuf[TxLen++] = Convert.ToByte(tbxTimeSourceNew.Text);
-
-                // Alert Way
-                TxBuf[TxLen++] = Convert.ToByte(tbxAlertWayNew.Text);
-
-                // Lcd Policy
-                TxBuf[TxLen++] = Convert.ToByte(tbxLcdPolicyNew.Text);
-
-                // CO2 Compensate
-                Int32 CompensateOfCO2 = Convert.ToInt32(tbxCO2CompensateNew.Text);
-                TxBuf[TxLen++] = (byte)((CompensateOfCO2 & 0xFF0000) >> 16);
-                TxBuf[TxLen++] = (byte)((CompensateOfCO2 & 0x00FF00) >> 8);
-                TxBuf[TxLen++] = (byte)((CompensateOfCO2 & 0x0000FF) >> 0);
-
-                // 加热下限
-                TxBuf[TxLen++] = Convert.ToByte(tbxHeatLowThrNew.Text);
-
-                // 加热上限
-                TxBuf[TxLen++] = Convert.ToByte(tbxHeatHighThrNew.Text);
-
-                // Reserved of Cfg
-                ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxReservedOfCfgNew.Text);
-                if (ByteBufTmp == null || ByteBufTmp.Length < 4)
-                {
-                    return;
-                }
-                TxBuf[TxLen++] = ByteBufTmp[0];
-                TxBuf[TxLen++] = ByteBufTmp[1];
-                TxBuf[TxLen++] = ByteBufTmp[2];
-                TxBuf[TxLen++] = ByteBufTmp[3];
-
-                // CRC16
-                UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 3, (UInt16)(TxLen - 3));
-                TxBuf[TxLen++] = (byte)((crc & 0xFF00) >> 8);
-                TxBuf[TxLen++] = (byte)((crc & 0x00FF) >> 0);
-
-                // End
-                TxBuf[TxLen++] = 0xBC;
-                TxBuf[TxLen++] = 0xBC;
-
-                // 重写长度位
-                TxBuf[2] = (byte)(TxLen - 7);
-
-                SerialPort_Send(TxBuf, 0, TxLen);
             }
             catch (Exception ex)
             {
@@ -1183,6 +1552,314 @@ namespace HyperWSN_Setup_M30
         private void btnClearLog_Click(object sender, RoutedEventArgs e)
         {
             tbxConsole.Text = "";
+        }
+
+        private void btnClearLoadStatus_Click(object sender, RoutedEventArgs e)
+        {
+            tbxLoadStatus.Text = "";
+            tbxLoadStatus2.Text = "";
+        }
+
+        Microsoft.Win32.OpenFileDialog ofd = new Microsoft.Win32.OpenFileDialog();                  // BSL
+        Microsoft.Win32.OpenFileDialog ofdOfExtFlash = new Microsoft.Win32.OpenFileDialog();        // 离线升级
+
+        private void btnBrowse_Click(object sender, RoutedEventArgs e)
+        {
+            if (ofd.ShowDialog() == true)
+            {
+                tbxLoadImage.Text = ofd.SafeFileName;
+            }
+        }
+
+        bool BootLoading = false;               // 表示烧录是否正在进行
+
+        /// <summary>
+        /// 为了保证BootLoader的正常执行，将一些有影响的控件禁用，等执行完后，再解禁；
+        /// </summary>
+        void ProtectBootLoader()
+        {
+            cbSerialPort.IsEnabled = false;
+            btnOpenComport.IsEnabled = false;
+
+            btnBrowse.IsEnabled = false;
+            btnLoadImage.IsEnabled = false;
+            cbxOnlyLoadImage.IsEnabled = false;
+
+            tabItemConsole.IsEnabled = false;
+            tabItemSetup.IsEnabled = false;
+
+            BootLoading = true;
+
+            TimeCntOfBsl = 0;
+            tbkCount.Text = TimeCntOfBsl.ToString();
+
+            TimerOfBsl.Enabled = true;          // 启动计时器
+        }
+
+        /// <summary>
+        /// 解禁
+        /// </summary>
+        void UnProtectBootLoader()
+        {
+            cbSerialPort.IsEnabled = true;
+            btnOpenComport.IsEnabled = true;
+
+            btnBrowse.IsEnabled = true;
+            btnLoadImage.IsEnabled = true;
+            cbxOnlyLoadImage.IsEnabled = true;
+
+            tabItemConsole.IsEnabled = true;
+            tabItemSetup.IsEnabled = true;
+
+            BootLoading = false;
+
+            TimerOfBsl.Enabled = false;             // 停止计时器
+        }
+
+        void TimerEventOfBsl(object sender, ElapsedEventArgs e)
+        {
+            Dispatcher.BeginInvoke(new Action(delegate
+            {
+                if (BootLoading == false)
+                {   // 烧录结束
+                    TimerOfBsl.Enabled = false;
+                }
+                else
+                {
+                    TimeCntOfBsl++;
+                    tbkCount.Text = TimeCntOfBsl.ToString();
+                }
+            }));
+        }
+
+        string SelectedDeviceText = "";
+
+        bool SupportBsl = false;                           
+
+        /// <summary>
+        /// 查询是否支持BootLoader，若支持，则开始BootLoader；
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        /// <param name="helper"></param>
+        /// <returns></returns>
+        private Int16 TxAndRx_BootLoader()
+        {
+            SupportBsl = false;
+
+            byte[] TxBuf = new byte[20];
+            UInt16 TxLen = 0;
+
+            // 起始位
+            TxBuf[TxLen++] = 0xCB;
+            TxBuf[TxLen++] = 0xCB;
+
+            // 长度位
+            TxBuf[TxLen++] = 0x00;
+
+            // 设备类型
+            TxBuf[TxLen++] = 0x00;
+
+            // 功能位
+            TxBuf[TxLen++] = 0x38;
+
+            // 协议版本
+            TxBuf[TxLen++] = 0x01;
+
+            // 保留位
+            TxBuf[TxLen++] = 0xC9;
+            TxBuf[TxLen++] = 0xFD;
+            TxBuf[TxLen++] = 0xBC;
+            TxBuf[TxLen++] = 0xB6;
+
+            // 保留位
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+
+            // CRC16
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 3, (UInt16)(TxLen - 3));
+            TxBuf[TxLen++] = (byte)((crc & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((crc & 0x00FF) >> 0);
+
+            // 结束位
+            TxBuf[TxLen++] = 0xBC;
+            TxBuf[TxLen++] = 0xBC;
+
+            // 重写长度位
+            TxBuf[2] = (byte)(TxLen - 7);
+
+            // 显示Log
+            ConsoleLog("TX", TxBuf, 0, TxLen);
+
+            // 发送数据
+            byte[] RxBuf = SerialPort.SendReceive(TxBuf, 0, TxLen, 2000);
+
+            Int16 error = RxPkt_Handle(RxBuf);
+            if (error < 0)
+            {
+                MessageBox.Show("设备进入BootLoader失败:" + error.ToString("G"));
+                return -1;
+            }
+
+            if (SupportBsl == false)
+            {
+                tbxLoadStatus.Text += System.DateTime.Now.ToString("HH:mm:ss.fff") + "   不支持升级！" + "\r\n";
+            }
+            else
+            {
+                tbxLoadStatus.Text += System.DateTime.Now.ToString("HH:mm:ss.fff") + "   允许升级！" + "\r\n";
+            }
+
+            return 0;
+        }
+
+        /// <summary>
+        /// 处理线程结束的事件
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        public delegate void ThreadEndEventHander();
+        public event ThreadEndEventHander ThreadEndEvent;               // 线程结束
+
+        Thread ThisThread;
+
+        void ThisThreadEnd()
+        {
+            Dispatcher.BeginInvoke(new Action(delegate
+            {
+                UnProtectBootLoader();
+
+                // 在执行完Bootloader之后，需要将串口再次打开。
+                if (SerialPort.IsOpen() == false)
+                {
+                    SerialPort.OpenPort();
+                }
+
+            }));
+        }
+
+        void ThisThreadStart()
+        {
+            ThreadEndEvent += ThisThreadEnd;
+
+            DateTime Start = System.DateTime.Now;           // 记录烧录的开始时间
+
+            BootLoader Bsl = new BootLoader();
+
+            Bsl.OutputRxLogEvent += Proc_OutputRxLogReceived;
+            Bsl.OutputStatusEvent += Proc_OutputStatusReceived;
+
+            Bsl.SerialDevice = SelectedDeviceText;
+            Bsl.FileNameOfImage = ofd.FileName;
+
+            Bsl.BSL_Scripter(45, Start);
+
+            // 通知主线程，子线程执行完毕
+            if (ThreadEndEvent != null)
+            {
+                ThreadEndEvent();
+            }
+        }
+
+        private void Proc_OutputStatusReceived(object sender, BootLoaderEventArgs e)
+        {
+            if (e.Message == null)
+            {
+                return;
+            }
+
+            Dispatcher.BeginInvoke(new Action(delegate
+            {
+                tbxLoadStatus.Text += e.Message;
+
+                // 使文本框一直显示在最后一行
+                tbxLoadStatus.SelectionStart = tbxLoadStatus.Text.Length;
+                tbxLoadStatus.SelectionLength = 0;
+                tbxLoadStatus.ScrollToEnd();
+            }));
+        }
+
+        private void Proc_OutputRxLogReceived(object sender, BootLoaderEventArgs e)
+        {
+            if (e.Message == null)
+            {
+                return;
+            }
+
+            Dispatcher.BeginInvoke(new Action(delegate
+            {
+                tbxLoadStatus2.Text += e.Message;
+
+                // 使文本框一直显示在最后一行
+                tbxLoadStatus2.SelectionStart = tbxLoadStatus2.Text.Length;
+                tbxLoadStatus2.SelectionLength = 0;
+                tbxLoadStatus2.ScrollToEnd();
+            }));
+        }
+
+        /// <summary>
+        /// 烧录升级
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btnLoadImage_Click(object sender, RoutedEventArgs e)
+        {
+            if (cbSerialPort.SelectedIndex < 0)
+            {
+                MessageBox.Show("请选择串行设备！");
+                return;
+            }
+
+            if (ofd.FileName == "")
+            {
+                MessageBox.Show("请选择烧录文件！");
+                return;
+            }
+            else if (ofd.SafeFileName.EndsWith(".txt") == false)
+            {
+                MessageBox.Show("请选择.txt格式的烧录文件！");
+                return;
+            }
+
+            ProtectBootLoader();
+
+            tbxLoadStatus.Text = "";
+            tbxLoadStatus2.Text = "";
+
+            try
+            {
+                SelectedDeviceText = cbSerialPort.Text;
+
+                // 创建线程
+                ThisThread = new Thread(ThisThreadStart);
+                ThisThread.Name = "烧录程序";
+                do
+                {
+                    if (cbxOnlyLoadImage.IsChecked == false)
+                    {   // 需要查询
+                        TxAndRx_BootLoader();
+                        if (SupportBsl == false)
+                        {
+                            UnProtectBootLoader();
+                            break;
+                        }
+                    }
+
+                    // 在执行Bootloader之前，需要将目前的串口断开。
+                    if (SerialPort.IsOpen())
+                    {
+                        SerialPort.ClosePort();
+                    }
+
+                    ThisThread.Start();
+
+                } while (false);
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
     }
 }

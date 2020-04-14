@@ -46,10 +46,13 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ActiveMQHelper.cs" />
     <Compile Include="ApplicationConfig.cs" />
+    <Compile Include="BootLoader.cs" />
+    <Compile Include="BootLoaderEventArgs.cs" />
     <Compile Include="FileHelper.cs" />
     <Compile Include="HardwareEnum.cs" />
     <Compile Include="Logger.cs" />

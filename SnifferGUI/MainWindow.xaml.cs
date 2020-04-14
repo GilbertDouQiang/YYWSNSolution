@@ -477,8 +477,8 @@ namespace SnifferGUI
 
             // Cmd
             string Cmd = "CE 09 A0 01" + bps.ToString("X2") + freq.ToString("X8") + expNum.ToString("X2") + "01 00 00 EC";
-
-            comport.SendCommand(Cmd);
+            
+            comport.Send(Cmd);
         }
 
         /// <summary>
@@ -597,7 +597,7 @@ namespace SnifferGUI
                 if (comport != null)
                 {
                     string Cmd = "CE 09 A0 01 FF 19 CF 0E 40 00 01 00 00 EC";
-                    comport.SendCommand(Cmd);
+                    comport.Send(Cmd);
 
                     comport.ClosePort();
                     btnOpenComPort.Content = "Open";

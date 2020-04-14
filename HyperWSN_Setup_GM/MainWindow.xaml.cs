@@ -859,7 +859,7 @@ namespace HyperWSN_Setup_GM
             ConsoleLog("TX", TxBuf, IndexOfStart, TxLen);
 
             // 发送数据
-            SerialPort.SendCommandByLength(TxBuf, IndexOfStart, TxLen);
+            SerialPort.Send(TxBuf, IndexOfStart, TxLen);
         }
 
         private void Comport_SerialPortReceived(object sender, SerialPortEventArgs e)

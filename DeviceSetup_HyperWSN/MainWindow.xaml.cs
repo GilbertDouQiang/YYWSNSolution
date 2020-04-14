@@ -573,7 +573,7 @@ namespace DeviceSetup_HyperWSN
 
                 byte[] updateCommand = updateDevice.UpdateFactory();
                 string updateString = CommArithmetic.ToHexString(updateCommand);
-                SerialPort.SendCommand(updateCommand);
+                SerialPort.Send(updateCommand);
                 System.Threading.Thread.Sleep(200);     //界面会卡
             }
             catch (Exception ex)
@@ -2845,7 +2845,7 @@ namespace DeviceSetup_HyperWSN
             // ConsoleLog("TX", TxBuf, IndexOfStart, TxLen);
 
             // 发送数据
-            SerialPort.SendCommandByLength(TxBuf, IndexOfStart, TxLen);
+            SerialPort.Send(TxBuf, IndexOfStart, TxLen);
         }
 
         /// <summary>
