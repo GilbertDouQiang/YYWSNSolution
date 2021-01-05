@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 
-namespace PictureTransfer
+namespace HyperWSN_Tool_WP
 {
     /// <summary>
     /// App.xaml 的交互逻辑

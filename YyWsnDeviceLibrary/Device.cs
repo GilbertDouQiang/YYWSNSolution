@@ -70,6 +70,29 @@ namespace YyWsnDeviceLibrary
             L1 = 0x85,                  // L1(光照传感器)
             ESK = 0x8A,                 // 爱立信，ESK
             IR20 = 0x8B,                // IR20
+            WP = 0x8E,                  // WP            
+            AC2 = 0x8F,                 // AC2，生物安全柜，485接口，modbus协议
+            CO2_INCUBATOR = 0x90,       // CO2培养箱，485接口，modbus协议，CO2数据
+            O2_INCUBATOR = 0x91,        // CO2培养箱，485接口，modbus协议，O2数据
+            C1 = 0x92,                  // C1，爱立信螺丝刀电流测量
+            SG10 = 0x93,                // SG10
+            ZQSG6M = 0x94,              // ZQSG6M
+            M24 = 0x95,                 // M24
+            M24_485_CO2 = 0x96,         // M24-485-CO2培养箱：CO2数据包
+            M24_485_O2 = 0x97,          // M24-485-CO2培养箱：O2数据包
+            M24_485_AC2 = 0x98,         // M24-485-AC2培养箱：
+            M26_485_TEC3000 = 0x99,     // M26_485_TEC3000
+            SG6E = 0x9A,                // SG6E(M44+W5500)
+            RT_MSP432 = 0x9B,           // RT(MSP432)
+            M24_CSF11 = 0x9C,           // M24_CSF11(土壤水分)
+            EK = 0x9D,                  // 电子锁
+            EK_SHT30 = 0x9E,            // 电子锁的外接传感器
+            M60 = 0x9F,                 // M60: 博容 4G 蓝牙版本
+            M70 = 0xA0,                 // M70：博容 CC1310版本
+            M60_SHT30 = 0xA1,           //
+            M60_MAX31855 = 0xA2,        //
+            M70_SHT30 = 0xA3,           //
+            M70_MAX31855 = 0xA4,        //
         }
 
         /// <summary>
@@ -84,7 +107,13 @@ namespace YyWsnDeviceLibrary
             SensorDataFromGmToPc,   // GM反馈给上位机的Sensor数据包
             SensorDataMax31855Debug, // MAX31855 Debug数据包
             SelfTestFromUsbToPc,    // USB修改工具接收到的Sensor的上电自检数据包
+            ExportFromM1Beetech,    // 从M1Beetech USB导出数据
         }
+
+        /// <summary>
+        /// 重启原因
+        /// </summary>
+        public byte RstSrc { get; set; }
 
         /// <summary>
         /// 源数据
@@ -105,6 +134,11 @@ namespace YyWsnDeviceLibrary
         /// 电池电压，单位：V
         /// </summary>
         public double voltF { get; set; }
+
+        /// <summary>
+        /// 是否连接了充电器
+        /// </summary>
+        public bool LinkCharge { get; set; }
 
         /// <summary>
         /// 设备名称
@@ -477,9 +511,159 @@ namespace YyWsnDeviceLibrary
                         Name = "L1";
                         break;
                     }
+                case 0x86:
+                    {
+                        Name = "SG6M(MSP432)";
+                        break;
+                    }
+                case 0x87:
+                    {
+                        Name = "SG6M(CC1352P)";
+                        break;
+                    }
+                case 0x88:
+                    {
+                        Name = "ZQSG2(MSP432)";
+                        break;
+                    }
+                case 0x89:
+                    {
+                        Name = "ZQSG2(CC1352P)";
+                        break;
+                    }
                 case 0x8A:
                     {
                         Name = "ESK";
+                        break;
+                    }
+                case 0x8B:
+                    {
+                        Name = "IR20";
+                        break;
+                    }
+                case 0x8C:
+                    {
+                        Name = "M44(MSP432)";
+                        break;
+                    }
+                case 0x8D:
+                    {
+                        Name = "M44(CC1352P)";
+                        break;
+                    }
+                case 0x8E:
+                    {
+                        Name = "WP";
+                        break;
+                    }
+                case 0x8F:
+                    {
+                        Name = "M44_485_AC2";
+                        break;
+                    }
+                case 0x90:
+                    {
+                        Name = "M44_485_CO2: CO2";
+                        break;
+                    }
+                case 0x91:
+                    {
+                        Name = "M44_485_CO2: O2";
+                        break;
+                    }
+                case 0x92:
+                    {
+                        Name = "C1";
+                        break;
+                    }
+                case 0x93:
+                    {
+                        Name = "SG10";
+                        break;
+                    }
+                case 0x94:
+                    {
+                        Name = "ZQSG6M";
+                        break;
+                    }
+                case 0x95:
+                    {
+                        Name = "M24";
+                        break;
+                    }
+                case 0x96:
+                    {
+                        Name = "M24_485_CO2: CO2";
+                        break;
+                    }
+                case 0x97:
+                    {
+                        Name = "M24_485_CO2: O2";
+                        break;
+                    }
+                case 0x98:
+                    {
+                        Name = "M24_485_AC2";
+                        break;
+                    }
+                case 0x99:
+                    {
+                        Name = "M24_485_TEC3000";
+                        break;
+                    }
+                case 0x9A:
+                    {
+                        Name = "SG6E";
+                        break;
+                    }
+                case 0x9B:
+                    {
+                        Name = "RT";
+                        break;
+                    }
+                case 0x9C:
+                    {
+                        Name = "M24_CSF11";
+                        break;
+                    }
+                case 0x9D:
+                    {
+                        Name = "EK";
+                        break;
+                    }
+                case 0x9E:
+                    {
+                        Name = "EK_SHT30";
+                        break;
+                    }
+                case 0x9F:
+                    {
+                        Name = "M60";
+                        break;
+                    }
+                case 0xA0:
+                    {
+                        Name = "M70";
+                        break;
+                    }
+                case 0xA1:
+                    {
+                        Name = "M60_SHT30";
+                        break;
+                    }
+                case 0xA2:
+                    {
+                        Name = "M60_MAX31855";
+                        break;
+                    }
+                case 0xA3:
+                    {
+                        Name = "M70_SHT30";
+                        break;
+                    }
+                case 0xA4:
+                    {
+                        Name = "M70_MAX31855";
                         break;
                     }
                 default:

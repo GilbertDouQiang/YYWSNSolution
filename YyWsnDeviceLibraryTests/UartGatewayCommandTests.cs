@@ -14,8 +14,7 @@ namespace YyWsnDeviceLibrary.Tests
     {
         [TestMethod()]
         public void ReadInfoTest()
-        {
-
+        {   /*
             SerialPortHelper Serial = new SerialPortHelper();
 
             Serial.InitCOM("COM5");
@@ -28,6 +27,13 @@ namespace YyWsnDeviceLibrary.Tests
             Serial.ClosePort();
 
             Assert.AreEqual("F1 76 D7 DB", RxBuf);
+            */
+            string ValStr = "12345";
+            byte[] Buf = MyCustomFxn.HexStringToByteArrayRightLeft(ValStr);
+            if(Buf == null || Buf.Length == 0)
+            {
+
+            }
         }
     }
 }

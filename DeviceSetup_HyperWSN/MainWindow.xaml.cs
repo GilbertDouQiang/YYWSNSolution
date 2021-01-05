@@ -67,7 +67,6 @@ namespace DeviceSetup_HyperWSN
             }
         }
 
-
         private void btnFindComport_Click(object sender, RoutedEventArgs e)
         {
             FindComport();
@@ -85,6 +84,9 @@ namespace DeviceSetup_HyperWSN
                 {
                     btnStartMonitor.IsEnabled = true;
                     btnOpenComport.Content = "Close";
+                }else
+                {
+                    MessageBox.Show(SerialPort.ExceptString);
                 }
             }
             else
@@ -176,7 +178,7 @@ namespace DeviceSetup_HyperWSN
 
             Dispatcher.BeginInvoke(new Action(delegate
             {
-                txtConsole.Text += Logger.GetTimeString() + "\t" + CommArithmetic.ToHexString(e.ReceivedBytes) + "\r\n";
+                ConsoleLog("RX", e.ReceivedBytes, 0, (UInt16) e.ReceivedBytes.Length);
 
                 bool ReceivedOk = false;
 
@@ -250,27 +252,11 @@ namespace DeviceSetup_HyperWSN
                                 M9 aM9 = new M9(e.ReceivedBytes, iX, Device.DataPktType.SelfTestFromUsbToPc);
                                 if (aM9 != null)
                                 {
-                                    tbxSensitivityOfM9.IsEnabled = true;
-                                    tbxNewSensitivityOfM9.IsEnabled = true;
-                                    tbxMoveDetectTimeOfM9.IsEnabled = true;
-                                    tbxNewMoveDetectTimeOfM9.IsEnabled = true;
-                                    tbxStaticDetectTimeOfM9.IsEnabled = true;
-                                    tbxNewStaticDetectTimeOfM9.IsEnabled = true;
-
-                                    cbxAlertCfgStaticOfM9.Content = "静止";
-                                    cbxAlertCfgMoveOfM9.Content = "运动";
-                                    cbxAlertCfgMoveStaticOfM9.Content = "动->静";
-                                    cbxAlertCfgStaticMoveOfM9.Content = "静->动";
-
-                                    tbkMoveStateOfM9.Text = "运动状态";
-
                                     TableOfM9.IsSelected = true;
                                     StackOfM9.DataContext = aM9;
 
                                     // 显示灵敏度
                                     DisplaySensitivityOfM9(aM9.MoveDetectThr, aM9.StaticDetectThr);
-
-                                    tbxMoveStateOfM9.Text = aM9.moveStateS;
 
                                     if (cbxAlertCfgLockOfM9.IsChecked == false)
                                     {
@@ -327,70 +313,54 @@ namespace DeviceSetup_HyperWSN
                                 M40 aM40 = new M40(e.ReceivedBytes, iX, Device.DataPktType.SelfTestFromUsbToPc);
                                 if (aM40 != null)
                                 {
-                                    tbxSensitivityOfM9.IsEnabled = false;
-                                    tbxNewSensitivityOfM9.IsEnabled = false;
-                                    tbxMoveDetectTimeOfM9.IsEnabled = false;
-                                    tbxNewMoveDetectTimeOfM9.IsEnabled = false;
-                                    tbxStaticDetectTimeOfM9.IsEnabled = false;
-                                    tbxNewStaticDetectTimeOfM9.IsEnabled = false;
+                                    TableOfM40.IsSelected = true;
+                                    StackOfM40.DataContext = aM40;
 
-                                    cbxAlertCfgStaticOfM9.Content = "关门";
-                                    cbxAlertCfgMoveOfM9.Content = "开门";
-                                    cbxAlertCfgMoveStaticOfM9.Content = "开->关";
-                                    cbxAlertCfgStaticMoveOfM9.Content = "关->开";
-
-                                    tbkMoveStateOfM9.Text = "门状态";
-
-                                    TableOfM9.IsSelected = true;
-                                    StackOfM9.DataContext = aM40;
-
-                                    tbxMoveStateOfM9.Text = aM40.openStateS;
-
-                                    if (cbxAlertCfgLockOfM9.IsChecked == false)
+                                    if (cbxAlertCfgLockOfM40.IsChecked == false)
                                     {
                                         if (0 != (aM40.AlertCfg & 0x01))
                                         {   // 关门报警
-                                            cbxAlertCfgStaticOfM9.IsChecked = true;
+                                            cbxAlertCfgClosedOfM40.IsChecked = true;
                                         }
                                         else
                                         {
-                                            cbxAlertCfgStaticOfM9.IsChecked = false;
+                                            cbxAlertCfgClosedOfM40.IsChecked = false;
                                         }
 
                                         if (0 != (aM40.AlertCfg & 0x02))
                                         {   // 开门报警
-                                            cbxAlertCfgMoveOfM9.IsChecked = true;
+                                            cbxAlertCfgOpenedOfM40.IsChecked = true;
                                         }
                                         else
                                         {
-                                            cbxAlertCfgMoveOfM9.IsChecked = false;
+                                            cbxAlertCfgOpenedOfM40.IsChecked = false;
                                         }
 
                                         if (0 != (aM40.AlertCfg & 0x04))
                                         {   // 开->关报警
-                                            cbxAlertCfgMoveStaticOfM9.IsChecked = true;
+                                            cbxAlertCfgOpenedClosedOfM40.IsChecked = true;
                                         }
                                         else
                                         {
-                                            cbxAlertCfgMoveStaticOfM9.IsChecked = false;
+                                            cbxAlertCfgOpenedClosedOfM40.IsChecked = false;
                                         }
 
                                         if (0 != (aM40.AlertCfg & 0x08))
                                         {   // 关->开报警
-                                            cbxAlertCfgStaticMoveOfM9.IsChecked = true;
+                                            cbxAlertCfgClosedOpenedOfM40.IsChecked = true;
                                         }
                                         else
                                         {
-                                            cbxAlertCfgStaticMoveOfM9.IsChecked = false;
+                                            cbxAlertCfgClosedOpenedOfM40.IsChecked = false;
                                         }
 
                                         if (0 != (aM40.AlertCfg & 0x10))
                                         {   // 异常报警
-                                            cbxAlertCfgExceptionOfM9.IsChecked = true;
+                                            cbxAlertCfgExceptionOfM40.IsChecked = true;
                                         }
                                         else
                                         {
-                                            cbxAlertCfgExceptionOfM9.IsChecked = false;
+                                            cbxAlertCfgExceptionOfM40.IsChecked = false;
                                         }
                                     }
                                 }
@@ -403,6 +373,16 @@ namespace DeviceSetup_HyperWSN
                                 {
                                     TableOfL1.IsSelected = true;
                                     StackOfL1.DataContext = aL1;
+                                }
+                                break;
+                            }
+                        case Device.DeviceType.WP:
+                            {
+                                WP aWP = new WP(e.ReceivedBytes, iX, Device.DataPktType.SelfTestFromUsbToPc);
+                                if (aWP != null)
+                                {
+                                    TableOfWP.IsSelected = true;
+                                    StackOfWP.DataContext = aWP;
                                 }
                                 break;
                             }
@@ -465,8 +445,15 @@ namespace DeviceSetup_HyperWSN
                 }
 
                 // Timeout
-                TxBuf[TxLen++] = 0x03;
-
+                if (tbxStartRxTimeoutThr.Text == string.Empty)
+                {
+                    TxBuf[TxLen++] = 0x03;
+                }
+                else
+                {
+                    byte TimeoutS = Convert.ToByte(tbxStartRxTimeoutThr.Text);
+                    TxBuf[TxLen++] = (byte)(TimeoutS > 10 ? 10 : TimeoutS);
+                }                
 
                 if (ExistRssiThr == false)
                 {
@@ -535,7 +522,6 @@ namespace DeviceSetup_HyperWSN
 
             //btnStartMonitor.IsEnabled = false;
             btnStopMonitor.IsEnabled = true;
-
         }
 
         private void Timeout_Elapsed(object sender, ElapsedEventArgs e)
@@ -563,12 +549,16 @@ namespace DeviceSetup_HyperWSN
         /// <param name="e"></param>
         private void btnUpdateFactoryOfM1_Click(object sender, RoutedEventArgs e)
         {
+            tbkResultOfM1.Text = "";
+
             M1 updateDevice = new M1();
             try
             {
                 updateDevice.DeviceTypeS = tbxDeviceNameOfM1.Text;
                 updateDevice.DeviceMacS = tbxDeviceMacOfM1.Text;
                 updateDevice.DeviceMacNewS = tbxNewDeviceMacOfM1.Text;
+                updateDevice.DeviceMacNewS = updateDevice.DeviceMacNewS.Replace("\r", "");
+                updateDevice.DeviceMacNewS = updateDevice.DeviceMacNewS.Replace("\n", "");
                 updateDevice.HwRevisionS = tbxNewHwRevisionOfM1.Text;
 
                 byte[] updateCommand = updateDevice.UpdateFactory();
@@ -578,7 +568,20 @@ namespace DeviceSetup_HyperWSN
             }
             catch (Exception ex)
             {
-                MessageBox.Show("参数错误" + ex.Message);
+                tbkResultOfM1.Text = "参数错误" + ex.Message;
+
+                if (tbkResultOfM1.Foreground == System.Windows.Media.Brushes.Red)
+                {
+                    tbkResultOfM1.Foreground = System.Windows.Media.Brushes.Green;
+                }
+                else if (tbkResultOfM1.Foreground == System.Windows.Media.Brushes.Green)
+                {
+                    tbkResultOfM1.Foreground = System.Windows.Media.Brushes.Blue;
+                }
+                else
+                {
+                    tbkResultOfM1.Foreground = System.Windows.Media.Brushes.Red;
+                }
             }
         }
 
@@ -2482,6 +2485,26 @@ namespace DeviceSetup_HyperWSN
                 tbxNewMoveDetectTimeOfM9.Text = tbxMoveDetectTimeOfM9.Text;
                 tbxNewStaticDetectTimeOfM9.Text = tbxStaticDetectTimeOfM9.Text;
             }
+            else if (TableOfM40.IsSelected == true)
+            {
+                tbxNewDeviceMacOfM40.Text = tbxDeviceMacOfM40.Text;
+                tbxNewHwRevisionOfM40.Text = tbxHwRevisionOfM40.Text;
+
+                tbxNewCustomerOfM40.Text = tbxCustomerOfM40.Text;
+                tbxNewDebugOfM40.Text = tbxDebugOfM40.Text;
+                tbxNewCategoryOfM40.Text = tbxCategoryOfM40.Text;
+                tbxNewPatternOfM40.Text = tbxPatternOfM40.Text;
+                tbxNewBpsOfM40.Text = tbxBpsOfM40.Text;
+                tbxNewTxPowerOfM40.Text = tbxTxPowerOfM40.Text;
+                tbxNewChannelOfM40.Text = tbxChannelOfM40.Text;
+                tbxNewMaxLengthOfM40.Text = tbxMaxLengthOfM40.Text;
+
+                tbxNewSampleSendOfM40.Text = tbxSampleSendOfM40.Text;
+                tbxNewIntervalOfM40.Text = tbxIntervalOfM40.Text;
+                tbxNewClosedTimeoutOfM40.Text = tbxClosedTimeoutOfM40.Text;
+                tbxNewOpenedTimeoutOfM40.Text = tbxOpenedTimeoutOfM40.Text;
+                tbxNewAlertSampleIntervalOfM40.Text = tbxAlertSampleIntervalOfM40.Text;
+            }
             else if (TableOfM4.IsSelected == true)
             {
                 tbxNewDeviceMacOfM4.Text = tbxDeviceMacOfM4.Text;
@@ -2556,10 +2579,42 @@ namespace DeviceSetup_HyperWSN
                 tbxNewIntervalWarningOfL1.Text = tbxIntervalWarningOfL1.Text;
                 tbxNewIntervalAlarmOfL1.Text = tbxIntervalAlarmOfL1.Text;
             }
+            else if (TableOfWP.IsSelected == true)
+            {
+                tbxNewDeviceMacOfWP.Text = tbxDeviceMacOfWP.Text;
+                tbxNewHwRevisionOfWP.Text = tbxHwRevisionOfWP.Text;
+
+                tbxNewCustomerOfWP.Text = tbxCustomerOfWP.Text;
+                tbxNewDebugOfWP.Text = tbxDebugOfWP.Text;
+                tbxNewCategoryOfWP.Text = tbxCategoryOfWP.Text;
+                tbxNewPatternOfWP.Text = tbxPatternOfWP.Text;
+                tbxNewBpsOfWP.Text = tbxBpsOfWP.Text;
+                tbxNewTxPowerOfWP.Text = tbxTxPowerOfWP.Text;
+                tbxNewChannelOfWP.Text = tbxChannelOfWP.Text;
+
+                tbxNewSampleIntervalOfWP.Text = tbxSampleIntervalOfWP.Text;
+                tbxNewUploadIntervalOfWP.Text = tbxUploadIntervalOfWP.Text;
+                tbxNewAdhocIntervalSucOfWP.Text = tbxAdhocIntervalSucOfWP.Text;
+                tbxNewAdhocIntervalFaiOfWP.Text = tbxAdhocIntervalFaiOfWP.Text;
+
+                tbxNewLogModeOfWP.Text = tbxLogModeOfWP.Text;
+
+                tbxNewAdhocRssiThrOfWP.Text = tbxAdhocRssiThrOfWP.Text;
+                tbxNewTransRssiThrOfWP.Text = tbxTransRssiThrOfWP.Text;
+
+                tbxNewUartBaudRateOfWP.Text = tbxUartBaudRateOfWP.Text;
+
+                tbxNewHopOfWP.Text = tbxHopOfWP.Text;
+            }
         }
 
         private void btnClear_Click(object sender, RoutedEventArgs e)
         {
+            if (cbxLock.IsChecked == true)
+            {
+                return;
+            }
+
             if (TableOfM1.IsSelected == true)
             {
                 tbxDeviceNameOfM1.Text = "";
@@ -2606,6 +2661,7 @@ namespace DeviceSetup_HyperWSN
                 txtFlashFront.Text = "";
                 txtFlashRear.Text = "";
                 txtFlashQueueLength.Text = "";
+                tbxRstSrc.Text = "";
             }
             else if (TableOfAO2.IsSelected == true)
             {
@@ -2704,6 +2760,50 @@ namespace DeviceSetup_HyperWSN
                 tbxFlashFrontOfM9.Text = "";
                 tbxFlashRearOfM9.Text = "";
                 tbxFlashQueueLengthOfM9.Text = "";
+            }
+            else if (TableOfM40.IsSelected == true)
+            {
+                tbxDeviceNameOfM40.Text = "";
+                tbxDeviceTypeOfM40.Text = "";
+                tbxProtocolOfM40.Text = "";
+
+                tbxPrimaryMacOfM40.Text = "";
+                tbxDeviceMacOfM40.Text = "";
+                tbxSwRevisionOfM40.Text = "";
+                tbxHwRevisionOfM40.Text = "";
+
+                tbxCustomerOfM40.Text = "";
+                tbxDebugOfM40.Text = "";
+                tbxCategoryOfM40.Text = "";
+                tbxPatternOfM40.Text = "";
+                tbxBpsOfM40.Text = "";
+                tbxTxPowerOfM40.Text = "";
+                tbxChannelOfM40.Text = "";
+                tbxMaxLengthOfM40.Text = "";
+
+                tbxCalendarOfM40.Text = "";
+                tbxSampleSendOfM40.Text = "";
+                tbxIntervalOfM40.Text = "";
+                tbxClosedTimeoutOfM40.Text = "";
+                tbxOpenedTimeoutOfM40.Text = "";
+                tbxAlertSampleIntervalOfM40.Text = "";
+                if (cbxAlertCfgLockOfM40.IsChecked == false)
+                {
+                    cbxAlertCfgClosedOfM40.IsChecked = false;
+                    cbxAlertCfgOpenedOfM40.IsChecked = false;
+                    cbxAlertCfgOpenedClosedOfM40.IsChecked = false;
+                    cbxAlertCfgClosedOpenedOfM40.IsChecked = false;
+                    cbxAlertCfgExceptionOfM40.IsChecked = false;
+                }
+
+                tbxICTemperatureOfM40.Text = "";
+                tbxVoltOfM40.Text = "";
+                tbxRssiOfM40.Text = "";
+                tbxOpenStateOfM40.Text = "";
+                tbxFlashIdOfM40.Text = "";
+                tbxFlashFrontOfM40.Text = "";
+                tbxFlashRearOfM40.Text = "";
+                tbxFlashQueueLengthOfM40.Text = "";
             }
             else if (TableOfM4.IsSelected == true)
             {
@@ -2831,6 +2931,76 @@ namespace DeviceSetup_HyperWSN
                 tbxFlashRearOfL1.Text = "";
                 tbxFlashQueueLengthOfL1.Text = "";
             }
+            else if (TableOfWP.IsSelected == true)
+            {
+                tbxDeviceNameOfWP.Text = "";
+                tbxDeviceTypeOfWP.Text = "";
+                tbxPrimaryMacOfWP.Text = "";
+                tbxDeviceMacOfWP.Text = "";
+                tbxProtocolOfWP.Text = "";
+                tbxSwRevisionOfWP.Text = "";
+                tbxHwRevisionOfWP.Text = "";
+
+                tbxCustomerOfWP.Text = "";
+                tbxDebugOfWP.Text = "";
+                tbxCategoryOfWP.Text = "";
+                tbxPatternOfWP.Text = "";
+                tbxBpsOfWP.Text = "";
+                tbxTxPowerOfWP.Text = "";
+                tbxChannelOfWP.Text = "";
+
+
+                tbxCalendarOfWP.Text = "";
+                tbxSampleIntervalOfWP.Text = "";
+                tbxUploadIntervalOfWP.Text = "";
+                tbxAdhocIntervalSucOfWP.Text = "";
+                tbxAdhocIntervalFaiOfWP.Text = "";
+
+                tbxLogModeOfWP.Text = "";
+                tbxAdhocRssiThrOfWP.Text = "";
+                tbxTransRssiThrOfWP.Text = "";
+                tbxUartBaudRateOfWP.Text = "";
+                tbxHopOfWP.Text = "";
+
+                tbxICTemperatureOfWP.Text = "";
+                tbxVoltOfWP.Text = "";
+                tbxRstSrcOfWP.Text = "";
+                tbxRssiOfWP.Text = "";
+                tbxSaveErrorOfWP.Text = "";
+                tbxFileNumOfWP.Text = "";
+                tbxStatusPktNumOfWP.Text = "";
+            }
+        }
+
+        private void ConsoleLog(string direct, byte[] Buf, UInt16 Start, UInt16 Len)
+        {
+            if (direct == null && (Buf == null || Buf.Length == 0 || Len == 0))
+            {
+                return;
+            }
+
+            if (chkLockLog.IsChecked == true)
+            {
+                return;
+            }
+
+            if (Buf == null)
+            {
+                tbxConsole.Text = "\r\n" + Logger.GetTimeString() + "\t" + direct + "\r\n" + tbxConsole.Text;
+            }
+            else
+            {
+                tbxConsole.Text = Logger.GetTimeString() + "\t" + direct + "\t" + MyCustomFxn.ToHexString(Buf, Start, Len) + "\r\n" + tbxConsole.Text;
+            }
+
+            UInt16 ConsoleMaxLine = Convert.ToUInt16(txtLogLineLimit.Text);
+            if (tbxConsole.LineCount > ConsoleMaxLine)
+            {
+                int start = tbxConsole.GetCharacterIndexFromLineIndex(ConsoleMaxLine);  // 末尾行第一个字符的索引
+                int length = tbxConsole.GetLineLength(ConsoleMaxLine);                  // 末尾行字符串的长度
+                tbxConsole.Select(start, start + length);                               // 选中末尾一行
+                tbxConsole.SelectedText = "END";
+            }
         }
 
         /// <summary>
@@ -2842,7 +3012,7 @@ namespace DeviceSetup_HyperWSN
         private void SerialPort_Send(byte[] TxBuf, UInt16 IndexOfStart, UInt16 TxLen)
         {
             // 显示Log
-            // ConsoleLog("TX", TxBuf, IndexOfStart, TxLen);
+            ConsoleLog("TX", TxBuf, IndexOfStart, TxLen);
 
             // 发送数据
             SerialPort.Send(TxBuf, IndexOfStart, TxLen);
@@ -4358,6 +4528,739 @@ namespace DeviceSetup_HyperWSN
             catch (Exception ex)
             {
                 MessageBox.Show("参数错误：" + ex.Message);
+            }
+        }
+
+        private void btnUpdateFactoryOfM40_Click(object sender, RoutedEventArgs e)
+        {
+            byte Protocol = 1;
+            UInt32 DstId = 0;
+
+            M40 aM40 = new M40();
+
+            try
+            {
+                byte[] ByteBuf = null;
+
+                ByteBuf = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfM40.Text);
+                if (ByteBuf == null || ByteBuf.Length < 4)
+                {
+                    MessageBox.Show("DeviceMac错误！");
+                    return;
+                }
+                DstId = ((UInt32)ByteBuf[0] << 24) | ((UInt32)ByteBuf[1] << 16) | ((UInt32)ByteBuf[2] << 8) | ((UInt32)ByteBuf[3] << 0);
+
+                ByteBuf = MyCustomFxn.HexStringToByteArray(tbxNewDeviceMacOfM40.Text);
+                if (ByteBuf == null || ByteBuf.Length < 4)
+                {
+                    MessageBox.Show("New Mac错误！");
+                    return;
+                }
+                aM40.DeviceMacV = ((UInt32)ByteBuf[0] << 24) | ((UInt32)ByteBuf[1] << 16) | ((UInt32)ByteBuf[2] << 8) | ((UInt32)ByteBuf[3] << 0);
+
+                ByteBuf = MyCustomFxn.HexStringToByteArray(tbxNewHwRevisionOfM40.Text);
+                if (ByteBuf == null || ByteBuf.Length < 4)
+                {
+                    MessageBox.Show("新硬件版本错误！");
+                    return;
+                }
+                aM40.HwRevisionV = ((UInt32)ByteBuf[0] << 24) | ((UInt32)ByteBuf[1] << 16) | ((UInt32)ByteBuf[2] << 8) | ((UInt32)ByteBuf[3] << 0);
+            }
+            catch
+            {
+                MessageBox.Show("参数错误！");
+                return;
+            }
+
+            byte[] TxBuf = aM40.WriteFactoryCfg(Protocol, DstId);
+
+            SerialPort_Send(TxBuf, 0, (UInt16)TxBuf.Length);
+        }
+
+        private void btnUpdateUserOfM40_Click(object sender, RoutedEventArgs e)
+        {
+            byte Protocol = 1;
+            UInt32 DstId = 0;
+
+            M40 aM40 = new M40();
+
+            try
+            {
+                byte[] ByteBuf = null;
+
+                if (cbxIsAllOfM40.IsChecked == false)
+                {
+                    ByteBuf = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfM40.Text);
+                    if (ByteBuf == null || ByteBuf.Length < 4)
+                    {
+                        MessageBox.Show("DeviceMac错误！");
+                        return;
+                    }
+                    DstId = ((UInt32)ByteBuf[0] << 24) | ((UInt32)ByteBuf[1] << 16) | ((UInt32)ByteBuf[2] << 8) | ((UInt32)ByteBuf[3] << 0);
+                }
+
+                ByteBuf = MyCustomFxn.HexStringToByteArray(tbxNewCustomerOfM40.Text);
+                if (ByteBuf == null || ByteBuf.Length < 2)
+                {
+                    MessageBox.Show("客户码错误！");
+                    return;
+                }
+                aM40.CustomerV = (UInt16)(((UInt16)ByteBuf[0] << 8) | ((UInt16)ByteBuf[1] << 0));
+
+                ByteBuf = MyCustomFxn.HexStringToByteArray(tbxNewDebugOfM40.Text);
+                if (ByteBuf == null || ByteBuf.Length < 2)
+                {
+                    MessageBox.Show("Debug状态错误！");
+                    return;
+                }
+                aM40.DebugV = (UInt16)(((UInt16)ByteBuf[0] << 8) | ((UInt16)ByteBuf[1] << 0));
+
+                aM40.Category = Convert.ToByte(tbxNewCategoryOfM40.Text);
+
+                aM40.Pattern = Convert.ToByte(tbxNewPatternOfM40.Text);
+
+                aM40.Bps = Convert.ToByte(tbxNewBpsOfM40.Text);
+
+                aM40.TxPower = Convert.ToInt16(tbxNewTxPowerOfM40.Text);
+
+                aM40.Channel = Convert.ToByte(tbxNewChannelOfM40.Text);
+
+                aM40.MaxLength = Convert.ToByte(tbxNewMaxLengthOfM40.Text);
+
+                aM40.Calendar = System.DateTime.Now;
+                tbxCalendarOfM40.Text = aM40.Calendar.ToString("yyyy-MM-dd HH:mm:ss");
+            }
+            catch
+            {
+                MessageBox.Show("参数错误！");
+                return;
+            }
+
+            byte[] TxBuf = aM40.WriteUserCfg(Protocol, DstId);
+
+            SerialPort_Send(TxBuf, 0, (UInt16)TxBuf.Length);
+        }
+
+        private void btnUpdateApplicationOfM40_Click(object sender, RoutedEventArgs e)
+        {
+            byte Protocol = 1;
+            UInt32 DstId = 0;
+
+            M40 aM40 = new M40();
+
+            try
+            {
+                byte[] ByteBuf = null;
+
+                if (cbxIsAllOfM40.IsChecked == false)
+                {
+                    ByteBuf = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfM40.Text);
+                    if (ByteBuf == null || ByteBuf.Length < 4)
+                    {
+                        MessageBox.Show("DeviceMac错误！");
+                        return;
+                    }
+                    DstId = ((UInt32)ByteBuf[0] << 24) | ((UInt32)ByteBuf[1] << 16) | ((UInt32)ByteBuf[2] << 8) | ((UInt32)ByteBuf[3] << 0);
+                }
+
+                aM40.Calendar = System.DateTime.Now;
+                tbxCalendarOfM40.Text = aM40.Calendar.ToString("yyyy-MM-dd HH:mm:ss");
+
+                aM40.Interval = Convert.ToUInt16(tbxNewIntervalOfM40.Text);
+
+                aM40.AlertInterval = Convert.ToUInt16(tbxNewAlertSampleIntervalOfM40.Text);
+
+                aM40.SampleSend = Convert.ToByte(tbxNewSampleSendOfM40.Text);
+
+                if (cbxAlertCfgClosedOfM40.IsChecked == true)
+                {   // 关报警
+                    aM40.AlertCfg |= 0x01;
+                }
+
+                if (cbxAlertCfgOpenedOfM40.IsChecked == true)
+                {   // 开报警
+                    aM40.AlertCfg |= 0x02;
+                }
+
+                if (cbxAlertCfgOpenedClosedOfM40.IsChecked == true)
+                {   // 开->关报警
+                    aM40.AlertCfg |= 0x04;
+                }
+
+                if (cbxAlertCfgClosedOpenedOfM40.IsChecked == true)
+                {   // 关->开报警
+                    aM40.AlertCfg |= 0x08;
+                }
+
+                if (cbxAlertCfgExceptionOfM40.IsChecked == true)
+                {   // 异常报警
+                    aM40.AlertCfg |= 0x10;
+                }
+
+                aM40.ClosedTimeoutS = Convert.ToUInt16(tbxNewClosedTimeoutOfM40.Text);
+
+                aM40.OpenedTimeoutS = Convert.ToUInt16(tbxNewOpenedTimeoutOfM40.Text);
+            }
+            catch
+            {
+                MessageBox.Show("参数错误！");
+                return;
+            }
+
+            byte[] TxBuf = aM40.WriteAppCfg(Protocol, DstId);
+
+            SerialPort_Send(TxBuf, 0, (UInt16)TxBuf.Length);
+        }
+
+        private void btnDeleteDataOfM40_Click(object sender, RoutedEventArgs e)
+        {
+            byte Protocol = 1;
+            UInt32 DstId = 0;
+
+            M40 aM40 = new M40();
+
+            try
+            {
+                byte[] ByteBuf = null;
+
+                if (cbxIsAllOfM40.IsChecked == false)
+                {
+                    ByteBuf = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfM40.Text);
+                    if (ByteBuf == null || ByteBuf.Length < 4)
+                    {
+                        MessageBox.Show("DeviceMac错误！");
+                        return;
+                    }
+                    DstId = ((UInt32)ByteBuf[0] << 24) | ((UInt32)ByteBuf[1] << 16) | ((UInt32)ByteBuf[2] << 8) | ((UInt32)ByteBuf[3] << 0);
+                }
+            }
+            catch
+            {
+                MessageBox.Show("参数错误！");
+                return;
+            }
+
+            byte[] TxBuf = aM40.DeleteHistory(Protocol, DstId);
+
+            SerialPort_Send(TxBuf, 0, (UInt16)TxBuf.Length);
+        }
+
+        private void cbxAlertCfgLockOfM40_Click(object sender, RoutedEventArgs e)
+        {
+            if (cbxAlertCfgLockOfM40.IsChecked == false)
+            {
+                cbxAlertCfgClosedOfM40.IsEnabled = true;
+                cbxAlertCfgOpenedOfM40.IsEnabled = true;
+                cbxAlertCfgOpenedClosedOfM40.IsEnabled = true;
+                cbxAlertCfgClosedOpenedOfM40.IsEnabled = true;
+                cbxAlertCfgExceptionOfM40.IsEnabled = true;
+            }
+            else
+            {
+                cbxAlertCfgClosedOfM40.IsEnabled = false;
+                cbxAlertCfgOpenedOfM40.IsEnabled = false;
+                cbxAlertCfgOpenedClosedOfM40.IsEnabled = false;
+                cbxAlertCfgClosedOpenedOfM40.IsEnabled = false;
+                cbxAlertCfgExceptionOfM40.IsEnabled = false;
+            }
+        }
+
+        private void btnLogClear_Click(object sender, RoutedEventArgs e)
+        {
+            tbxConsole.Text = "";
+        }
+
+        private Int16 WriteFactoryCfgOfWP()
+        {
+            byte[] TxBuf = new byte[25];
+            UInt16 TxLen = 0;
+
+            // Start
+            TxBuf[TxLen++] = 0xCE;
+
+            // Length
+            TxBuf[TxLen++] = 0x00;
+
+            // Cmd
+            TxBuf[TxLen++] = 0xA1;
+
+            // USB Protocol
+            TxBuf[TxLen++] = 0x02;
+
+            // 设备类型
+            TxBuf[TxLen++] = (byte)Device.DeviceType.WP;
+
+            // Protocol
+            TxBuf[TxLen++] = 0x01;
+
+            // Sensor Mac
+            byte[] ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfWP.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+            {
+                return -1;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+            TxBuf[TxLen++] = ByteBufTmp[2];
+            TxBuf[TxLen++] = ByteBufTmp[3];
+
+            // New Sensor Mac
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxNewDeviceMacOfWP.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+            {
+                return -2;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+            TxBuf[TxLen++] = ByteBufTmp[2];
+            TxBuf[TxLen++] = ByteBufTmp[3];
+
+            // Hardware Revision
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxNewHwRevisionOfWP.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+            {
+                return -3;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+            TxBuf[TxLen++] = ByteBufTmp[2];
+            TxBuf[TxLen++] = ByteBufTmp[3];
+
+            // 保留
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+
+            // CRC16
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 2, (UInt16)(TxLen - 2));
+            TxBuf[TxLen++] = (byte)((crc & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((crc & 0x00FF) >> 0);
+
+            // End
+            TxBuf[TxLen++] = 0xEC;
+
+            // 重写长度位
+            TxBuf[1] = (byte)(TxLen - 5);
+
+            SerialPort_Send(TxBuf, 0, TxLen);
+
+            return 0;
+        }
+
+        private void btnUpdateFactoryOfWP_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                WriteFactoryCfgOfWP();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("参数错误" + ex.Message);
+            }
+        }
+
+        private Int16 WriteUserCfgOfWP()
+        {
+            byte[] TxBuf = new byte[36];
+            UInt16 TxLen = 0;
+
+            byte[] ByteBufTmp = null;
+
+            // Start
+            TxBuf[TxLen++] = 0xCE;
+
+            // Length
+            TxBuf[TxLen++] = 0x00;
+
+            // Cmd
+            TxBuf[TxLen++] = 0xA2;
+
+            // USB Protocol
+            TxBuf[TxLen++] = 0x02;
+
+            // 设备类型
+            TxBuf[TxLen++] = (byte)Device.DeviceType.WP;
+
+            // Protocol
+            TxBuf[TxLen++] = 0x01;
+
+            // Sensor Mac
+            if (cbxIsAllOfWP.IsChecked == true)
+            {
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+            }
+            else
+            {
+                ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfWP.Text);
+                if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+                {
+                    return -1;
+                }
+                TxBuf[TxLen++] = ByteBufTmp[0];
+                TxBuf[TxLen++] = ByteBufTmp[1];
+                TxBuf[TxLen++] = ByteBufTmp[2];
+                TxBuf[TxLen++] = ByteBufTmp[3];
+            }
+
+            // Customer
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxNewCustomerOfWP.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 2)
+            {
+                return -2;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+
+            // Debug
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxNewDebugOfWP.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 2)
+            {
+                return -2;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+
+            // Category
+            TxBuf[TxLen++] = Convert.ToByte(tbxNewCategoryOfWP.Text);
+
+            // Pattern
+            TxBuf[TxLen++] = Convert.ToByte(tbxNewPatternOfWP.Text);
+
+            // Bps
+            TxBuf[TxLen++] = Convert.ToByte(tbxNewBpsOfWP.Text);
+
+            // TX Power
+            Int16 txPower = Convert.ToInt16(tbxNewTxPowerOfWP.Text);
+            TxBuf[TxLen++] = (byte)txPower;
+
+            // Channel
+            TxBuf[TxLen++] = Convert.ToByte(tbxNewChannelOfWP.Text);
+
+            // 日期和时间
+            tbxCalendarOfL1.Text = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            DateTime NowCalendar = Convert.ToDateTime(tbxCalendarOfWP.Text);
+            ByteBufTmp = MyCustomFxn.DataTimeToByteArray(NowCalendar);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[0]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[1]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[2]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[3]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[4]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[5]);
+
+            // 保留
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+
+            // CRC16
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 2, (UInt16)(TxLen - 2));
+            TxBuf[TxLen++] = (byte)((crc & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((crc & 0x00FF) >> 0);
+
+            // End
+            TxBuf[TxLen++] = 0xEC;
+
+            // 重写长度位
+            TxBuf[1] = (byte)(TxLen - 5);
+
+            SerialPort_Send(TxBuf, 0, TxLen);
+
+            return 0;
+        }
+
+        private void btnUpdateUserOfWP_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                WriteUserCfgOfWP();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("参数错误" + ex.Message);
+            }
+        }
+
+        private Int16 WriteAppCfgOfWP()
+        {
+            byte[] TxBuf = new byte[36];
+            UInt16 TxLen = 0;
+
+            byte[] ByteBufTmp = null;
+
+            // Start
+            TxBuf[TxLen++] = 0xCE;
+
+            // Length
+            TxBuf[TxLen++] = 0x00;
+
+            // Cmd
+            TxBuf[TxLen++] = 0xA3;
+
+            // USB Protocol
+            TxBuf[TxLen++] = 0x02;
+
+            // 设备类型
+            TxBuf[TxLen++] = (byte)Device.DeviceType.WP;
+
+            // Protocol
+            TxBuf[TxLen++] = 0x01;
+
+            // Sensor Mac
+            if (cbxIsAllOfWP.IsChecked == true)
+            {
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+            }
+            else
+            {
+                ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfWP.Text);
+                if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+                {
+                    return -1;
+                }
+                TxBuf[TxLen++] = ByteBufTmp[0];
+                TxBuf[TxLen++] = ByteBufTmp[1];
+                TxBuf[TxLen++] = ByteBufTmp[2];
+                TxBuf[TxLen++] = ByteBufTmp[3];
+            }
+
+            // 日期和时间
+            tbxCalendarOfL1.Text = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            DateTime ThisCalendar = Convert.ToDateTime(tbxCalendarOfWP.Text);
+            ByteBufTmp = MyCustomFxn.DataTimeToByteArray(ThisCalendar);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[0]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[1]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[2]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[3]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[4]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[5]);
+
+            // 采集间隔
+            UInt16 Interval = Convert.ToUInt16(tbxNewSampleIntervalOfWP.Text);
+            TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+            // 上传间隔
+            Interval = Convert.ToUInt16(tbxNewUploadIntervalOfWP.Text);
+            TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+            // 正常组网间隔
+            Interval = Convert.ToUInt16(tbxNewAdhocIntervalSucOfWP.Text);
+            TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+            // 异常组网间隔
+            Interval = Convert.ToUInt16(tbxNewAdhocIntervalFaiOfWP.Text);
+            TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+            // 日志模式
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxNewLogModeOfWP.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 1)
+            {
+                return -1;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+
+            // 组网时的RSSI阈值
+            TxBuf[TxLen++] =(byte) Convert.ToInt16(tbxNewAdhocRssiThrOfWP.Text);
+
+            // 传输时的RSSI阈值
+            TxBuf[TxLen++] = (byte)Convert.ToInt16(tbxNewTransRssiThrOfWP.Text);
+
+            // 串口波特率
+            TxBuf[TxLen++] = Convert.ToByte(tbxNewUartBaudRateOfWP.Text);
+
+            // Hop
+            TxBuf[TxLen++] = Convert.ToByte(tbxNewHopOfWP.Text);
+
+            // 保留位
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+
+            // CRC16
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 2, (UInt16)(TxLen - 2));
+            TxBuf[TxLen++] = (byte)((crc & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((crc & 0x00FF) >> 0);
+
+            // End
+            TxBuf[TxLen++] = 0xEC;
+
+            // 重写长度位
+            TxBuf[1] = (byte)(TxLen - 5);
+
+            SerialPort_Send(TxBuf, 0, TxLen);
+
+            return 0;
+        }
+
+        private void btnUpdateApplicationOfWP_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                WriteAppCfgOfWP();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("参数错误" + ex.Message);
+            }
+        }
+
+        private Int16 DeleteHistoryOfWP()
+        {
+            byte[] TxBuf = new byte[20];
+            UInt16 TxLen = 0;
+
+            byte[] ByteBufTmp = null;
+
+            // Start
+            TxBuf[TxLen++] = 0xCE;
+
+            // Length
+            TxBuf[TxLen++] = 0x00;
+
+            // Cmd
+            TxBuf[TxLen++] = 0xA4;
+
+            // USB Protocol
+            TxBuf[TxLen++] = 0x02;
+
+            // 设备类型
+            TxBuf[TxLen++] = (byte)Device.DeviceType.WP;
+
+            // Protocol
+            TxBuf[TxLen++] = 0x01;
+
+            // Sensor Mac
+            if (cbxIsAllOfWP.IsChecked == true)
+            {
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+            }
+            else
+            {
+                ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfWP.Text);
+                if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+                {
+                    return -1;
+                }
+                TxBuf[TxLen++] = ByteBufTmp[0];
+                TxBuf[TxLen++] = ByteBufTmp[1];
+                TxBuf[TxLen++] = ByteBufTmp[2];
+                TxBuf[TxLen++] = ByteBufTmp[3];
+            }
+
+            // Which
+            TxBuf[TxLen++] = 0x00;
+
+            // 保留位
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+
+            // CRC16
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 2, (UInt16)(TxLen - 2));
+            TxBuf[TxLen++] = (byte)((crc & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((crc & 0x00FF) >> 0);
+
+            // End
+            TxBuf[TxLen++] = 0xEC;
+
+            // 重写长度位
+            TxBuf[1] = (byte)(TxLen - 5);
+
+            SerialPort_Send(TxBuf, 0, TxLen);
+
+            return 0;
+        }
+
+        private void btnDeleteDataOfWP_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                DeleteHistoryOfWP();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("参数错误" + ex.Message);
+            }
+        }
+
+
+        private void tbxNewDeviceMacOfM1_inTextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (cbxBatch.IsChecked == false)
+            {
+                return;
+            }
+
+            if (tbxNewDeviceMacOfM1.Text == null || tbxNewDeviceMacOfM1.Text == string.Empty || tbxNewDeviceMacOfM1.Text.Length == 0)
+            {
+                return;
+            }
+
+            // 获取末尾的字符
+            String lastChar = tbxNewDeviceMacOfM1.Text.Substring(tbxNewDeviceMacOfM1.Text.Length - 1, 1);
+
+            // 将光标移到末尾
+            this.tbxNewDeviceMacOfM1.Focus();
+            this.tbxNewDeviceMacOfM1.Select(this.tbxNewDeviceMacOfM1.Text.Length, 0);
+            this.tbxNewDeviceMacOfM1.ScrollToEnd();
+
+            // 去除字符串中的空格和TAB符
+            String inputStr = tbxNewDeviceMacOfM1.Text;
+            inputStr = inputStr.Replace(" ", "");
+            inputStr = inputStr.Replace("\t", "");
+            if (inputStr.Length < 8)
+            {
+                return;
+            }
+
+            // 转为字符数组
+            byte[] ByteBufTmp = MyCustomFxn.HexStringToByteArray(inputStr);
+            if (ByteBufTmp == null || ByteBufTmp.Length != 4)
+            {
+                return;
+            }
+
+            // 判断末尾是不是回车符
+            if (lastChar.Equals("\n") == false)
+            {
+                return;
+            }
+
+            UInt32 InputVal = ((UInt32)ByteBufTmp[0] << 24) | ((UInt32)ByteBufTmp[1] << 16) | ((UInt32)ByteBufTmp[2] << 8) | ((UInt32)ByteBufTmp[3] << 0);
+
+            if(InputVal == 0)
+            {   // 上电自检
+                btnStartMonitor_Click(sender, e);
+            }else
+            {   // 修改出厂配置
+                btnUpdateFactoryOfM1_Click(sender, e);
+            }
+            
+
+            // 执行成功后，清除之前输入的内容，并将光标移到此位置
+            tbxNewDeviceMacOfM1.Text = "";
+            // 将光标移到末尾
+            this.tbxNewDeviceMacOfM1.Focus();
+            this.tbxNewDeviceMacOfM1.Select(this.tbxNewDeviceMacOfM1.Text.Length, 0);
+            this.tbxNewDeviceMacOfM1.ScrollToEnd();
+        }
+
+        private void tbxNewDeviceMacOfM1_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            tbxNewDeviceMacOfM1_inTextChanged(sender, e);
+
+            if(tbxNewDeviceMacOfM1.Text.Contains("\n") == true || tbxNewDeviceMacOfM1.Text.Contains("\r") == true)
+            {   // 删除字符串中的回车换行符
+                tbxNewDeviceMacOfM1.Text = tbxNewDeviceMacOfM1.Text.Replace("\n", "");
+                tbxNewDeviceMacOfM1.Text = tbxNewDeviceMacOfM1.Text.Replace("\r", "");
             }
         }
     }

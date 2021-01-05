@@ -5,13 +5,13 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ReceiveFile"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+        Title="MainWindow" Height="600" Width="800">
     <Grid>
-        <Image x:Name="image" HorizontalAlignment="Left" Height="193" Margin="87,93,0,0" VerticalAlignment="Top" Width="240"/>
-        <Grid Margin="0,22,0,275">
+        <Grid Margin="0,22,0,503">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="0.8*"/>
                 <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
@@ -20,6 +20,9 @@
             <Button x:Name="btnOpenComport" Grid.Column="2" Content="Open" Click="btnOpenComport_Click"  Margin="0 0 10 0" VerticalAlignment="Center"/>
             <Button x:Name="btnFindComport" Grid.Column="3" Content="Refersh" Click="btnFindComport_Click" Margin="0 0 10 0" VerticalAlignment="Center"/>
         </Grid>
+        <Image x:Name="image" HorizontalAlignment="Left" Height="421" Margin="10,148,0,0" VerticalAlignment="Top" Width="772"/>
+        <Button x:Name="button" Content="浏览" HorizontalAlignment="Left" Margin="470,92,0,0" VerticalAlignment="Top" Width="76" Click="button_Click"/>
+        <TextBox x:Name="tbxFileName" HorizontalAlignment="Left" Height="24" Margin="100,92,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="312"/>
 
     </Grid>
 </Window>

@@ -68,6 +68,30 @@ namespace YyWsnDeviceLibrary
         }
 
         /// <summary>
+        /// 计算校验和
+        /// </summary>
+        /// <param name="seed"></param>
+        /// <param name="input"></param>
+        /// <param name="IndexOfStart"></param>
+        /// <param name="nbrOfBytes"></param>
+        /// <returns></returns>
+        static public byte CheckSum8(byte seed, byte[] input, UInt16 IndexOfStart, UInt16 nbrOfBytes)
+        {
+            nbrOfBytes = (UInt16)(nbrOfBytes > 0xFFFE ? 0xFFFE : nbrOfBytes);
+
+            byte sum = seed;
+
+            UInt16 iX = 0;
+
+            for (; iX < nbrOfBytes; iX++)
+            {
+                sum += input[IndexOfStart + iX];
+            }
+
+            return sum;
+        }
+
+        /// <summary>
         /// 计算CRC8
         /// </summary>
         /// <param name="polynomial"></param>
@@ -131,11 +155,67 @@ namespace YyWsnDeviceLibrary
             return crc;
         }
 
+        static public UInt16 CRC16(UInt16 polynomial, UInt16 seed, byte[] input, UInt32 IndexOfStart, UInt32 nbrOfBytes)
+        {
+            UInt16 crc = seed, bit = 0;
+
+            UInt32 byteCtr = 0;
+
+            for (byteCtr = 0; byteCtr < nbrOfBytes; byteCtr++)
+            {
+                crc ^= (UInt16)(input[IndexOfStart + byteCtr] << 8);
+
+                for (bit = 8; bit > 0; bit--)
+                {
+                    if ((crc & 0x8000) == 0)
+                    {
+                        crc <<= 1;
+                    }
+                    else
+                    {
+                        crc = (UInt16)((crc << 1) ^ polynomial);
+                    }
+                }
+            }
+
+            return crc;
+        }
+
+        // TODO: 2020-12-02 未完成
+        static public UInt32 CRC32(UInt32 polynomial, UInt32 seed, byte[] input, UInt32 IndexOfStart, UInt32 nbrOfBytes)
+        {
+            UInt32 crc = seed, bit = 0;
+
+            UInt32 byteCtr = 0;
+
+            for (byteCtr = 0; byteCtr < nbrOfBytes; byteCtr++)
+            {
+                crc ^= (UInt32)(input[IndexOfStart + byteCtr] << 24);
+
+                for (bit = 8; bit > 0; bit--)
+                {
+                    if ((crc & 0x80000000) == 0)
+                    {
+                        crc = (UInt32)((crc << 1) ^ polynomial);
+                       
+                    }
+                    else
+                    {
+                        crc <<= 1;
+                    }
+                }
+
+                crc ^= 0xFFFFFFFF;
+            }
+
+            return crc;
+        }
+
         /// <summary>
         /// Modbus CRC16的计算方法
         /// </summary>
-        /// <param name="polynomial"></param>
-        /// <param name="seed"></param>
+        /// <param name="polynomial"> 0xA001 </param>
+        /// <param name="seed"> 0xFFFF </param>
         /// <param name="input"></param>
         /// <param name="IndexOfStart"></param>
         /// <param name="nbrOfBytes"></param>
@@ -249,20 +329,30 @@ namespace YyWsnDeviceLibrary
         }
 
         /// <summary>
-        /// 将16进制的字符串转换为字节数组
+        /// 从左到右，将16进制的字符串转换为字节数组
         /// </summary>
         /// <param name="s"></param>
         /// <returns></returns>
         static public byte[] HexStringToByteArray(string hexStr)
         {
+            if(hexStr == null)
+            {
+                return null;
+            }
+
+            if(hexStr == "")
+            {
+                return null;
+            }
+
             try
             {
-                // 去除字符串中的空格、回车、换行、英文逗号、中文逗号
+                // 去除字符串中的空格、回车、换行、英文逗号、中文逗号                
                 hexStr = hexStr.Replace(" ", "");
+                hexStr = hexStr.Replace("\xA0", "");
                 hexStr = hexStr.Replace("\r", "");
                 hexStr = hexStr.Replace("\n", "");
                 hexStr = hexStr.Replace(",", "");
-                hexStr = hexStr.Replace("，", "");
 
                 // 判断字符串中是否有非16进制数
                 UInt16 StrLen = HexString_isRight(hexStr);
@@ -305,6 +395,94 @@ namespace YyWsnDeviceLibrary
             {
                 return null;
             }
+        }
+
+        /// <summary>
+        /// 从右到左，将16进制的字符串转换为字节数组
+        /// </summary>
+        /// <param name="hexStr"></param>
+        /// <returns></returns>
+        static public byte[] HexStringToByteArrayRightLeft(string hexStr)
+        {
+            if (hexStr == null)
+            {
+                return null;
+            }
+
+            if (hexStr == "")
+            {
+                return null;
+            }
+
+            try
+            {
+                // 去除字符串中的空格、回车、换行、英文逗号、中文逗号
+                hexStr = hexStr.Replace(" ", "");
+                hexStr = hexStr.Replace("\r", "");
+                hexStr = hexStr.Replace("\n", "");
+                hexStr = hexStr.Replace(",", "");
+                hexStr = hexStr.Replace("，", "");
+
+                // 判断字符串中是否有非16进制数
+                UInt16 StrLen = HexString_isRight(hexStr);
+                if (StrLen == 0)
+                {
+                    return null;
+                }
+
+                // 计算字节数组的长度
+                UInt16 BufLen = 0;
+                if (0 == (StrLen % 2))
+                {
+                    BufLen = (UInt16)(StrLen / 2);
+                }
+                else
+                {
+                    BufLen = (UInt16)(StrLen / 2 + 1);
+                }
+
+                // 创建字节数组
+                byte[] Buf = new byte[BufLen];
+
+                // 填充字节数组的内容
+                for (UInt16 iCnt = 0; iCnt < BufLen - 1; iCnt++)
+                {
+                    Buf[BufLen - 1 - iCnt] = (byte)Convert.ToByte(hexStr.Substring(StrLen - 2 - iCnt * 2, 2), 16);
+                }
+
+                if (0 == (StrLen % 2))
+                {
+                    Buf[0] = (byte)Convert.ToByte(hexStr.Substring(StrLen - 2 - (BufLen - 1) * 2, 2), 16);
+                }
+                else
+                {
+                    Buf[0] = (byte)Convert.ToByte(hexStr.Substring(StrLen - 2 - (BufLen - 1) * 2 + 1, 1), 16);
+                }
+
+                return Buf;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        static public UInt32 HexStringToUInt32(string hexStr)
+        {
+            byte[] ByteBuf = HexStringToByteArrayRightLeft(hexStr);
+            if (ByteBuf == null || ByteBuf.Length == 0 || ByteBuf.Length > 4)
+            {
+                return 0;
+            }
+
+            UInt32 Val = 0;
+
+            for (int iX = 0; iX < ByteBuf.Length; iX++)
+            {
+                Val = Val * 256 + ByteBuf[iX];
+            }
+
+            return Val;
         }
 
         /// <summary>
@@ -355,6 +533,16 @@ namespace YyWsnDeviceLibrary
         /// <param name="dateTime"></param>
         /// <returns></returns>
         static public byte DecimalToBcd(byte iValue)
+        {
+            if (iValue > 99)
+            {
+                return 0;       // 输入的数值无法转换为BCD码
+            }
+
+            return (byte)((iValue / 10 * 0x10) + (iValue % 10));
+        }
+
+        static public byte DecimalToBcd(int iValue)
         {
             if (iValue > 99)
             {

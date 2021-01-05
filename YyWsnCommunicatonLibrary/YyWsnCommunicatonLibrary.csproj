@@ -51,8 +51,10 @@
   <ItemGroup>
     <Compile Include="ActiveMQHelper.cs" />
     <Compile Include="ApplicationConfig.cs" />
+    <Compile Include="BinaryFile.cs" />
     <Compile Include="BootLoader.cs" />
     <Compile Include="BootLoaderEventArgs.cs" />
+    <Compile Include="BSL.cs" />
     <Compile Include="FileHelper.cs" />
     <Compile Include="HardwareEnum.cs" />
     <Compile Include="Logger.cs" />

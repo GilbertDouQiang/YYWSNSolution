@@ -44,6 +44,7 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
+                    <CheckBox x:Name="cbxAutoNtp" Grid.Column="0" Content="自动授时" IsChecked="True" Margin="0,3,10,0" HorizontalAlignment="Right" />
                     <Button x:Name="btnNtpTota" Grid.Column="1" Content="授时" Click="btnNtp_Click"  VerticalAlignment="Center"/>
                     <Button x:Name="btnExport" Grid.Column="3" Content="导出表格" Click="btnExportData_Click"  VerticalAlignment="Center"/>
                     <Button x:Name="btnClear" Grid.Column="5" Content="清空显示" Click="btnClearData_Click"  VerticalAlignment="Center"/>
@@ -256,11 +257,14 @@
                             </Grid.ColumnDefinitions>
 
                             <TextBlock  Grid.Column="1" Text="转发策略" Margin="0,0,4,0" HorizontalAlignment="Right"/>
-                            <TextBox Grid.Column="2" x:Name="tbxTransPolicy" Margin="0,0,5,0" IsReadOnly="True" MaxLength="2" MaxLines="1"/>
-                            <TextBox Grid.Column="3" x:Name="tbxTransPolicyNew"   Margin="5,0,0,0" MaxLength="2" MaxLines="1"/>
-                            <TextBlock  Grid.Column="5" Text="保留位" Margin="0,0,4,0" HorizontalAlignment="Right"/>
-                            <TextBox Grid.Column="6" x:Name="tbxReserved" Margin="0,0,5,0" IsReadOnly="True" MaxLength="5" MaxLines="1" Height="18"/>
-                            <TextBox Grid.Column="7" x:Name="tbxReservedNew"    Margin="5,0,0,0" MaxLines="1" MaxLength="5"/>
+                            <TextBox Grid.Column="2" x:Name="tbxTransPolicy" Margin="0,0,5,0" IsReadOnly="True" MaxLength="3" MaxLines="1"/>
+                            <TextBox Grid.Column="3" x:Name="tbxTransPolicyNew"   Margin="5,0,0,0" MaxLength="3" MaxLines="1"/>
+                            <TextBlock  Grid.Column="5" Text="RSSI阈值" Margin="0,0,4,0" HorizontalAlignment="Right"/>
+                            <TextBox Grid.Column="6" x:Name="tbxRssiThr" Margin="0,0,5,0" IsReadOnly="True" MaxLength="4" MaxLines="1" Height="18"/>
+                            <TextBox Grid.Column="7" x:Name="tbxRssiThrNew"    Margin="5,0,0,0" MaxLines="1" MaxLength="4"/>
+                            <TextBlock  Grid.Column="9" Text="打印日志" Margin="0,0,4,0" HorizontalAlignment="Right"/>
+                            <TextBox Grid.Column="10" x:Name="tbxLogEnable" Margin="0,0,5,0" IsReadOnly="True" MaxLength="4" MaxLines="1" Height="18"/>
+                            <TextBox Grid.Column="11" x:Name="tbxLogEnableNew"    Margin="5,0,0,0" MaxLines="1" MaxLength="4"/>
                         </Grid>
 
                         <Grid Margin="0,10">
@@ -348,7 +352,7 @@
 
                             <TextBlock  Grid.Column="1" Text="授时时间" Margin="0,0,4,0" HorizontalAlignment="Right"/>
                             <TextBox Grid.Column="2" x:Name="tbxNtpCalendar" Margin="0" MaxLength="19" MaxLines="1"/>
-                            <CheckBox Grid.Column="4" x:Name="cbxAutoNtp" Content="系统时间" IsChecked="True" Margin="10,0,0,0" />
+                            <CheckBox Grid.Column="4" x:Name="cbxUseSysTime" Content="系统时间" IsChecked="True" Margin="10,0,0,0" />
                             <Button Grid.Column="7" x:Name="btnNtp" Content="授时"  Click="btnNtp_Click"  Margin="0,0,0,0"/>
 
                         </Grid>
@@ -531,6 +535,90 @@
                                 <DataGridTextColumn Header="RAM" Binding="{Binding ToSendRam}" />
                                 <DataGridTextColumn Header="FLASH" Binding="{Binding ToSendFlash}" />
                                 <DataGridTextColumn Header="保留"  Binding="{Binding Reserved,StringFormat='{}{0:X2}'}" />
+                                <DataGridTextColumn Header="源数据" Binding="{Binding SourceData}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </TabItem>
+
+                <TabItem x:Name="tabItemM1Beetech" Header="  M1 Beetech " Height="21" Margin="0" VerticalAlignment="Bottom">
+                   
+                    <Grid Margin="0,0,0,0" ScrollViewer.HorizontalScrollBarVisibility="Visible">
+
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="12*"/>
+                        </Grid.RowDefinitions>
+
+                        <Grid Margin="0,10,0,10" Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="0.2*"/>
+                                <ColumnDefinition Width="0.8*"/>
+                                <ColumnDefinition Width="0.1*"/>
+                                <ColumnDefinition Width="0.8*"/>
+                                <ColumnDefinition Width="0.1*"/>
+                                <ColumnDefinition Width="1.2*"/>
+                                <ColumnDefinition Width="0.1*"/>
+                                <ColumnDefinition Width="1.2*"/>
+                                <ColumnDefinition Width="0.1*"/>
+                                <ColumnDefinition Width="0.8*"/>
+                                <ColumnDefinition Width="0.2*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Button x:Name="btnReadHistoryInfo" Content="查询" Grid.Column="1" Click="btnReadHistoryInfo_Click"  Margin="0,0,0,0"/>
+
+                            <TextBox x:Name="tbxSensorMac" Grid.Column="3"  Margin="0,0,0,0" MaxLines="1" MaxLength="11" IsReadOnly="True"/>
+
+                            <TextBox x:Name="tbxStartTime" Grid.Column="5"  Margin="0,0,0,0" MaxLines="1" MaxLength="24"/>
+                            <TextBox x:Name="tbxEndTime" Grid.Column="7"    Margin="0,0,0,0" MaxLines="1" MaxLength="24"/>
+
+                            <TextBox x:Name="tbxNbrOfHistory" Grid.Column="9"  Margin="0,0,0,0" MaxLines="1" MaxLength="10" IsReadOnly="True"/>
+
+                        </Grid>
+
+                        <Grid Margin="0,10,0,10" Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="0.2*"/>
+                                <ColumnDefinition Width="0.8*"/>
+                                <ColumnDefinition Width="0.1*"/>
+                                <ColumnDefinition Width="0.6*"/>
+                                <ColumnDefinition Width="0.2*"/>
+                                <ColumnDefinition Width="0.1*"/>
+                                <ColumnDefinition Width="1.2*"/>
+                                <ColumnDefinition Width="0.1*"/>
+                                <ColumnDefinition Width="1.2*"/>
+                                <ColumnDefinition Width="0.1*"/>
+                                <ColumnDefinition Width="0.8*"/>
+                                <ColumnDefinition Width="0.2*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Button x:Name="btnReadHistoryData" Content="读取历史数据" Grid.Column="1" Click="btnReadHistoryData_Click"  Margin="0,0,0,0"/>
+
+                            <TextBlock x:Name="tbkReadHistoryStatus" Grid.Column="3" Text="" Margin="0,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+
+                            <TextBox x:Name="tbxReadIntervalMs" Grid.Column="4"  Margin="0,0,0,0" MaxLines="1" MaxLength="24" Text="5" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Center" VerticalAlignment="Center" FlowDirection="RightToLeft"/>
+
+                            <TextBox x:Name="tbxStartExportTime" Grid.Column="6"  Margin="0,0,0,0" MaxLines="1" MaxLength="24" IsReadOnly="True"/>
+                            <TextBox x:Name="tbxEndExportTime" Grid.Column="8"    Margin="0,0,0,0" MaxLines="1" MaxLength="24" IsReadOnly="True"/>
+
+                            <Button x:Name="btnExportHistoryData" Content="导出Excel" Grid.Column="10" Click="btnExportHistoryData_Click"  Margin="0,0,0,0"/>
+                        </Grid>
+
+                        <DataGrid Margin="0,0,0,10" Grid.Row="2" x:Name="GridOfM1Beetech" AutoGenerateColumns="False"  AlternatingRowBackground="#F4F4F4" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Visible" Padding="0">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="序号" Binding="{Binding DisplayID}" />
+                                <DataGridTextColumn Header="导出序列号" Binding="{Binding ExportSerial}" />
+                                <DataGridTextColumn Header="SendOk" Binding="{Binding deviceTypeOfGw, StringFormat='{}{0:X2}'}" />
+                                <DataGridTextColumn Header="状态" Binding="{Binding State,StringFormat='{}{0:X2}'}" />
+                                <DataGridTextColumn Header="报警项" Binding="{Binding AlarmItem,StringFormat='{}{0:X2}'}" />
+                                <DataGridTextColumn Header="传输序列号" Binding="{Binding SerialOfGw}" />
+                                <DataGridTextColumn Header="采集时间" Binding="{Binding SensorCollectTime,StringFormat='{}{0:MM-dd HH:mm:ss}'}" />
+                                <DataGridTextColumn Header="IC温度" Binding="{Binding ICTemperature,StringFormat='{}{0:F0}'}" />
+                                <DataGridTextColumn Header="电压" Binding="{Binding voltF,StringFormat='{}{0:F3}'}" />
+                                <DataGridTextColumn Header="采集序列号" Binding="{Binding SensorSN}" />
+                                <DataGridTextColumn Header="温度℃" Binding="{Binding tempF,StringFormat='{}{0:F2}'}" />
+                                <DataGridTextColumn Header="湿度%" Binding="{Binding humF, StringFormat='{}{0:F2}'}" />
                                 <DataGridTextColumn Header="源数据" Binding="{Binding SourceData}" />
                             </DataGrid.Columns>
                         </DataGrid>

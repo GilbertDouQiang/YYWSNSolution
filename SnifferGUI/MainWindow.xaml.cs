@@ -29,6 +29,8 @@ namespace SnifferGUI
         ObservableCollection<SK> SensorDataOfSK = new ObservableCollection<SK>();           // SK的传感数据
         ObservableCollection<AO2> SensorDataOfAO2 = new ObservableCollection<AO2>();        // AO2的传感数据
         ObservableCollection<L1> SensorDataOfL1 = new ObservableCollection<L1>();           // L1的传感数据
+        ObservableCollection<M1> SensorDataOfNtp = new ObservableCollection<M1>();          // 授时申请
+        ObservableCollection<M1> SensorDataOfNtpRes = new ObservableCollection<M1>();       // 授时反馈
 
         DataSet DS = new DataSet();
 
@@ -48,6 +50,8 @@ namespace SnifferGUI
         int TableLineOfSK = 1;                  // SK表格的行编号
         int TableLineOfAO2 = 1;                 // AO2表格的行编号
         int TableLineOfL1 = 1;                  // L1表格的行编号
+        int TableLineOfNtp = 1;                 // 授时申请表格的行编号
+        int TableLineOfNtpRes = 1;              // 授时反馈表格的行编号
 
         UInt16 ExCustomer = 0x0000;             // 期望的客户码
 
@@ -74,6 +78,8 @@ namespace SnifferGUI
             TableOfSK.ItemsSource = SensorDataOfSK;
             TableOfAO2.ItemsSource = SensorDataOfAO2;
             TableOfL1.ItemsSource = SensorDataOfL1;
+            TableOfNtp.ItemsSource = SensorDataOfNtp;
+            TableOfNtpRes.ItemsSource = SensorDataOfNtpRes;
 
             //M1 排序用
             ICollectionView v = CollectionViewSource.GetDefaultView(TableOfM1.ItemsSource);
@@ -151,6 +157,20 @@ namespace SnifferGUI
             d = ListSortDirection.Descending;
             v.SortDescriptions.Add(new SortDescription("DisplayID", d));
             v.Refresh();
+
+            //NTP 排序用
+            v = CollectionViewSource.GetDefaultView(TableOfNtp.ItemsSource);
+            v.SortDescriptions.Clear();
+            d = ListSortDirection.Descending;
+            v.SortDescriptions.Add(new SortDescription("DisplayID", d));
+            v.Refresh();
+
+            //授时反馈 排序用
+            v = CollectionViewSource.GetDefaultView(TableOfNtpRes.ItemsSource);
+            v.SortDescriptions.Clear();
+            d = ListSortDirection.Descending;
+            v.SortDescriptions.Add(new SortDescription("DisplayID", d));
+            v.Refresh();
         }
 
         /// <summary>
@@ -163,7 +183,6 @@ namespace SnifferGUI
         /// </returns>
         private bool isDesDeviceType(byte rxDeviceType)
         {
-
             byte ExDeviceType = 0x00;
 
             if (cbSensorType.SelectedIndex == 0)
@@ -220,10 +239,21 @@ namespace SnifferGUI
             {
                 // L1
                 ExDeviceType = L1.GetDeviceType();
-            }else if(cbSensorType.SelectedIndex == 11)
+            }
+            else if (cbSensorType.SelectedIndex == 11)
             {
                 // M40
                 ExDeviceType = M40.GetDeviceType();
+            }
+            else if (cbSensorType.SelectedIndex == 12)
+            {
+                // M70
+                if (rxDeviceType != (byte)Device.DeviceType.M70 && rxDeviceType != (byte)Device.DeviceType.M70_SHT30 && rxDeviceType != (byte)Device.DeviceType.M70_MAX31855)
+                {
+                    return false;
+                }
+
+                ExDeviceType = rxDeviceType;
             }
             else
             {
@@ -246,14 +276,10 @@ namespace SnifferGUI
         private void btnOpenFile_Click_1(object sender, RoutedEventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
-            //openFileDialog.InitialDirectory = "c:\\";//注意这里写路径时要用c:\\而不是c:\
             openFileDialog.Filter = "文本文件|*.txt|Log文件|*.log|所有文件|*.*";
-            //openFileDialog.RestoreDirectory = true;
-            //openFileDialog.FilterIndex = 1;
             if (openFileDialog.ShowDialog() == true)
             {
                 string filename = openFileDialog.FileName;
-                //TxtOpenFileName.Text = openFileDialog.FileName;
                 ObservableCollection<Device> devices = FileHelper.ReadFile(filename);
                 int i = 1;
                 foreach (M1 item in devices)
@@ -353,6 +379,18 @@ namespace SnifferGUI
                 TableLineOfL1 = 1;
                 SensorDataOfL1.Clear();
             }
+
+            if (TableNtp.IsSelected == true)
+            {
+                TableLineOfNtp = 1;
+                SensorDataOfNtp.Clear();
+            }
+
+            if (TableNtpRes.IsSelected == true)
+            {
+                TableLineOfNtpRes = 1;
+                SensorDataOfNtpRes.Clear();
+            }
         }
 
         /// <summary>
@@ -394,6 +432,12 @@ namespace SnifferGUI
 
             TableLineOfL1 = 1;
             SensorDataOfL1.Clear();
+
+            TableLineOfNtp = 1;
+            SensorDataOfNtp.Clear();
+
+            TableLineOfNtpRes = 1;
+            SensorDataOfNtpRes.Clear();
         }
 
         /// <summary>
@@ -612,8 +656,8 @@ namespace SnifferGUI
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>       
-        private Int16 HandleSensorData(Device device) {
-
+        private Int16 HandleSensorData(Device device)
+        {
             if (isDesDeviceType(device.DeviceTypeV) == false)
             {
                 return -1;
@@ -623,12 +667,10 @@ namespace SnifferGUI
             byte Cmd = device.Pattern;
             byte STP1 = device.STP;
 
-            if (Cmd == 0x01 || Cmd == 0x02 || Cmd == 0x03 || Cmd == 0x04)
+            if (Cmd == 0x01 || Cmd == 0x02 || Cmd == 0x03 || Cmd == 0x04 || Cmd == 0xA1)
             {
                 // 接收到数据的客户码
-                byte[] RxCustomerByte = CommArithmetic.HexStringToByteArray(device.CustomerS);
-                UInt16 RxCustomer = (UInt16)(RxCustomerByte[0] * 256 + RxCustomerByte[1]);
-                if (ExCustomer != 0 && ExCustomer != RxCustomer && RxCustomer != 0)
+                if (ExCustomer != 0 && ExCustomer != device.CustomerV && device.CustomerV != 0)
                 {
                     return -1;
                 }
@@ -644,7 +686,18 @@ namespace SnifferGUI
                 if (STP1 == 0xEA)
                 {
                     //显示数据
-                    if (M1.isDeviceType(device.DeviceTypeV) == true)
+                    if (Cmd == 0xA1)
+                    {
+                        M1 ThisDevice = (M1)device;
+                        device.DisplayID = TableLineOfNtp;
+                        if (++TableLineOfNtp == 0)
+                        {
+                            TableLineOfNtp++;
+                        }
+
+                        SensorDataOfNtp.Add(ThisDevice);
+                    }
+                    else if (M1.isDeviceType(device.DeviceTypeV) == true)
                     {
                         M1 ThisDevice = (M1)device;
                         if (ThisDevice.GetDataPktType() == Device.DataPktType.SensorDataMax31855Debug)
@@ -666,7 +719,7 @@ namespace SnifferGUI
                             }
 
                             SensorDataOfM1.Add(ThisDevice);
-                        }                        
+                        }
                     }
                     else if (M5.isDeviceType(device.DeviceTypeV) == true)
                     {
@@ -751,17 +804,88 @@ namespace SnifferGUI
                 }
                 else if (STP1 == 0xAE)
                 {
-                    device.DisplayID = TableLineOfAck;
-                    if (++TableLineOfAck == 0)
+                    if (Cmd == 0xA1)
                     {
-                        TableLineOfAck++;
-                    }
+                        M1 ThisDevice = (M1)device;
+                        device.DisplayID = TableLineOfNtpRes;
+                        if (++TableLineOfNtpRes == 0)
+                        {
+                            TableLineOfNtpRes++;
+                        }
 
-                    GroupFeedBack.Add((M1)device);
+                        SensorDataOfNtpRes.Add(ThisDevice);
+                    }else
+                    {
+                        device.DisplayID = TableLineOfAck;
+                        if (++TableLineOfAck == 0)
+                        {
+                            TableLineOfAck++;
+                        }
+
+                        GroupFeedBack.Add((M1)device);
+                    }                    
                 }
             }
 
             return 0;
+        }
+
+        /// <summary>
+        /// 控制台里显示Log
+        /// </summary>
+        /// <param name="RxBuf"></param>
+        private void ConsoleLog(byte[] RxBuf)
+        {
+            if (RxBuf == null || RxBuf.Length < 1)
+            {
+                return;
+            }
+
+            if (chkLockLog.IsChecked == true)
+            {
+                return;
+            }
+
+            Int16 Rssi = (Int16)RxBuf[RxBuf.Length - 1];
+            if (Rssi >= 0x80)
+            {
+                Rssi -= 0x100;
+            }
+
+            string rssiStr = (RxBuf.Length - 1).ToString("D3");
+            string RssiStr = string.Empty;
+
+            bool FindNotZero = false;
+
+            for (int iX = 0; iX < rssiStr.Length; iX++)
+            {
+                if(FindNotZero == false)
+                {
+                    if (rssiStr[iX] == '0')
+                    {
+                        RssiStr += ' ';
+                    }else
+                    {
+                        RssiStr += rssiStr[iX];
+                        FindNotZero = true;
+                    }
+                }else
+                {
+                    RssiStr += rssiStr[iX];
+                }                
+            }
+
+            tbxConsole.Text = Logger.GetTimeString() + "\t" + RssiStr + " | " + CommArithmetic.ToHexString(RxBuf, 0, RxBuf.Length - 1) + "  | " + Rssi.ToString() + "\r\n" + tbxConsole.Text;
+
+            UInt16 ConsoleMaxLine = Convert.ToUInt16(txtLogLineLimit.Text);
+            if (tbxConsole.LineCount > ConsoleMaxLine)
+            {
+                int start = tbxConsole.GetCharacterIndexFromLineIndex(ConsoleMaxLine);  // 末尾行第一个字符的索引
+                int length = tbxConsole.GetLineLength(ConsoleMaxLine);                  // 末尾行字符串的长度
+                tbxConsole.Select(start, start + length);                               // 选中末尾一行
+                tbxConsole.SelectedText = "END";
+            }
+
         }
 
         /// <summary>
@@ -775,20 +899,7 @@ namespace SnifferGUI
             Dispatcher.BeginInvoke(new Action(delegate
             {
                 // 控制台里显示Log
-                if (e.ReceivedBytes.Length != 0 && chkLockLog.IsChecked == false)
-                {
-                    txtConsole.Text = Logger.GetTimeString() + "\t" + CommArithmetic.ToHexString(e.ReceivedBytes) + "\r\n" + txtConsole.Text;
-
-                    UInt16 ConsoleMaxLine = Convert.ToUInt16(txtLogLineLimit.Text);
-                    if (txtConsole.LineCount > ConsoleMaxLine)
-                    {
-                        int start = txtConsole.GetCharacterIndexFromLineIndex(ConsoleMaxLine);  // 末尾行第一个字符的索引
-                        int length = txtConsole.GetLineLength(ConsoleMaxLine);                  // 末尾行字符串的长度
-                        txtConsole.Select(start, start + length);                               // 选中末尾一行
-                        txtConsole.SelectedText = "END";                            
-                    }
-
-                }               
+                ConsoleLog(e.ReceivedBytes);
 
                 ObservableCollection<Device> devices = DeviceFactory.CreateDevices(e.ReceivedBytes);
 
@@ -831,7 +942,7 @@ namespace SnifferGUI
         /// <param name="e"></param>
         private void btnLogClear_Click(object sender, RoutedEventArgs e)
         {
-            txtConsole.Text = "";
+            tbxConsole.Text = "";
         }
     }
 }

@@ -32,6 +32,16 @@ namespace YyWsnDeviceLibrary
         /// </summary>
         public byte AlertCfg { get; set; }
 
+        /// <summary>
+        /// 开报警超时时间，单位：秒；若是处于开启状态超过此时长，则报警；
+        /// </summary>
+        public UInt16 OpenedTimeoutS { get; set; }
+
+        /// <summary>
+        /// 关报警超时时间，单位：秒；若是处于关闭状态超过此时长，则报警；
+        /// </summary>
+        public UInt16 ClosedTimeoutS { get; set; }
+
 
         /**************************************
          * 方法
@@ -129,7 +139,7 @@ namespace YyWsnDeviceLibrary
                 if ((byte)Device.IsPowerOnSelfTestPktFromUsbToPc(SrcData, IndexOfStart) == GetDeviceType())
                 {
                     byte protocol = SrcData[IndexOfStart + 5];
-                    if (protocol != 3)
+                    if (protocol != 1)
                     {
                         return;
                     }
@@ -144,30 +154,42 @@ namespace YyWsnDeviceLibrary
                     SetDeviceDebug(SrcData, (UInt16)(IndexOfStart + 22));
 
                     Category = SrcData[IndexOfStart + 24];
+
+                    // 正常采集间隔
                     Interval = (UInt16)(SrcData[IndexOfStart + 25] * 256 + SrcData[IndexOfStart + 26]);
-                    Calendar = CommArithmetic.DecodeDateTime(SrcData, (UInt16)(IndexOfStart + 27));
 
-                    Pattern = SrcData[IndexOfStart + 33];
-                    Bps = SrcData[IndexOfStart + 34];
-                    SetTxPower(SrcData[IndexOfStart + 35]);
-                    SampleSend = SrcData[IndexOfStart + 36];
-                    Channel = SrcData[IndexOfStart + 37];
+                    // 报警采集间隔
+                    AlertInterval = (UInt16)(SrcData[IndexOfStart + 27] * 256 + SrcData[IndexOfStart + 28]);
 
-                    AlertCfg = SrcData[38];
+                    Calendar = CommArithmetic.DecodeDateTime(SrcData, (UInt16)(IndexOfStart + 29));
 
-                    ICTemperature = SrcData[IndexOfStart + 39];
-                    voltF = Math.Round(Convert.ToDouble((SrcData[IndexOfStart + 40] * 256 + SrcData[IndexOfStart + 41])) / 1000, 2);
+                    Pattern = SrcData[IndexOfStart + 35];
+                    Bps = SrcData[IndexOfStart + 36];
+                    SetTxPower(SrcData[IndexOfStart + 37]);
+                    SampleSend = SrcData[IndexOfStart + 38];
+                    Channel = SrcData[IndexOfStart + 39];
 
-                    FlashID = CommArithmetic.DecodeClientID(SrcData, IndexOfStart + 42);
-                    MaxLength = SrcData[IndexOfStart + 44];
+                    AlertCfg = SrcData[40];
 
-                    FlashFront = SrcData[IndexOfStart + 45] * 256 * 256 + SrcData[IndexOfStart + 46] * 256 + SrcData[IndexOfStart + 47];
-                    FlashRear = SrcData[IndexOfStart + 48] * 256 * 256 + SrcData[IndexOfStart + 49] * 256 + SrcData[IndexOfStart + 50];
-                    FlashQueueLength = SrcData[IndexOfStart + 51] * 256 * 256 + SrcData[IndexOfStart + 52] * 256 + SrcData[IndexOfStart + 53];
+                    // 关报警超时时间
+                    ClosedTimeoutS = (UInt16)(SrcData[IndexOfStart + 41] * 256 + SrcData[IndexOfStart + 42]);
 
-                    OpenState_Set(SrcData[IndexOfStart + 54]);
+                    // 开报警超时时间
+                    OpenedTimeoutS = (UInt16)(SrcData[IndexOfStart + 43] * 256 + SrcData[IndexOfStart + 44]);
 
-                    byte rssi = SrcData[IndexOfStart + 58];
+                    ICTemperature = SrcData[IndexOfStart + 45];
+                    voltF = Math.Round(Convert.ToDouble((SrcData[IndexOfStart + 46] * 256 + SrcData[IndexOfStart + 47])) / 1000, 2);
+
+                    FlashID = CommArithmetic.DecodeClientID(SrcData, IndexOfStart + 48);
+                    MaxLength = SrcData[IndexOfStart + 50];
+
+                    FlashFront = SrcData[IndexOfStart + 51] * 256 * 256 + SrcData[IndexOfStart + 52] * 256 + SrcData[IndexOfStart + 53];
+                    FlashRear = SrcData[IndexOfStart + 54] * 256 * 256 + SrcData[IndexOfStart + 55] * 256 + SrcData[IndexOfStart + 56];
+                    FlashQueueLength = SrcData[IndexOfStart + 57] * 256 * 256 + SrcData[IndexOfStart + 58] * 256 + SrcData[IndexOfStart + 59];
+
+                    OpenState_Set(SrcData[IndexOfStart + 60]);
+
+                    byte rssi = SrcData[IndexOfStart + 64];
                     if (rssi >= 0x80)
                     {
                         RSSI = (double)(rssi - 0x100);
@@ -362,6 +384,282 @@ namespace YyWsnDeviceLibrary
             this.SourceData = CommArithmetic.ToHexString(SrcData);
 
             return 0;
+        }
+
+        public byte[] WriteFactoryCfg(byte Protocol, UInt32 DstId)
+        {
+            byte[] TxBuf = new byte[23];
+            UInt16 TxLen = 0;
+
+            // Start
+            TxBuf[TxLen++] = 0xCE;
+
+            // Length
+            TxBuf[TxLen++] = 0x00;
+
+            // Cmd
+            TxBuf[TxLen++] = 0xA1;
+
+            // USB Protocol
+            TxBuf[TxLen++] = 0x02;
+
+            // 设备类型
+            TxBuf[TxLen++] = (byte)GetDeviceType();
+
+            // Protocol
+            TxBuf[TxLen++] = Protocol;
+
+            // Sensor Mac
+            TxBuf[TxLen++] = (byte)((DstId & 0xFF000000) >> 24);
+            TxBuf[TxLen++] = (byte)((DstId & 0x00FF0000) >> 16);
+            TxBuf[TxLen++] = (byte)((DstId & 0x0000FF00) >> 8);
+            TxBuf[TxLen++] = (byte)((DstId & 0x000000FF) >> 0);
+
+            // New Sensor Mac
+            TxBuf[TxLen++] = (byte)((DeviceMacV & 0xFF000000) >> 24);
+            TxBuf[TxLen++] = (byte)((DeviceMacV & 0x00FF0000) >> 16);
+            TxBuf[TxLen++] = (byte)((DeviceMacV & 0x0000FF00) >> 8);
+            TxBuf[TxLen++] = (byte)((DeviceMacV & 0x000000FF) >> 0);
+
+            // Hardware Revision
+            TxBuf[TxLen++] = (byte)((HwRevisionV & 0xFF000000) >> 24);
+            TxBuf[TxLen++] = (byte)((HwRevisionV & 0x00FF0000) >> 16);
+            TxBuf[TxLen++] = (byte)((HwRevisionV & 0x0000FF00) >> 8);
+            TxBuf[TxLen++] = (byte)((HwRevisionV & 0x000000FF) >> 0);
+
+            // 保留位
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+
+            // CRC16
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 2, (UInt16)(TxLen - 2));
+            TxBuf[TxLen++] = (byte)((crc & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((crc & 0x00FF) >> 0);
+
+            // End
+            TxBuf[TxLen++] = 0xEC;
+
+            // 重写长度位
+            TxBuf[1] = (byte)(TxLen - 5);
+
+            return TxBuf;
+        }
+
+        public byte[] WriteUserCfg(byte Protocol, UInt32 DstId)
+        {
+            byte[] TxBuf = new byte[31];
+            UInt16 TxLen = 0;
+
+            // Start
+            TxBuf[TxLen++] = 0xCE;
+
+            // Length
+            TxBuf[TxLen++] = 0x00;
+
+            // Cmd
+            TxBuf[TxLen++] = 0xA2;
+
+            // USB Protocol
+            TxBuf[TxLen++] = 0x02;
+
+            // 设备类型
+            TxBuf[TxLen++] = (byte)GetDeviceType();
+
+            // Protocol
+            TxBuf[TxLen++] = Protocol;
+
+            // Sensor Mac
+            TxBuf[TxLen++] = (byte)((DstId & 0xFF000000) >> 24);
+            TxBuf[TxLen++] = (byte)((DstId & 0x00FF0000) >> 16);
+            TxBuf[TxLen++] = (byte)((DstId & 0x0000FF00) >> 8);
+            TxBuf[TxLen++] = (byte)((DstId & 0x000000FF) >> 0);
+
+            // Customer
+            TxBuf[TxLen++] = (byte)((CustomerV & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((CustomerV & 0x00FF) >> 0);
+
+            // Debug
+            TxBuf[TxLen++] = (byte)((DebugV & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((DebugV & 0x00FF) >> 0);
+
+            // category
+            TxBuf[TxLen++] = Category;
+
+            // pattern
+            TxBuf[TxLen++] = Pattern;
+
+            // bps
+            TxBuf[TxLen++] = Bps;
+
+            // tx power
+            TxBuf[TxLen++] = (byte)TxPower;
+
+            // channel
+            TxBuf[TxLen++] = Channel;
+
+            // 最大存储容量
+            TxBuf[TxLen++] = MaxLength;
+
+            // 日期和时间
+            byte[] ByteBuf = MyCustomFxn.DataTimeToByteArray(Calendar);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBuf[0]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBuf[1]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBuf[2]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBuf[3]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBuf[4]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBuf[5]);
+
+            // 保留位
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+
+            // CRC16
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 2, (UInt16)(TxLen - 2));
+            TxBuf[TxLen++] = (byte)((crc & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((crc & 0x00FF) >> 0);
+
+            // End
+            TxBuf[TxLen++] = 0xEC;
+
+            // 重写长度位
+            TxBuf[1] = (byte)(TxLen - 5);
+
+            return TxBuf;
+        }
+
+        public byte[] WriteAppCfg(byte Protocol, UInt32 DstId)
+        {
+            byte[] TxBuf = new byte[31];
+            UInt16 TxLen = 0;
+
+            // Start
+            TxBuf[TxLen++] = 0xCE;
+
+            // Length
+            TxBuf[TxLen++] = 0x00;
+
+            // Cmd
+            TxBuf[TxLen++] = 0xA3;
+
+            // USB Protocol
+            TxBuf[TxLen++] = 0x02;
+
+            // 设备类型
+            TxBuf[TxLen++] = (byte)GetDeviceType();
+
+            // Protocol
+            TxBuf[TxLen++] = Protocol;
+
+            // Sensor Mac
+            TxBuf[TxLen++] = (byte)((DstId & 0xFF000000) >> 24);
+            TxBuf[TxLen++] = (byte)((DstId & 0x00FF0000) >> 16);
+            TxBuf[TxLen++] = (byte)((DstId & 0x0000FF00) >> 8);
+            TxBuf[TxLen++] = (byte)((DstId & 0x000000FF) >> 0);
+
+            // 日期和时间
+            byte[] ByteBuf = MyCustomFxn.DataTimeToByteArray(Calendar);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBuf[0]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBuf[1]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBuf[2]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBuf[3]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBuf[4]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBuf[5]);
+
+            // 正常采集间隔
+            TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+            // 报警采集间隔
+            TxBuf[TxLen++] = (byte)((AlertInterval & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((AlertInterval & 0x00FF) >> 0);
+
+            // 采/发
+            TxBuf[TxLen++] = SampleSend;
+
+            // 报警选择
+            TxBuf[TxLen++] = AlertCfg;
+
+            // 关报警超时时间
+            TxBuf[TxLen++] = (byte)((ClosedTimeoutS & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((ClosedTimeoutS & 0x00FF) >> 0);
+
+            // 开报警超时时间
+            TxBuf[TxLen++] = (byte)((OpenedTimeoutS & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((OpenedTimeoutS & 0x00FF) >> 0);
+
+            // 保留位
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+
+            // CRC16
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 2, (UInt16)(TxLen - 2));
+            TxBuf[TxLen++] = (byte)((crc & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((crc & 0x00FF) >> 0);
+
+            // End
+            TxBuf[TxLen++] = 0xEC;
+
+            // 重写长度位
+            TxBuf[1] = (byte)(TxLen - 5);
+
+            return TxBuf;
+        }
+
+        public byte[] DeleteHistory(byte Protocol, UInt32 DstId)
+        {
+            byte[] TxBuf = new byte[21];
+            UInt16 TxLen = 0;
+
+            // Start
+            TxBuf[TxLen++] = 0xCE;
+
+            // Length
+            TxBuf[TxLen++] = 0x00;
+
+            // Cmd
+            TxBuf[TxLen++] = 0xA4;
+
+            // USB Protocol
+            TxBuf[TxLen++] = 0x02;
+
+            // 设备类型
+            TxBuf[TxLen++] = (byte)GetDeviceType();
+
+            // Protocol
+            TxBuf[TxLen++] = Protocol;
+
+            // Sensor Mac
+            TxBuf[TxLen++] = (byte)((DstId & 0xFF000000) >> 24);
+            TxBuf[TxLen++] = (byte)((DstId & 0x00FF0000) >> 16);
+            TxBuf[TxLen++] = (byte)((DstId & 0x0000FF00) >> 8);
+            TxBuf[TxLen++] = (byte)((DstId & 0x000000FF) >> 0);
+
+            // front
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+
+            // rear 
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+
+            // 保留位
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+
+            // CRC16
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 2, (UInt16)(TxLen - 2));
+            TxBuf[TxLen++] = (byte)((crc & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((crc & 0x00FF) >> 0);
+
+            // End
+            TxBuf[TxLen++] = 0xEC;
+
+            // 重写长度位
+            TxBuf[1] = (byte)(TxLen - 5);
+
+            return TxBuf;
         }
 
     }

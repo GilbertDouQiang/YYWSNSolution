@@ -410,5 +410,7 @@ namespace YyWsnCommunicatonLibrary
             evtArgs.Message = msg;
             this.OutputRxLogEvent(this, evtArgs);
         }
+
+        /*********/
     }
 }

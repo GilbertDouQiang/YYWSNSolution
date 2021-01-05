@@ -1,7 +1,7 @@
-﻿<Application x:Class="PictureTransfer.App"
+﻿<Application x:Class="HyperWSN_Tool_WP.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:PictureTransfer"
+             xmlns:local="clr-namespace:HyperWSN_Tool_WP"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
          

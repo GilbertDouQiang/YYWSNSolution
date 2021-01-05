@@ -1,0 +1,116 @@
+﻿<Window x:Class="HyperWSN_Tool_WP.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:HyperWSN_Tool_WP"
+        mc:Ignorable="d"
+        Title="HyperWSN Tool WP" Height="660" Width="1024" WindowStartupLocation="CenterScreen" FontFamily="Courier New">
+    <Grid>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="12*"/>
+            <RowDefinition Height="88*"/>
+        </Grid.RowDefinitions>
+
+        <Border Padding="5,0" Grid.Row="0" Margin="0">
+            <StackPanel Margin="0,5,0,0">
+                <Grid Margin="0,5,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="4*"/>
+                        <ColumnDefinition Width="0.4*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="1.6*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="设备：" Grid.Column="0" FontWeight="Bold" Margin="0,0,5,0" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                    <ComboBox x:Name="cbSerialPort" Grid.Column="1" Margin="0 0 0 0" VerticalAlignment="Center" />
+                    <Button x:Name="btnFindComport" Grid.Column="3" Content="Refersh" Click="btnFindComport_Click" Margin="0 0 0 0" VerticalAlignment="Center"/>
+                </Grid>
+
+                <Grid Margin="0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="3*"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <Label   Content="BaudRate:"  Grid.Column="0" Margin="0,0,4,0" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                    <TextBox x:Name="tbxBaudRate" Grid.Column="1" Text="115200" VerticalContentAlignment="Stretch" Margin="0" MaxLength="10" MaxLines="1" TextAlignment="Right" Padding="0,0,6,0" />
+
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <Border Padding="5" Grid.Row="2">
+            <TabControl x:Name="tabControl" Margin="0" SelectedIndex="2">
+
+                <TabItem x:Name="tabItemConsole" Header="  Console  ">
+                    <StackPanel x:Name="Console">
+
+                        <Grid Margin="0 10 0 0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Label Content="日志行数" Grid.Column="1" Margin="0,0,8,0" FlowDirection="RightToLeft" Padding="5" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                            <TextBox x:Name="txtLogLineLimit" Grid.Column="2" Text="20" VerticalContentAlignment="Center" Margin="0" MaxLength="4" MaxLines="1" TextAlignment="Right" HorizontalContentAlignment="Stretch" Padding="0,0,6,0" />
+                            <CheckBox x:Name="chkLockLog" Grid.Column="3" Content="锁定" IsChecked ="True" VerticalContentAlignment="Center" Margin="8,0,10,0" ></CheckBox>
+                            <Button x:Name="btnClearLog" Grid.Column="4" Content="清空" VerticalContentAlignment="Center"   Margin="0,0" RenderTransformOrigin="3.189,0.543" Click="btnClearLog_Click"/>
+                            <Button x:Name="btnTestLog" Grid.Column="6" Content="测试" VerticalContentAlignment="Center"   Margin="0,0" RenderTransformOrigin="3.189,0.543" Click="btnTestLog_Click"/>
+                        </Grid>
+
+                        <TextBox   x:Name="tbxConsole"  Margin="5,5,5,5" VerticalScrollBarVisibility="Auto" IsReadOnly="True" TextWrapping="Wrap" />
+
+                    </StackPanel>
+
+                </TabItem>
+
+                <TabItem x:Name="tabItemTest" Header="  Test  ">
+                    <StackPanel x:Name="Test">
+
+                        <Grid Margin="0, 10, 0, 0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock  Grid.Column="1" Text="MAC" Margin="0,0,4,0" HorizontalAlignment="Right"/>
+                            <TextBox Grid.Column="2" x:Name="tbxMac" Margin="0,0,5,0" MaxLines="1" MaxLength="11"/>
+                            <TextBox Grid.Column="3" x:Name="tbxMacNew"   Margin="5,0,0,0" MaxLength="11" MaxLines="1"/>
+                            <TextBlock  Grid.Column="5" Text="硬件版本" Margin="0,0,4,0" HorizontalAlignment="Right"/>
+                            <TextBox Grid.Column="6" x:Name="tbxHwRevision" Margin="0,0,5,0" IsReadOnly="True" MaxLength="11" MaxLines="1"/>
+                            <TextBox Grid.Column="7" x:Name="tbxHwRevisionNew"  Margin="5,0,0,0" MaxLength="11" MaxLines="1"/>
+                            <TextBlock  Grid.Column="9" Text="软件版本" Margin="0,0,4,0" HorizontalAlignment="Right"/>
+                            <TextBox Grid.Column="10" x:Name="tbxSwRevision" Margin="0,0,5,0" MaxLength="5" IsReadOnly="True" MaxLines="1"/>
+                        </Grid>
+
+                    </StackPanel>
+                </TabItem>
+
+            </TabControl>
+        </Border>
+
+    </Grid>
+</Window>

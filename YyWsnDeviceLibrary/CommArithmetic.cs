@@ -200,7 +200,10 @@ namespace YyWsnDeviceLibrary
                 {
                     strB.Append(bytes[i].ToString("X2") + " ");
                 }
+
                 hexString = strB.ToString();
+
+                hexString = hexString.TrimEnd();
             }
 
             return hexString;
@@ -217,7 +220,10 @@ namespace YyWsnDeviceLibrary
                 {
                     strB.Append(bytes[StartIndex + i].ToString("X2") + " ");
                 }
+
                 hexString = strB.ToString();
+
+                hexString = hexString.TrimEnd();
             }
 
             return hexString;
@@ -248,7 +254,7 @@ namespace YyWsnDeviceLibrary
 
             try
             {
-                dt = DateTime.ParseExact(strDate, "yy MM dd HH mm ss ", System.Globalization.CultureInfo.CurrentCulture);
+                dt = DateTime.ParseExact(strDate, "yy MM dd HH mm ss", System.Globalization.CultureInfo.CurrentCulture);
             }
             catch (Exception)
             {

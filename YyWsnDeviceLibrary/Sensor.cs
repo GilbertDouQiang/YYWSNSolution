@@ -78,6 +78,8 @@ namespace YyWsnDeviceLibrary
         /// </summary>
         public double ICTemperature { get; set; }
 
+        public byte monTemp { get; set; }
+
 
 
         /// <summary>

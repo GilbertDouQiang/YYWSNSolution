@@ -8,14 +8,14 @@
         Title="计算CRC" HorizontalAlignment="Left" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" WindowStartupLocation="CenterScreen" Margin="50,0" Width="600" Height="371" Padding="0" VerticalAlignment="Top">
     <Grid Width="590" Height="341">
         <TextBox x:Name="tbx_Buf" HorizontalAlignment="Center" Height="168" Margin="0,42,0,0" Width="480" MaxLength="4096" MaxLines="32" HorizontalScrollBarVisibility="Auto" VerticalAlignment="Top" TextWrapping="Wrap" AutoWordSelection="True" CharacterCasing="Upper" AcceptsReturn="True" ScrollViewer.CanContentScroll="True" VerticalScrollBarVisibility="Auto" IsUndoEnabled="False"/>
-        <TextBox x:Name="tbx_Seed" HorizontalAlignment="Left" Height="20" Margin="55,0,0,40" TextWrapping="Wrap" VerticalAlignment="Bottom" Width="60" MaxLines="1" MaxLength="4" Text="0000" IsUndoEnabled="True" TextAlignment="Center" FontSize="14"/>
-        <TextBox x:Name="tbx_Polynomial" HorizontalAlignment="Left" Height="20" Margin="145,0,0,40" TextWrapping="Wrap" VerticalAlignment="Bottom" Width="60" MaxLines="1" MaxLength="4" Text="1021" TextAlignment="Center" FontSize="14"/>
-        <TextBox x:Name="tbx_Crc" HorizontalAlignment="Right" Height="20" Margin="0,0,55,40" TextWrapping="Wrap" VerticalAlignment="Bottom" Width="60" MaxLines="1" MaxLength="4" TextAlignment="Center" FontSize="14" IsReadOnly="True"/>
+        <TextBox x:Name="tbx_Seed" HorizontalAlignment="Left" Height="20" Margin="55,0,0,40" TextWrapping="Wrap" VerticalAlignment="Bottom" Width="60" MaxLines="1" MaxLength="6" Text="0000" IsUndoEnabled="True" TextAlignment="Center" FontSize="14"/>
+        <TextBox x:Name="tbx_Polynomial" HorizontalAlignment="Left" Height="20" Margin="145,0,0,40" TextWrapping="Wrap" VerticalAlignment="Bottom" Width="60" MaxLines="1" MaxLength="6" Text="1021" TextAlignment="Center" FontSize="14"/>
+        <TextBox x:Name="tbx_Crc" HorizontalAlignment="Right" Height="20" Margin="0,0,55,40" TextWrapping="Wrap" VerticalAlignment="Bottom" Width="60" MaxLines="1" MaxLength="6" TextAlignment="Center" FontSize="14" IsReadOnly="True"/>
         <Button x:Name="btn_Calc" Content="计算" Margin="0,228,0,63" VerticalAlignment="Center" Width="90" RenderTransformOrigin="-0.096,0.76" Height="50" FontSize="14" Click="btn_Calc_Click" HorizontalAlignment="Center" />
         <TextBox x:Name="tbx_Len" HorizontalAlignment="Right" Height="20" Margin="0,0,145,40" TextWrapping="Wrap" VerticalAlignment="Bottom" Width="60" MaxLines="1" MaxLength="5" FontSize="14" IsUndoEnabled="False" IsReadOnly="True" TextAlignment="Center"/>
         <Label x:Name="label_Seed" Content="种子" HorizontalAlignment="Left" Margin="55,0,0,60" VerticalAlignment="Bottom" Width="60" Height="30" FontSize="14" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
         <Label x:Name="label_Polynomial" Content="多项式" HorizontalAlignment="Left" Margin="145,0,0,60" VerticalAlignment="Bottom" Width="60" Height="30" FontSize="14" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
-        <Label x:Name="label_Crc" Content="CRC" HorizontalAlignment="Right" Margin="0,0,55,60" VerticalAlignment="Bottom" Width="60" Height="30" FontSize="14" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+        <Label x:Name="label_Crc" Content="结果" HorizontalAlignment="Right" Margin="0,0,55,60" VerticalAlignment="Bottom" Width="60" Height="30" FontSize="14" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
         <Label x:Name="label_Len" Content="长度(十)" HorizontalAlignment="Right" Margin="0,0,145,60" VerticalAlignment="Bottom" Width="62" Height="30" FontSize="14" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
         <Label x:Name="label_Author" Content="DQ" HorizontalAlignment="Right" Margin="0,0,6,6" VerticalAlignment="Bottom" Width="30" Height="20" FontSize="8" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
         <ComboBox x:Name="cbbAlgorithm" HorizontalAlignment="Center" Margin="235,297,235,20" VerticalAlignment="Center" Width="120" Height="24" SelectedIndex="0" SelectionChanged="cbbAlgorithm_SelectionChanged" >
@@ -24,6 +24,8 @@
             <ListBoxItem Content="Zigin" HorizontalAlignment="Center" VerticalAlignment="Center" />
             <ListBoxItem Content="YYWSN_CRC8" HorizontalAlignment="Center" VerticalAlignment="Center" />
             <ListBoxItem Content="Modbus_CRC16" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            <ListBoxItem Content="CheckSum 8bit" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            <ListBoxItem Content="Bluetooth CRC24" HorizontalAlignment="Center" VerticalAlignment="Center" />
         </ComboBox>
 
     </Grid>

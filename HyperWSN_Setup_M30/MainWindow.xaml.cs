@@ -42,7 +42,7 @@ namespace HyperWSN_Setup_M30
            System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
             TimerOfBsl = new System.Timers.Timer(1000);
-            TimerOfBsl.Elapsed += TimerEventOfBsl;
+            TimerOfBsl.Elapsed += TimerEventOfBsl2;
 
             FindComport();
         }
@@ -687,7 +687,7 @@ namespace HyperWSN_Setup_M30
             // State
             if (SrcData[IndexOfStart + 10] == 1)
             {
-                SupportBsl = true;      // 支持BootLoader
+                // 支持BootLoader
             }
 
             return 0;
@@ -1554,255 +1554,626 @@ namespace HyperWSN_Setup_M30
             tbxConsole.Text = "";
         }
 
-        private void btnClearLoadStatus_Click(object sender, RoutedEventArgs e)
-        {
-            tbxLoadStatus.Text = "";
-            tbxLoadStatus2.Text = "";
-        }
+        //=========================================================================================================================
 
         Microsoft.Win32.OpenFileDialog ofd = new Microsoft.Win32.OpenFileDialog();                  // BSL
-        Microsoft.Win32.OpenFileDialog ofdOfExtFlash = new Microsoft.Win32.OpenFileDialog();        // 离线升级
 
-        private void btnBrowse_Click(object sender, RoutedEventArgs e)
-        {
-            if (ofd.ShowDialog() == true)
-            {
-                tbxLoadImage.Text = ofd.SafeFileName;
-            }
-        }
+        BSL bsl = null;
 
-        bool BootLoading = false;               // 表示烧录是否正在进行
+        Thread bslThread = null;
+        string LoadStatus = string.Empty;
+        bool? OnlyLoadImage = false;
+        string SerialPortName = string.Empty;
+        bool Bsling = false;                        // 表示正在执行Bootloader过程
 
-        /// <summary>
-        /// 为了保证BootLoader的正常执行，将一些有影响的控件禁用，等执行完后，再解禁；
-        /// </summary>
-        void ProtectBootLoader()
-        {
-            cbSerialPort.IsEnabled = false;
-            btnOpenComport.IsEnabled = false;
-
-            btnBrowse.IsEnabled = false;
-            btnLoadImage.IsEnabled = false;
-            cbxOnlyLoadImage.IsEnabled = false;
-
-            tabItemConsole.IsEnabled = false;
-            tabItemSetup.IsEnabled = false;
-
-            BootLoading = true;
-
-            TimeCntOfBsl = 0;
-            tbkCount.Text = TimeCntOfBsl.ToString();
-
-            TimerOfBsl.Enabled = true;          // 启动计时器
-        }
-
-        /// <summary>
-        /// 解禁
-        /// </summary>
-        void UnProtectBootLoader()
-        {
-            cbSerialPort.IsEnabled = true;
-            btnOpenComport.IsEnabled = true;
-
-            btnBrowse.IsEnabled = true;
-            btnLoadImage.IsEnabled = true;
-            cbxOnlyLoadImage.IsEnabled = true;
-
-            tabItemConsole.IsEnabled = true;
-            tabItemSetup.IsEnabled = true;
-
-            BootLoading = false;
-
-            TimerOfBsl.Enabled = false;             // 停止计时器
-        }
-
-        void TimerEventOfBsl(object sender, ElapsedEventArgs e)
+        void TimerEventOfBsl2(object sender, ElapsedEventArgs e)
         {
             Dispatcher.BeginInvoke(new Action(delegate
             {
-                if (BootLoading == false)
-                {   // 烧录结束
-                    TimerOfBsl.Enabled = false;
-                }
-                else
+                TimeCntOfBsl++;
+                tbkCount2.Text = TimeCntOfBsl.ToString();
+                tbxLoadStatus.Text = LoadStatus;
+
+                // 显示定位到最后一行
+                tbxLoadStatus.ScrollToEnd();
+
+                if (Bsling == false)
                 {
-                    TimeCntOfBsl++;
-                    tbkCount.Text = TimeCntOfBsl.ToString();
+                    TimerOfBsl.Enabled = false;
                 }
             }));
         }
 
-        string SelectedDeviceText = "";
+        private void btnClearLoadStatus2_Click(object sender, RoutedEventArgs e)
+        {
+            tbxLoadStatus.Text = LoadStatus = string.Empty;
+        }
 
-        bool SupportBsl = false;                           
+        private void btnBrowse2_Click(object sender, RoutedEventArgs e)
+        {
+            if (ofd.ShowDialog() == true)
+            {
+                tbxLoadImage2.Text = ofd.SafeFileName;
+            }
+        }
 
-        /// <summary>
-        /// 查询是否支持BootLoader，若支持，则开始BootLoader；
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        /// <param name="helper"></param>
-        /// <returns></returns>
-        private Int16 TxAndRx_BootLoader()
+        public void BSL_SerialPort_Init(System.IO.Ports.Parity parity)
+        {
+            if (SerialPort != null)
+            {
+                if (SerialPort.IsOpen() == true)
+                {
+                    SerialPort.ClosePort();
+                }
+            }
+
+            SerialPort = new SerialPortHelper();
+            SerialPort.IsLogger = true;
+            SerialPort.InitCOM(SerialPortName, 115200, parity);
+            SerialPort.ReceiveDelayMs = 2;
+            SerialPort.OpenPort();
+        }
+
+        public void BSL_SerialPort_Close()
+        {
+            if (SerialPort != null)
+            {
+                if (SerialPort.IsOpen() == true)
+                {
+                    SerialPort.ClosePort();
+                }
+            }
+        }
+
+        public int BslReady_Gateway(ref bool SupportBsl)
         {
             SupportBsl = false;
 
-            byte[] TxBuf = new byte[20];
-            UInt16 TxLen = 0;
+            byte[] TxBuf = { 0xCB, 0xCB, 0x06, 0x02, 0x01, 0xC9, 0xFD, 0xBC, 0xB6, 0x00, 0x00, 0xBC, 0xBC };        // 网关
+            byte[] RxBuf = null;
 
-            // 起始位
-            TxBuf[TxLen++] = 0xCB;
-            TxBuf[TxLen++] = 0xCB;
-
-            // 长度位
-            TxBuf[TxLen++] = 0x00;
-
-            // 设备类型
-            TxBuf[TxLen++] = 0x00;
-
-            // 功能位
-            TxBuf[TxLen++] = 0x38;
-
-            // 协议版本
-            TxBuf[TxLen++] = 0x01;
-
-            // 保留位
-            TxBuf[TxLen++] = 0xC9;
-            TxBuf[TxLen++] = 0xFD;
-            TxBuf[TxLen++] = 0xBC;
-            TxBuf[TxLen++] = 0xB6;
-
-            // 保留位
-            TxBuf[TxLen++] = 0x00;
-            TxBuf[TxLen++] = 0x00;
-
-            // CRC16
-            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 3, (UInt16)(TxLen - 3));
-            TxBuf[TxLen++] = (byte)((crc & 0xFF00) >> 8);
-            TxBuf[TxLen++] = (byte)((crc & 0x00FF) >> 0);
-
-            // 结束位
-            TxBuf[TxLen++] = 0xBC;
-            TxBuf[TxLen++] = 0xBC;
-
-            // 重写长度位
-            TxBuf[2] = (byte)(TxLen - 7);
-
-            // 显示Log
-            ConsoleLog("TX", TxBuf, 0, TxLen);
-
-            // 发送数据
-            byte[] RxBuf = SerialPort.SendReceive(TxBuf, 0, TxLen, 2000);
-
-            Int16 error = RxPkt_Handle(RxBuf);
-            if (error < 0)
+            for (int iX = 0; iX < 3; iX++)
             {
-                MessageBox.Show("设备进入BootLoader失败:" + error.ToString("G"));
+                RxBuf = SerialPort.SendReceive(TxBuf, 0, (UInt16)TxBuf.Length, 1000, 50);
+                if (RxBuf == null || RxBuf.Length != 19)
+                {
+                    continue;
+                }
+
+                if (RxBuf[0] != 0xBC || RxBuf[1] != 0xBC || RxBuf[2] != 0x0C || RxBuf[3] != 0x02 || RxBuf[4] != 0x01 || RxBuf[17] != 0xCB || RxBuf[18] != 0xCB)
+                {
+                    return -2;
+                }
+
+                if (RxBuf[10] != 0x01)
+                {
+                    SupportBsl = false;
+                }else
+                {
+                    SupportBsl = true;
+                }
+
+                return 0;
+            }
+
+            return -1;
+        }
+
+        public int BslReady_M44(ref bool SupportBsl)
+        {
+            SupportBsl = false;
+
+            byte[] TxBuf = { 0xCB, 0xCB, 0x09, 0x00, 0x38, 0x01, 0xC9, 0xFD, 0xBC, 0xB6, 0x00, 0x00, 0x00, 0x00, 0xBC, 0xBC };        // M30/M44
+            byte[] RxBuf = null;
+
+            for (int iX = 0; iX < 3; iX++)
+            {
+                RxBuf = SerialPort.SendReceive(TxBuf, 0, (UInt16)TxBuf.Length, 1000, 50);
+                if (RxBuf == null || RxBuf.Length != 19)
+                {
+                    continue;
+                }
+
+                if (RxBuf[0] != 0xBC || RxBuf[1] != 0xBC || RxBuf[2] != 0x0C || RxBuf[4] != 0x38 || RxBuf[5] != 0x01 || RxBuf[17] != 0xCB || RxBuf[18] != 0xCB)
+                {
+                    return -2;
+                }
+
+                if (RxBuf[10] != 0x01)
+                {
+                    SupportBsl = false;
+                }
+                else
+                {
+                    SupportBsl = true;
+                }
+
+                return 0;
+            }
+
+            return -1;
+        }
+
+        public int BslReady_Router(ref bool SupportBsl)
+        {
+            SupportBsl = false;
+
+            byte[] TxBuf = { 0x05, 0xCB, 0x3B, 0x02, 0x01, 0xC9, 0xFD, 0xBC, 0xB6 };        // Router
+            byte[] RxBuf = null;
+
+            for (int iX = 0; iX < 3; iX++)
+            {
+                RxBuf = SerialPort.SendReceive(TxBuf, 0, (UInt16)TxBuf.Length, 1000, 100);
+                if (RxBuf == null || RxBuf.Length != 18)
+                {
+                    continue;
+                }
+
+                if (RxBuf[0] < 0x0E || RxBuf[1] != 0xBC || RxBuf[3] != 0x02 || RxBuf[4] != 0x01)
+                {
+                    return -2;
+                }
+
+                if (RxBuf[10] != 0x01)
+                {
+                    SupportBsl = false;
+                }
+                else
+                {
+                    SupportBsl = true;
+                }
+
+                return 0;
+            }
+
+            return -1;
+        }
+
+        public int BslReady()
+        {
+            bool SupportBsl = false;
+
+            int error = BslReady_Router(ref SupportBsl);
+            if (error >= 0)
+            {
+                if (SupportBsl == true)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return -64;
+                }
+            }
+
+            error = BslReady_Gateway(ref SupportBsl);
+            if (error >= 0)
+            {
+                if (SupportBsl == true)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return -64;
+                }
+            }
+
+            error = BslReady_M44(ref SupportBsl);
+            if (error >= 0)
+            {
+                if (SupportBsl == true)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return -64;
+                }
+            }
+
+            return -36;
+        }
+
+        public int Ping(UInt16 MaxTryNum)
+        {
+            byte[] TxBuf = null;
+            byte[] RxBuf = null;
+
+            bool Suc = false;
+
+            for (int iX = 0; iX < MaxTryNum; iX++)
+            {
+                TxBuf = BSL.MyPing();
+                RxBuf = SerialPort.SendReceive(TxBuf, 0, (UInt16)TxBuf.Length, 50);
+                if (RxBuf == null || RxBuf.Length == 0)
+                {
+                    System.Threading.Thread.Sleep(50);
+                    continue;
+                }
+
+                if (RxBuf.Length != 1)
+                {
+                    continue;
+                }
+
+                if (RxBuf[0] == 0x00)
+                {
+                    continue;
+                }
+
+                if (RxBuf[0] == 0x51)
+                {
+                    Suc = true;
+                    break;
+                }
+            }
+
+            if (Suc == false)
+            {
                 return -1;
-            }
-
-            if (SupportBsl == false)
-            {
-                tbxLoadStatus.Text += System.DateTime.Now.ToString("HH:mm:ss.fff") + "   不支持升级！" + "\r\n";
-            }
-            else
-            {
-                tbxLoadStatus.Text += System.DateTime.Now.ToString("HH:mm:ss.fff") + "   允许升级！" + "\r\n";
             }
 
             return 0;
         }
 
-        /// <summary>
-        /// 处理线程结束的事件
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        public delegate void ThreadEndEventHander();
-        public event ThreadEndEventHander ThreadEndEvent;               // 线程结束
-
-        Thread ThisThread;
-
-        void ThisThreadEnd()
+        public int Password()
         {
-            Dispatcher.BeginInvoke(new Action(delegate
-            {
-                UnProtectBootLoader();
+            byte[] TxBuf = null;
+            byte[] RxBuf = null;
 
-                // 在执行完Bootloader之后，需要将串口再次打开。
-                if (SerialPort.IsOpen() == false)
+            int error = 0;
+
+            for (int iX = 0; iX < 4; iX++)
+            {
+                TxBuf = BSL.MyPassword();
+                RxBuf = SerialPort.SendReceive(TxBuf, 0, (UInt16)TxBuf.Length, 100);
+
+                error = bsl.MyRxRight(RxBuf, TxBuf);
+                if (error < 0)
                 {
-                    SerialPort.OpenPort();
+                    continue;
                 }
 
-            }));
-        }
-
-        void ThisThreadStart()
-        {
-            ThreadEndEvent += ThisThreadEnd;
-
-            DateTime Start = System.DateTime.Now;           // 记录烧录的开始时间
-
-            BootLoader Bsl = new BootLoader();
-
-            Bsl.OutputRxLogEvent += Proc_OutputRxLogReceived;
-            Bsl.OutputStatusEvent += Proc_OutputStatusReceived;
-
-            Bsl.SerialDevice = SelectedDeviceText;
-            Bsl.FileNameOfImage = ofd.FileName;
-
-            Bsl.BSL_Scripter(45, Start);
-
-            // 通知主线程，子线程执行完毕
-            if (ThreadEndEvent != null)
-            {
-                ThreadEndEvent();
-            }
-        }
-
-        private void Proc_OutputStatusReceived(object sender, BootLoaderEventArgs e)
-        {
-            if (e.Message == null)
-            {
-                return;
+                break;
             }
 
-            Dispatcher.BeginInvoke(new Action(delegate
-            {
-                tbxLoadStatus.Text += e.Message;
-
-                // 使文本框一直显示在最后一行
-                tbxLoadStatus.SelectionStart = tbxLoadStatus.Text.Length;
-                tbxLoadStatus.SelectionLength = 0;
-                tbxLoadStatus.ScrollToEnd();
-            }));
+            return error;
         }
 
-        private void Proc_OutputRxLogReceived(object sender, BootLoaderEventArgs e)
+        public int Read()
         {
-            if (e.Message == null)
+            byte[] TxBuf = null;
+            byte[] RxBuf = null;
+
+            byte[] Buf = null;
+            UInt16 Len = 0;
+
+            UInt32 Addr = 0x3F000;
+            UInt16 Size = 1024;
+
+            int error = 0;
+
+            for (int iX = 0; iX < 4; iX++)
             {
-                return;
+                Buf = new byte[Size];
+                Len = 0;
+
+                TxBuf = bsl.MyRead(Addr, Size);
+                RxBuf = SerialPort.SendReceive(TxBuf, 0, (UInt16)TxBuf.Length, 4000, 100);
+                if (RxBuf == null || RxBuf.Length < 8 || RxBuf.Length < Size)
+                {
+                    continue;
+                }
+
+                bool First = true;
+                int BufStart = 0;
+                UInt16 BufLen = 0;
+                int PktLen = 0;
+
+                for (int iJ = 0; iJ < RxBuf.Length;)
+                {
+                    error = bsl.MyRxRight_Read(RxBuf, iJ, First, ref BufStart, ref BufLen, ref PktLen);
+                    if (error < 0)
+                    {
+                        iJ++;
+                        continue;
+                    }
+
+                    First = false;
+                    iJ += PktLen;
+
+                    if (Len + BufLen > Size)
+                    {
+                        return -21;
+                    }
+
+                    for (int iK = 0; iK < BufLen; iK++)
+                    {
+                        Buf[Len++] = RxBuf[BufStart + iK];
+                    }
+
+                    if (Len < Size)
+                    {
+                        continue;
+                    }
+
+                    bsl.MyOverWrite(Addr, Buf);
+
+                    return 0;
+                }
             }
 
-            Dispatcher.BeginInvoke(new Action(delegate
-            {
-                tbxLoadStatus2.Text += e.Message;
-
-                // 使文本框一直显示在最后一行
-                tbxLoadStatus2.SelectionStart = tbxLoadStatus2.Text.Length;
-                tbxLoadStatus2.SelectionLength = 0;
-                tbxLoadStatus2.ScrollToEnd();
-            }));
+            return error;
         }
 
-        /// <summary>
-        /// 烧录升级
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void btnLoadImage_Click(object sender, RoutedEventArgs e)
+        public int MassErase()
+        {
+            byte[] TxBuf = null;
+            byte[] RxBuf = null;
+
+            int error = 0;
+
+            for (int iX = 0; iX < 4; iX++)
+            {   
+                TxBuf = BSL.MyMassErase();
+                RxBuf = SerialPort.SendReceive(TxBuf, 0, (UInt16)TxBuf.Length, 400, 20);
+
+                error = bsl.MyRxRight(RxBuf, TxBuf);
+                if (error < 0)
+                {
+                    continue;
+                }
+
+                break;
+            }
+
+            return error;
+        }
+
+        public int Check()
+        {
+            byte[] TxBuf = null;
+            byte[] RxBuf = null;
+
+            int error = 0;
+
+            UInt32 ExpTotal = 256 * 1024;
+            UInt32 CurTotal = 0;
+
+            const UInt16 Unit = 4096;
+            UInt16 Size = 0;
+
+            while (CurTotal < ExpTotal)
+            {
+                if (ExpTotal - CurTotal >= Unit)
+                {
+                    Size = Unit;
+                }
+                else
+                {
+                    Size = (UInt16)(ExpTotal - CurTotal);
+                }
+
+                for (int iX = 0; iX < 4; iX++)
+                {
+                    TxBuf = bsl.MyCheck(CurTotal, Size);
+                    RxBuf = SerialPort.SendReceive(TxBuf, 0, (UInt16)TxBuf.Length, 800, 10);
+
+                    error = bsl.MyRxRight(RxBuf, TxBuf);
+                    if (error < 0)
+                    {
+                        continue;
+                    }
+
+                    break;
+                }
+
+                if (error < 0)
+                {
+                    return error;
+                }
+
+                CurTotal += Size;
+            }
+
+            return error;
+        }
+
+        public int Write()
+        {
+            byte[] TxBuf = null;
+            byte[] RxBuf = null;
+
+            int error = 0;
+
+            UInt32 ExpTotal = 256 * 1024;
+            UInt32 CurTotal = 0;
+
+            const UInt16 Unit = 256;
+            UInt16 Len = 0;
+
+            bool Ignore = false;
+
+            while (CurTotal < ExpTotal)
+            {
+                if (ExpTotal - CurTotal >= Unit)
+                {
+                    Len = Unit;
+                }
+                else
+                {
+                    Len = (UInt16)(ExpTotal - CurTotal);
+                }
+
+                for (int iX = 0; iX < 4; iX++)
+                {
+                    TxBuf = bsl.MyWrite(CurTotal, Len, ref Ignore);
+                    if (Ignore == true)
+                    {
+                        break;
+                    }
+
+                    RxBuf = SerialPort.SendReceive(TxBuf, 0, (UInt16)TxBuf.Length, 200, 2);
+
+                    error = bsl.MyRxRight(RxBuf, TxBuf);
+                    if (error < 0)
+                    {
+                        continue;
+                    }
+
+                    break;
+                }
+
+                if (error < 0)
+                {
+                    break;
+                }
+
+                CurTotal += Len;
+            }
+
+            return error;
+        }
+
+        public int RebootReset()
+        {
+            byte[] TxBuf = null;
+
+            TxBuf = BSL.MyRebootReset();
+            SerialPort.Send(TxBuf);
+
+            return 0;
+        }
+
+        private void bslThreadFxn()
+        {
+            bsl = new BSL();
+
+            int error = 0;
+            bool Suc = false;
+
+            try
+            {
+                do
+                {
+                    LoadStatus += System.DateTime.Now.ToString("HH:mm:ss.fff") + "   开始烧录\t" + ofd.SafeFileName + "\r\n";
+
+                    if (OnlyLoadImage == false)
+                    {   // 需要手动进入BSL
+                        BSL_SerialPort_Init(System.IO.Ports.Parity.None);
+
+                        error = BslReady();
+                        if (error < 0)
+                        {
+                            LoadStatus += System.DateTime.Now.ToString("HH:mm:ss.fff") + "   进入失败\t" + error.ToString() + "\r\n";
+                            break;
+                        }
+                        LoadStatus += System.DateTime.Now.ToString("HH:mm:ss.fff") + "   进入成功" + "\r\n";
+                    }
+                    else
+                    {   // 无需手动进入BSL
+                        LoadStatus += System.DateTime.Now.ToString("HH:mm:ss.fff") + "   无需进入" + "\r\n";
+                    }
+
+                    BSL_SerialPort_Init(System.IO.Ports.Parity.Even);
+
+                    error = bsl.MyOpen(ofd.FileName, 256 * 1024);
+                    if (error < 0)
+                    {
+                        LoadStatus += System.DateTime.Now.ToString("HH:mm:ss.fff") + "   打开失败\t" + error.ToString() + "\r\n";
+                        break;
+                    }
+                    LoadStatus += System.DateTime.Now.ToString("HH:mm:ss.fff") + "   打开成功" + "\r\n";
+
+                    if (OnlyLoadImage == false)
+                    {   // 需要手动进入BSL
+                        error = Ping(60);
+                    }
+                    else
+                    {
+                        error = Ping(8);
+                    }
+
+                    if (error < 0)
+                    {
+                        LoadStatus += System.DateTime.Now.ToString("HH:mm:ss.fff") + "   通信失败\t" + error.ToString() + "\r\n";
+                        break;
+                    }
+                    LoadStatus += System.DateTime.Now.ToString("HH:mm:ss.fff") + "   通信成功" + "\r\n";
+
+                    error = Password();
+                    if (error < 0)
+                    {
+                        LoadStatus += System.DateTime.Now.ToString("HH:mm:ss.fff") + "   密码错误\t" + error.ToString() + "\r\n";
+                        break;
+                    }
+                    LoadStatus += System.DateTime.Now.ToString("HH:mm:ss.fff") + "   密码正确" + "\r\n";
+
+                    error = Read();
+                    if (error < 0)
+                    {
+                        LoadStatus += System.DateTime.Now.ToString("HH:mm:ss.fff") + "   备份失败\t" + error.ToString() + "\r\n";
+                        break;
+                    }
+                    LoadStatus += System.DateTime.Now.ToString("HH:mm:ss.fff") + "   备份成功" + "\r\n";
+
+                    error = MassErase();
+                    if (error < 0)
+                    {
+                        LoadStatus += System.DateTime.Now.ToString("HH:mm:ss.fff") + "   擦除失败\t" + error.ToString() + "\r\n";
+                        break;
+                    }
+                    LoadStatus += System.DateTime.Now.ToString("HH:mm:ss.fff") + "   擦除成功" + "\r\n";
+
+                    error = Write();
+                    if (error < 0)
+                    {
+                        LoadStatus += System.DateTime.Now.ToString("HH:mm:ss.fff") + "   写入失败\t" + error.ToString() + "\r\n";
+                        break;
+                    }
+                    LoadStatus += System.DateTime.Now.ToString("HH:mm:ss.fff") + "   写入成功" + "\r\n";
+
+                    error = Check();
+                    if (error < 0)
+                    {
+                        LoadStatus += System.DateTime.Now.ToString("HH:mm:ss.fff") + "   校验失败\t" + error.ToString() + "\r\n";
+                        break;
+                    }
+                    LoadStatus += System.DateTime.Now.ToString("HH:mm:ss.fff") + "   校验成功" + "\r\n";
+
+                    RebootReset();
+                    LoadStatus += System.DateTime.Now.ToString("HH:mm:ss.fff") + "   设备重启" + "\r\n";
+
+                    Suc = true;
+
+                } while (false);
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                BSL_SerialPort_Close();
+            }
+
+            if (Suc == true)
+            {
+                LoadStatus += System.DateTime.Now.ToString("HH:mm:ss.fff") + "   烧录成功\t耗时" + TimeCntOfBsl.ToString() + "秒钟\r\n";
+            }
+            else
+            {
+                LoadStatus += System.DateTime.Now.ToString("HH:mm:ss.fff") + "   烧录失败" + "\r\n";
+            }
+
+            LoadStatus += "\r\n*****************************************************************************\r\n";
+
+            Bsling = false;
+        }
+
+        private void btnLoadImage2_Click(object sender, RoutedEventArgs e)
         {
             if (cbSerialPort.SelectedIndex < 0)
             {
@@ -1821,45 +2192,76 @@ namespace HyperWSN_Setup_M30
                 return;
             }
 
-            ProtectBootLoader();
-
-            tbxLoadStatus.Text = "";
-            tbxLoadStatus2.Text = "";
-
-            try
+            if (LoadStatus == string.Empty)
             {
-                SelectedDeviceText = cbSerialPort.Text;
-
-                // 创建线程
-                ThisThread = new Thread(ThisThreadStart);
-                ThisThread.Name = "烧录程序";
-                do
-                {
-                    if (cbxOnlyLoadImage.IsChecked == false)
-                    {   // 需要查询
-                        TxAndRx_BootLoader();
-                        if (SupportBsl == false)
-                        {
-                            UnProtectBootLoader();
-                            break;
-                        }
-                    }
-
-                    // 在执行Bootloader之前，需要将目前的串口断开。
-                    if (SerialPort.IsOpen())
-                    {
-                        SerialPort.ClosePort();
-                    }
-
-                    ThisThread.Start();
-
-                } while (false);
-
+                LoadStatus = "*****************************************************************************\r\n\r\n";
             }
-            catch (Exception ex)
+            else
             {
-                MessageBox.Show(ex.Message);
+                LoadStatus += "\r\n";
             }
+
+            OnlyLoadImage = cbxOnlyLoadImage2.IsChecked;
+            SerialPortName = SerialPortHelper.GetSerialPortName(cbSerialPort.SelectedValue.ToString());
+
+            bslThread = new Thread(bslThreadFxn);
+            bslThread.Start();
+
+            Bsling = true;
+
+            // 启动计时器
+            TimeCntOfBsl = 0;
+            tbkCount2.Text = "";
+            TimerOfBsl = new System.Timers.Timer(1000);
+            TimerOfBsl.Elapsed += TimerEventOfBsl2;
+            TimerOfBsl.Enabled = true;
         }
+
+        private void btnEnterBsl_Click(object sender, RoutedEventArgs e)
+        {
+            SerialPortName = SerialPortHelper.GetSerialPortName(cbSerialPort.SelectedValue.ToString());
+
+            BSL_SerialPort_Init(System.IO.Ports.Parity.None);
+
+            int error = BslReady();
+            if (error < 0)
+            {
+                LoadStatus += System.DateTime.Now.ToString("HH:mm:ss.fff") + "   进入失败\t" + error.ToString() + "\r\n";
+            }
+            else
+            {
+                LoadStatus += System.DateTime.Now.ToString("HH:mm:ss.fff") + "   进入成功" + "\r\n";
+            }
+
+            tbxLoadStatus.Text = LoadStatus;
+
+            BSL_SerialPort_Close();
+        }
+
+        private void btnReset_Click(object sender, RoutedEventArgs e)
+        {
+            SerialPortName = SerialPortHelper.GetSerialPortName(cbSerialPort.SelectedValue.ToString());
+
+            BSL_SerialPort_Init(System.IO.Ports.Parity.Even);
+
+            int error = Ping(4);
+            if (error < 0)
+            {
+                LoadStatus += System.DateTime.Now.ToString("HH:mm:ss.fff") + "   通信失败\t" + error.ToString() + "\r\n";
+            }
+            else
+            {
+                LoadStatus += System.DateTime.Now.ToString("HH:mm:ss.fff") + "   通信成功" + "\r\n";
+            }
+
+            RebootReset();
+            LoadStatus += System.DateTime.Now.ToString("HH:mm:ss.fff") + "   设备重启" + "\r\n";
+
+            tbxLoadStatus.Text = LoadStatus;
+
+            BSL_SerialPort_Close();
+        }
+
+        /*******************/
     }
 }

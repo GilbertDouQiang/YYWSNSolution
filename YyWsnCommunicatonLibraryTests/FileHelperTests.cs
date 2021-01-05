@@ -15,8 +15,10 @@ namespace YyWsnCommunicatonLibrary.Tests
         [TestMethod()]
         public void ReadFileTest()
         {
-            string fileName = @"D:\00.YYTech\21.Program\01.YYWSNSolution\YYWSNSolution\SnifferGUI\bin\Debug\Data.txt";
-            ObservableCollection<Device> devices = FileHelper.ReadFile(fileName);
+            string filePath = @"E:\Visual_Workspace\dq\VS2015\YYWSNSolution\YyWsnCommunicatonLibraryTests\bin\Debug\out\SGX_YYWSN_MSP432.txt";
+            BootLoader BSL = new BootLoader();
+
+            BSL.MyOpen(filePath, 256 * 1024);
 
             //Assert.Fail();
         }

@@ -42,8 +42,6 @@ namespace QueryData_GUI
         {
             QueryService.queryserviceSoapClient service = new QueryService.queryserviceSoapClient();
             txtHelloWorld.Text= service.HelloWorld();
-
-
         }
 
 

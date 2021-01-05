@@ -36,12 +36,26 @@ namespace MD5_Tool
         /// <param name="e"></param>
         private void btn_Calc_Click(object sender, RoutedEventArgs e)
         {
-            byte[] encrypt = Encoding.ASCII.GetBytes(tbx_Buf.Text);             // 明文
-            if (encrypt == null || encrypt.Length > 64)
-            {
-                MessageBox.Show("明文字符串编码错误或长度超限！");
-                return;
+            byte[] encrypt = null;
+
+            if (cbx_EncryptType.SelectedIndex == 0)
+            {   // 字符串
+                encrypt = Encoding.ASCII.GetBytes(tbx_Buf.Text);             // 明文
+                if (encrypt == null || encrypt.Length > 64)
+                {
+                    MessageBox.Show("明文字符串编码错误或长度超限！");
+                    return;
+                }
             }
+            else
+            {   // HEX
+                // 将16进制的字符串转换为字节数组
+                encrypt = MyCustomFxn.HexStringToByteArray(tbx_Buf.Text);
+                if (encrypt == null || encrypt.Length == 0)
+                {
+                    return;
+                }
+            }            
 
             MD5 aMD5 = new MD5(tbx_Key.Text);
 

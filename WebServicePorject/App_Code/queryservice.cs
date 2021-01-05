@@ -9,8 +9,6 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Configuration;
 
-
-
 /// <summary>
 /// Summary description for queryservice
 /// </summary>
@@ -23,7 +21,6 @@ public class queryservice : System.Web.Services.WebService
 
     public queryservice()
     {
-
         //Uncomment the following line if using designed components 
         //InitializeComponent(); 
     }
@@ -34,10 +31,8 @@ public class queryservice : System.Web.Services.WebService
         return "Service Status OK";
     }
 
-
-
     [WebMethod]
-    public DataTable QueryNTP(string mac ,string startdate,string edndate)
+    public DataTable QueryNTP(string mac, string startdate, string edndate)
     {
         string connStr = ConfigurationManager.AppSettings["ConnectionString"];
         SqlConnection connection = new SqlConnection(connStr);
@@ -59,7 +54,6 @@ public class queryservice : System.Web.Services.WebService
         cmd.Parameters["@DeviceMAC"].Value = mac;
         cmd.Parameters["@startDate"].Value = startdate;
         cmd.Parameters["@endDate"].Value = edndate;
-        
 
         DataTable dt = new DataTable();
         dt.TableName = "NTP";
@@ -69,11 +63,6 @@ public class queryservice : System.Web.Services.WebService
         adapter.SelectCommand = cmd;
 
         adapter.Fill(dt);
-
-
-
-
-
 
         return dt;
     }
@@ -102,7 +91,6 @@ public class queryservice : System.Web.Services.WebService
         cmd.Parameters["@startDate"].Value = startdate;
         cmd.Parameters["@endDate"].Value = edndate;
 
-
         DataTable dt = new DataTable();
         dt.TableName = "GatewayStatus";
 
@@ -115,14 +103,10 @@ public class queryservice : System.Web.Services.WebService
         DataColumn snColumn = new DataColumn("SnCalc", System.Type.GetType("System.Int32"));
 
         dt.Columns.Add(snColumn);
-        for (int i=0;i<dt.Rows.Count-1; i++)
+        for (int i = 0; i < dt.Rows.Count - 1; i++)
         {
-            dt.Rows[i]["SnCalc"] =(int) dt.Rows[i]["SerialNo"] -(int) dt.Rows[i + 1]["SerialNo"];
+            dt.Rows[i]["SnCalc"] = (int)dt.Rows[i]["SerialNo"] - (int)dt.Rows[i + 1]["SerialNo"];
         }
-
-
-
-
 
         return dt;
     }
@@ -161,10 +145,6 @@ public class queryservice : System.Web.Services.WebService
 
         adapter.Fill(dt);
 
-
-
-
-
         return dt;
     }
 
@@ -192,7 +172,6 @@ public class queryservice : System.Web.Services.WebService
         cmd.Parameters["@startDate"].Value = startdate;
         cmd.Parameters["@endDate"].Value = edndate;
 
-
         DataTable dt = new DataTable();
         dt.TableName = "M1Data";
 
@@ -201,10 +180,6 @@ public class queryservice : System.Web.Services.WebService
         adapter.SelectCommand = cmd;
 
         adapter.Fill(dt);
-
-
-
-
 
         return dt;
     }
@@ -233,7 +208,6 @@ public class queryservice : System.Web.Services.WebService
         cmd.Parameters["@startDate"].Value = startdate;
         cmd.Parameters["@endDate"].Value = edndate;
 
-
         DataTable dt = new DataTable();
         dt.TableName = "M2Data";
 
@@ -242,10 +216,6 @@ public class queryservice : System.Web.Services.WebService
         adapter.SelectCommand = cmd;
 
         adapter.Fill(dt);
-
-
-
-
 
         return dt;
     }
@@ -284,12 +254,6 @@ public class queryservice : System.Web.Services.WebService
 
         adapter.Fill(dt);
 
-
-
-
-
         return dt;
     }
-
-
 }

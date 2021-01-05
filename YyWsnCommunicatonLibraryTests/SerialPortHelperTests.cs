@@ -19,14 +19,14 @@ namespace YyWsnCommunicatonLibrary.Tests
             serial.InitCOM("COM3");
             serial.OpenPort();
 
-            serial.Send("CA CA 05 01 00 00 00 00 00 00 AC AC");
+            serial.Send("00 CA 00 00");
 
             Thread.Sleep(2000);      
         }
 
         private void Serial_SerialPortReceived(object sender, SerialPortEventArgs e)
         {
-
+           
         }
     }
 }

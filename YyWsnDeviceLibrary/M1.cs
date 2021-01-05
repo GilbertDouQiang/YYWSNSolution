@@ -63,6 +63,16 @@ namespace YyWsnDeviceLibrary
         public double humF { get; set; }
 
         /// <summary>
+        /// 湿度数据按照温度解析
+        /// </summary>
+        public Int16 humTemp { get; set; }
+
+        /// <summary>
+        /// 湿度数据按照温度解析
+        /// </summary>
+        public double humTempF { get; set; }
+
+        /// <summary>
         /// 温度预警上限
         /// </summary>
         public double TempWarnHigh { get; set; }
@@ -141,6 +151,20 @@ namespace YyWsnDeviceLibrary
         /// </summary>
         public double internalTempF { get; set; }
 
+        /// <summary>
+        /// 导出序列号
+        /// </summary>
+        public UInt32 ExportSerial { get; set; }
+
+        /// <summary>
+        /// 检查下发
+        /// </summary>
+        public byte CheckIssue { get; set; }
+
+        /// <summary>
+        /// 保留位
+        /// </summary>
+        public UInt16 ReservedUInt16 { get; set; }
 
         /**************************************
          * 方法
@@ -162,7 +186,7 @@ namespace YyWsnDeviceLibrary
         /// <returns></returns>
         static public bool isDeviceType(byte iDeviceType)
         {
-            if (iDeviceType == (byte)DeviceType.M1 || iDeviceType == (byte)DeviceType.S1P || iDeviceType == (byte)DeviceType.M1_NTC || iDeviceType == (byte)DeviceType.M1_Beetech || iDeviceType == (byte)DeviceType.M6 || iDeviceType == (byte)DeviceType.M2_SHT30 || iDeviceType == (byte)DeviceType.M30 || iDeviceType == (byte)DeviceType.ZQM1 || iDeviceType == (byte)DeviceType.M10 || iDeviceType == (byte)DeviceType.M20 || iDeviceType == (byte)DeviceType.M1X)
+            if (iDeviceType == (byte)DeviceType.M1 || iDeviceType == (byte)DeviceType.S1P || iDeviceType == (byte)DeviceType.M1_NTC || iDeviceType == (byte)DeviceType.M1_Beetech || iDeviceType == (byte)DeviceType.M6 || iDeviceType == (byte)DeviceType.M2_SHT30 || iDeviceType == (byte)DeviceType.M30 || iDeviceType == (byte)DeviceType.ZQM1 || iDeviceType == (byte)DeviceType.M10 || iDeviceType == (byte)DeviceType.M20 || iDeviceType == (byte)DeviceType.M1X || iDeviceType == (byte)DeviceType.EK_SHT30 || iDeviceType == (byte)DeviceType.M60_SHT30 || iDeviceType == (byte)DeviceType.M60_MAX31855 || iDeviceType == (byte)DeviceType.M70_SHT30 || iDeviceType == (byte)DeviceType.M70_MAX31855)
             {
                 return true;
             }
@@ -258,7 +282,8 @@ namespace YyWsnDeviceLibrary
                 HumCompensation = CommArithmetic.DecodeHumidity(SrcData, 55);
 
                 // IC temp
-                ICTemperature = SrcData[57];
+                monTemp = SrcData[57];
+                ICTemperature = monTemp;
                 if (ICTemperature >= 128)
                 {
                     ICTemperature -= 256;
@@ -404,7 +429,8 @@ namespace YyWsnDeviceLibrary
 
                 SensorSN = SrcData[13] * 256 + SrcData[14];
                 //传感器信息
-                ICTemperature = SrcData[16]; //todo : 有符号整形数
+                monTemp = SrcData[16];
+                ICTemperature = monTemp;
                 if (ICTemperature >= 128)
                 {
                     ICTemperature -= 256;
@@ -465,6 +491,14 @@ namespace YyWsnDeviceLibrary
             else if (isSensorDataV1_MAX31855(SrcData, IndexOfStart, true) >= 0)
             {
                 ReadSensorDataV1_MAX31855(SrcData, IndexOfStart, true);
+            }
+            else if (isNtpPktV1(SrcData, IndexOfStart, true) >= 0)
+            {
+                ReadNtpPktV1(SrcData, IndexOfStart, true);
+            }
+            else if (isNtpRespondPktV1(SrcData, IndexOfStart, true) >= 0)
+            {
+                ReadNtpRespondPktV1(SrcData, IndexOfStart, true);
             }
 
             return;
@@ -538,11 +572,13 @@ namespace YyWsnDeviceLibrary
                 iCnt += 1;
 
                 // IC temp
-                ICTemperature = SrcData[iCnt];
+                monTemp = SrcData[iCnt];
+                ICTemperature = monTemp;
                 if (ICTemperature >= 128)
                 {
                     ICTemperature -= 256;
                 }
+
                 iCnt += 1;
 
                 iCnt += 1;
@@ -666,7 +702,8 @@ namespace YyWsnDeviceLibrary
                     TempCompensation = (double)(Int16)(SrcData[IndexOfStart + 54] * 256 + SrcData[IndexOfStart + 55]) / 100.0f;
                     HumCompensation = (double)(Int16)(SrcData[IndexOfStart + 56] * 256 + SrcData[IndexOfStart + 57]) / 100.0f;
 
-                    ICTemperature = SrcData[IndexOfStart + 58];
+                    monTemp = SrcData[IndexOfStart + 58];
+                    ICTemperature = monTemp;
                     voltF = Math.Round(Convert.ToDouble((SrcData[IndexOfStart + 59] * 256 + SrcData[IndexOfStart + 60])) / 1000, 2);
 
                     FlashID = CommArithmetic.DecodeClientID(SrcData, IndexOfStart + 61);
@@ -713,8 +750,8 @@ namespace YyWsnDeviceLibrary
                     SampleSend = SrcData[IndexOfStart + 36];
                     Channel = SrcData[IndexOfStart + 37];
 
-                    TempWarnHigh = (double)(Int16)(SrcData[IndexOfStart + 38] * 256 + SrcData[IndexOfStart + 39])/100.0f;
-                    TempWarnLow = (double)(Int16)(SrcData[IndexOfStart + 40] * 256 + SrcData[IndexOfStart + 41])/100.0f;
+                    TempWarnHigh = (double)(Int16)(SrcData[IndexOfStart + 38] * 256 + SrcData[IndexOfStart + 39]) / 100.0f;
+                    TempWarnLow = (double)(Int16)(SrcData[IndexOfStart + 40] * 256 + SrcData[IndexOfStart + 41]) / 100.0f;
 
                     HumWarnHigh = (double)(SrcData[IndexOfStart + 42] * 256 + SrcData[IndexOfStart + 43]) / 100.0f;
                     HumWarnLow = (double)(SrcData[IndexOfStart + 44] * 256 + SrcData[IndexOfStart + 45]) / 100.0f;
@@ -748,6 +785,8 @@ namespace YyWsnDeviceLibrary
                     WarnInterval = (UInt16)(SrcData[IndexOfStart + 79] * 256 + SrcData[IndexOfStart + 80]);
                     AlertInterval = (UInt16)(SrcData[IndexOfStart + 81] * 256 + SrcData[IndexOfStart + 82]);
 
+                    RstSrc = SrcData[IndexOfStart + 84];
+
                     byte rssi = SrcData[IndexOfStart + 86];
                     if (rssi >= 0x80)
                     {
@@ -759,6 +798,68 @@ namespace YyWsnDeviceLibrary
                     }
                 }
             }
+            else if (pktType == Device.DataPktType.ExportFromM1Beetech)
+            {
+                UInt16 iCnt = (UInt16)(IndexOfStart + 12);
+
+                // 导出序列号
+                ExportSerial = (UInt32)(SrcData[iCnt] * 256 * 256 + SrcData[iCnt + 1] * 256 + SrcData[iCnt + 2]);
+                iCnt += 3;
+
+                // SendOK
+                SendOK = SrcData[iCnt];
+                iCnt += 1;
+
+                //状态state
+                State = SrcData[iCnt];
+                iCnt += 1;
+
+                //报警项
+                AlarmItem = SrcData[iCnt];
+                iCnt += 1;
+
+                // 传输序列号
+                SerialOfGw = (UInt16)(SrcData[iCnt] * 256 + SrcData[iCnt + 1]);
+                iCnt += 2;
+
+                // Sample Calendar
+                SensorCollectTime = CommArithmetic.DecodeDateTime(SrcData, iCnt);
+                iCnt += 6;
+
+                // IC temp
+                ICTemperature = SrcData[iCnt];
+                if (ICTemperature >= 128)
+                {
+                    ICTemperature -= 256;
+                }
+                iCnt += 1;
+
+                // voltage
+                volt = (UInt16)(SrcData[iCnt] * 256 + SrcData[iCnt + 1]);
+                voltF = (double)(volt / 1000.0f);
+                iCnt += 2;
+
+                // Serial
+                SensorSN = SrcData[iCnt] * 256 + SrcData[iCnt + 1];
+                iCnt += 2;
+
+                // 温度
+                temp = (Int16)(SrcData[iCnt] * 256 + SrcData[iCnt + 1]);
+                tempF = (double)(temp / 100.0f);
+                iCnt += 2;
+
+                // 湿度
+                hum = (UInt16)(SrcData[iCnt] * 256 + SrcData[iCnt + 1]);
+                humF = (double)(hum / 100.0f);
+                iCnt += 2;
+
+                // 系统时间            
+                SystemTime = System.DateTime.Now;
+
+                // 源数据
+                this.SourceData = CommArithmetic.ToHexString(SrcData, IndexOfStart, SrcData[IndexOfStart + 2] + 7);
+            }
+
         }
 
         /// <summary>
@@ -1002,7 +1103,7 @@ namespace YyWsnDeviceLibrary
 
             // 长度位
             byte pktLen = SrcData[IndexOfStart + 1];
-            if(pktLen + 5 + AppendLen > SrcLen)
+            if (pktLen + 5 + AppendLen > SrcLen)
             {
                 return -3;
             }
@@ -1059,6 +1160,140 @@ namespace YyWsnDeviceLibrary
             if (dataType != 0x66)
             {
                 return -11;
+            }
+
+            return 0;
+        }
+
+        /// <summary>
+        /// 判断是不是监测工具监测到的Sensor发出的授时申请数据包
+        /// </summary>
+        /// <param name="SrcBuf"></param>
+        /// <param name="ExistRssi">true = 包含RSSI； false = 不包含RSSI；</param>
+        /// <returns></returns>
+        static public Int16 isNtpPktV1(byte[] SrcData, UInt16 IndexOfStart, bool ExistRssi)
+        {
+            UInt16 AppendLen = 0;
+            if (ExistRssi == true)
+            {
+                AppendLen = 1;
+            }
+
+            // 数据包的总长度
+            UInt16 SrcLen = (UInt16)(SrcData.Length - IndexOfStart);
+            if (SrcLen < 25 + AppendLen)
+            {
+                return -1;
+            }
+
+            // 起始位
+            if (SrcData[IndexOfStart + 0] != 0xEA)
+            {
+                return -2;
+            }
+
+            // 长度位
+            byte pktLen = SrcData[IndexOfStart + 1];
+            if(pktLen + 5 + AppendLen > SrcLen)
+            {
+                return -3;
+            }
+
+            if (SrcData[IndexOfStart + 2 + pktLen + 2] != 0xAE)
+            {
+                return -4;
+            }
+
+            // CRC16
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, SrcData, (UInt16)(IndexOfStart + 2), pktLen);
+            UInt16 crc_chk = (UInt16)(SrcData[IndexOfStart + 2 + pktLen + 0] * 256 + SrcData[IndexOfStart + 2 + pktLen + 1]);
+            if (crc_chk != crc && crc_chk != 0)
+            {
+                return -5;
+            }
+
+            // Cmd
+            byte Cmd = SrcData[IndexOfStart + 2];
+            if (Cmd != 0xA1)
+            {
+                return -6;
+            }
+
+            // DeviceType
+            // 不判断设备类型
+
+            // 协议版本
+            byte protocol = SrcData[IndexOfStart + 4];
+            if (protocol != 1)
+            {
+                return -8;
+            }
+
+            return 0;
+        }
+
+        /// <summary>
+        /// 判断是不是监测工具监测到的Gateway发出的授时反馈数据包
+        /// </summary>
+        /// <param name="SrcBuf"></param>
+        /// <param name="ExistRssi">true = 包含RSSI； false = 不包含RSSI；</param>
+        /// <returns></returns>
+        static public Int16 isNtpRespondPktV1(byte[] SrcData, UInt16 IndexOfStart, bool ExistRssi)
+        {
+            UInt16 AppendLen = 0;
+            if (ExistRssi == true)
+            {
+                AppendLen = 1;
+            }
+
+            // 数据包的总长度
+            UInt16 SrcLen = (UInt16)(SrcData.Length - IndexOfStart);
+            if (SrcLen < 15 + AppendLen)
+            {
+                return -1;
+            }
+
+            // 起始位
+            if (SrcData[IndexOfStart + 0] != 0xAE)
+            {
+                return -2;
+            }
+
+            // 长度位
+            byte pktLen = SrcData[IndexOfStart + 1];
+            if (pktLen + 5 + AppendLen > SrcLen)
+            {
+                return -3;
+            }
+
+            if (SrcData[IndexOfStart + 2 + pktLen + 2] != 0xEA)
+            {
+                return -4;
+            }
+
+            // CRC16
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, SrcData, (UInt16)(IndexOfStart + 2), pktLen);
+            UInt16 crc_chk = (UInt16)(SrcData[IndexOfStart + 2 + pktLen + 0] * 256 + SrcData[IndexOfStart + 2 + pktLen + 1]);
+            if (crc_chk != crc && crc_chk != 0)
+            {
+                return -5;
+            }
+
+            // Cmd
+            byte Cmd = SrcData[IndexOfStart + 2];
+            if (Cmd != 0xA1)
+            {
+                return -6;
+            }
+
+            // DeviceType
+            // 不判断设备类型
+
+            // 协议版本
+            byte protocol = SrcData[IndexOfStart + 4];
+            if (protocol != 1)
+            {
+                return -8;
             }
 
             return 0;
@@ -1153,7 +1388,7 @@ namespace YyWsnDeviceLibrary
             // 传输时间                
             SensorTransforTime = System.DateTime.Now;
 
-            this.SourceData = CommArithmetic.ToHexString(SrcData);
+            this.SourceData = CommArithmetic.ToHexString(SrcData, IndexOfStart, 31);
 
             return 0;
         }
@@ -1241,7 +1476,7 @@ namespace YyWsnDeviceLibrary
             // 传输时间                
             SensorTransforTime = System.DateTime.Now;
 
-            this.SourceData = CommArithmetic.ToHexString(SrcData);
+            this.SourceData = CommArithmetic.ToHexString(SrcData, IndexOfStart, 37);
 
             return 0;
         }
@@ -1292,14 +1527,27 @@ namespace YyWsnDeviceLibrary
             SensorCollectTime = CommArithmetic.DecodeDateTime(SrcData, (UInt16)(IndexOfStart + 16));
 
             // IC temp
-            ICTemperature = SrcData[IndexOfStart + 22];
+            monTemp = SrcData[IndexOfStart + 22];
+            ICTemperature = monTemp;
             if (ICTemperature >= 128)
             {
                 ICTemperature -= 256;
             }
 
             // voltage
-            volt = (UInt16)(SrcData[IndexOfStart + 23] * 256 + SrcData[IndexOfStart + 24]);
+            UInt16 VoltValue = (UInt16)(SrcData[IndexOfStart + 23] * 256 + SrcData[IndexOfStart + 24]);
+
+            if (0 == (VoltValue & 0x8000))
+            {
+                LinkCharge = false;
+            }
+            else
+            {
+                LinkCharge = true;
+                VoltValue = (UInt16)(VoltValue & 0x7FFF);
+            }
+
+            volt = (UInt16)(VoltValue);
             voltF = (double)(volt / 1000.0f);
 
             // AltSerial
@@ -1311,6 +1559,10 @@ namespace YyWsnDeviceLibrary
 
             hum = (UInt16)(SrcData[IndexOfStart + 31] * 256 + SrcData[IndexOfStart + 32]);
             humF = (double)(hum / 100.0f);
+
+            // 湿度数据按照温度解析
+            humTemp = (Int16)hum;
+            humTempF = (double)(humTemp / 100.0f);
 
             // To Send Ram
             ToSendRam = SrcData[IndexOfStart + 33];
@@ -1335,7 +1587,139 @@ namespace YyWsnDeviceLibrary
             // 传输时间                
             SensorTransforTime = System.DateTime.Now;
 
-            this.SourceData = CommArithmetic.ToHexString(SrcData);
+            this.SourceData = CommArithmetic.ToHexString(SrcData, IndexOfStart, 40);
+
+            return 0;
+        }
+
+        /// <summary>
+        /// 读取Sensor的授时申请数据包
+        /// </summary>
+        /// <param name="SrcData"></param>
+        /// <param name="IndexOfStart"></param>
+        /// <param name="ExistRssi"></param>
+        /// <returns></returns>
+        public Int16 ReadNtpPktV1(byte[] SrcData, UInt16 IndexOfStart, bool ExistRssi)
+        {
+            // 数据包类型
+            dataPktType = DataPktType.SensorFromSsToGw;
+
+            // 起始位
+            STP = SrcData[IndexOfStart + 0];
+
+            // Cmd
+            Pattern = SrcData[IndexOfStart + 2];
+
+            // Device Type
+            SetDeviceName(SrcData[IndexOfStart + 3]);
+
+            // protocol
+            ProtocolVersion = SrcData[IndexOfStart + 4];
+
+            // CustomerV
+            SetDeviceCustomer(SrcData, (UInt16)(IndexOfStart + 5));
+
+            // Sensor ID
+            SetDeviceMac(SrcData, (UInt16)(IndexOfStart + 7));
+
+            // Serial
+            SensorSN = SrcData[IndexOfStart + 11] * 256 + SrcData[IndexOfStart + 12];
+
+            // Sample Calendar
+            SensorCollectTime = CommArithmetic.DecodeDateTime(SrcData, (UInt16)(IndexOfStart + 13));
+
+            // 检查下发
+            CheckIssue = SrcData[IndexOfStart + 19];
+
+            // 保留
+            ReservedUInt16 = (UInt16)(SrcData[IndexOfStart + 20] * 256 + SrcData[IndexOfStart + 21]);
+
+            // RSSI
+            if (ExistRssi == true)
+            {
+                byte rssi = SrcData[IndexOfStart + 25];
+                if (rssi >= 0x80)
+                {
+                    RSSI = (double)(rssi - 0x100);
+                }
+                else
+                {
+                    RSSI = (double)rssi;
+                }
+            }
+
+            // 传输时间                
+            SensorTransforTime = System.DateTime.Now;
+
+            this.SourceData = CommArithmetic.ToHexString(SrcData, IndexOfStart, 26);
+
+            return 0;
+        }
+
+        /// <summary>
+        /// 读取Sensor的授时反馈数据包
+        /// </summary>
+        /// <param name="SrcData"></param>
+        /// <param name="IndexOfStart"></param>
+        /// <param name="ExistRssi"></param>
+        /// <returns></returns>
+        public Int16 ReadNtpRespondPktV1(byte[] SrcData, UInt16 IndexOfStart, bool ExistRssi)
+        {
+            // 数据包类型
+            dataPktType = DataPktType.SensorFromSsToGw;
+
+            // 起始位
+            STP = SrcData[IndexOfStart + 0];
+
+            // 数据包长度
+            byte pktLen = SrcData[IndexOfStart + 1];
+
+            // Cmd
+            Pattern = SrcData[IndexOfStart + 2];
+
+            // Device Type
+            SetDeviceName(SrcData[IndexOfStart + 3]);
+
+            // Custom
+            CustomerS = "0000";
+            CustomerV = 0;
+
+            // protocol
+            ProtocolVersion = SrcData[IndexOfStart + 4];
+
+            // Sensor ID
+            SetDeviceMac(SrcData, (UInt16)(IndexOfStart + 5));
+
+            // Serial
+            SensorSN = SrcData[IndexOfStart + 9] * 256 + SrcData[IndexOfStart + 10];
+
+            // Error
+            Error = SrcData[IndexOfStart + 11];
+
+            if (pktLen >= 16)
+            {
+                // Sample Calendar
+                SensorCollectTime = CommArithmetic.DecodeDateTime(SrcData, (UInt16)(IndexOfStart + 12));
+            }            
+
+            // RSSI
+            if (ExistRssi == true)
+            {
+                byte rssi = SrcData[IndexOfStart + 2 + pktLen + 3];
+                if (rssi >= 0x80)
+                {
+                    RSSI = (double)(rssi - 0x100);
+                }
+                else
+                {
+                    RSSI = (double)rssi;
+                }
+            }
+
+            // 传输时间                
+            SensorTransforTime = System.DateTime.Now;
+
+            this.SourceData = CommArithmetic.ToHexString(SrcData, IndexOfStart, pktLen + 6);
 
             return 0;
         }

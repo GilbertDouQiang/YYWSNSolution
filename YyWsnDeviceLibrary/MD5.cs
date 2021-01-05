@@ -35,15 +35,17 @@ namespace YyWsnDeviceLibrary
         public MD5(string keyStr)
         {
             byte[] keyByte = MyCustomFxn.HexStringToByteArray(keyStr);
-            if(keyByte == null || keyByte.Length != 16)
+            if (keyByte == null || keyByte.Length < 16)
             {
                 return;         // 指定密钥格式错误，使用默认密钥
             }
-
-            state[0] = ((UInt32)keyByte[0] << 24) | ((UInt32)keyByte[1] << 16) | ((UInt32)keyByte[2] << 8) | ((UInt32)keyByte[3] << 0);
-            state[1] = ((UInt32)keyByte[4] << 24) | ((UInt32)keyByte[5] << 16) | ((UInt32)keyByte[6] << 8) | ((UInt32)keyByte[7] << 0);
-            state[2] = ((UInt32)keyByte[8] << 24) | ((UInt32)keyByte[9] << 16) | ((UInt32)keyByte[10] << 8) | ((UInt32)keyByte[11] << 0);
-            state[3] = ((UInt32)keyByte[12] << 24) | ((UInt32)keyByte[13] << 16) | ((UInt32)keyByte[14] << 8) | ((UInt32)keyByte[15] << 0);
+            else
+            {
+                state[0] = ((UInt32)keyByte[0] << 24) | ((UInt32)keyByte[1] << 16) | ((UInt32)keyByte[2] << 8) | ((UInt32)keyByte[3] << 0);
+                state[1] = ((UInt32)keyByte[4] << 24) | ((UInt32)keyByte[5] << 16) | ((UInt32)keyByte[6] << 8) | ((UInt32)keyByte[7] << 0);
+                state[2] = ((UInt32)keyByte[8] << 24) | ((UInt32)keyByte[9] << 16) | ((UInt32)keyByte[10] << 8) | ((UInt32)keyByte[11] << 0);
+                state[3] = ((UInt32)keyByte[12] << 24) | ((UInt32)keyByte[13] << 16) | ((UInt32)keyByte[14] << 8) | ((UInt32)keyByte[15] << 0);
+            }           
         }
 
         private UInt32 F(UInt32 x, UInt32 y, UInt32 z)

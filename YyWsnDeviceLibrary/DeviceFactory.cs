@@ -210,7 +210,25 @@ namespace YyWsnDeviceLibrary
             {
                 try
                 {
-                    if (M1.isSensorDataV1(SrcData, iCnt, true) >= 0 || M1.isSensorDataV3(SrcData, iCnt, true) >= 0 || M1.isSensorDataV1_MAX31855(SrcData, iCnt, true) >= 0)
+                    if (M1.isNtpPktV1(SrcData, iCnt, true) >= 0 )
+                    {   // 授时
+                        M1 m1 = new M1(SrcData, iCnt);
+                        if (m1 != null)
+                        {
+                            devices.Add(m1);
+                            continue;
+                        }
+                    }
+                    else if (M1.isNtpRespondPktV1(SrcData, iCnt, true) >= 0)
+                    {   // 授时反馈
+                        M1 m1 = new M1(SrcData, iCnt);
+                        if (m1 != null)
+                        {
+                            devices.Add(m1);
+                            continue;
+                        }
+                    }
+                    else if (M1.isSensorDataV1(SrcData, iCnt, true) >= 0 || M1.isSensorDataV3(SrcData, iCnt, true) >= 0 || M1.isSensorDataV1_MAX31855(SrcData, iCnt, true) >= 0)
                     {
                         M1 m1 = new M1(SrcData, iCnt);
                         if (m1 != null)

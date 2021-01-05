@@ -40,13 +40,18 @@ namespace HyperWSN_Setup_GM
     {
         SerialPortHelper SerialPort;
 
+        System.Timers.Timer TimerOfAutoNtp = null;                                  // 自动授时的计时器
+
         ObservableCollection<M1> GridDataOfM1 = new ObservableCollection<M1>();     // M1的传感数据
         ObservableCollection<M20> GridDataOfM20 = new ObservableCollection<M20>();  // M20的传感数据
         ObservableCollection<AO2> GridDataOfAO2 = new ObservableCollection<AO2>();  // AO2的传感数据
 
+        ObservableCollection<M1> GridDataOfM1Beetech = new ObservableCollection<M1>();  // M1Beetech的传感数据
+
         int GridLineOfM1 = 1;                                                       // M1表格的行编号  
         int GridLineOfM20 = 1;                                                      // M20表格的行编号   
         int GridLineOfAO2 = 1;                                                      // AO2表格的行编号         
+        int GridLineOfM1Beetech = 1;                                                // M1Beetech表格的行编号         
 
         UInt16 ReadTotal = 0;           // 希望读取的数据的总数量
         UInt16 ReadCnt = 0;             // 读取数据的累计单元
@@ -70,6 +75,7 @@ namespace HyperWSN_Setup_GM
             GridOfM1.ItemsSource = GridDataOfM1;
             GridOfM20.ItemsSource = GridDataOfM20;
             GridOfAO2.ItemsSource = GridDataOfAO2;
+            GridOfM1Beetech.ItemsSource = GridDataOfM1Beetech;
 
             //M1 排序用
             ICollectionView v = CollectionViewSource.GetDefaultView(GridOfM1.ItemsSource);
@@ -87,6 +93,13 @@ namespace HyperWSN_Setup_GM
 
             //AO2 排序用
             v = CollectionViewSource.GetDefaultView(GridOfAO2.ItemsSource);
+            v.SortDescriptions.Clear();
+            d = ListSortDirection.Descending;
+            v.SortDescriptions.Add(new SortDescription("DisplayID", d));
+            v.Refresh();
+
+            //M1Beetech 排序用
+            v = CollectionViewSource.GetDefaultView(GridOfM1Beetech.ItemsSource);
             v.SortDescriptions.Clear();
             d = ListSortDirection.Descending;
             v.SortDescriptions.Add(new SortDescription("DisplayID", d));
@@ -112,9 +125,47 @@ namespace HyperWSN_Setup_GM
             FindComport();
         }
 
+        private void TimerOfAutoNtp_Start()
+        {
+            if (cbxAutoNtp.IsChecked == false)
+            {
+                return;
+            }
+
+            if (TimerOfAutoNtp == null)
+            {
+                TimerOfAutoNtp = new System.Timers.Timer(100);
+                TimerOfAutoNtp.Elapsed += TimerOfAutoNtp_Elapsed;
+                TimerOfAutoNtp.Enabled = true;
+            }
+        }
+
+        private void TimerOfAutoNtp_Stop()
+        {
+            if (TimerOfAutoNtp == null)
+            {
+                return;
+            }
+
+            TimerOfAutoNtp.Enabled = false;
+            TimerOfAutoNtp.Dispose();
+            TimerOfAutoNtp = null;
+        }
+
+        private void TimerOfAutoNtp_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            Dispatcher.BeginInvoke(new Action(delegate
+            {
+                TimerOfAutoNtp.Enabled = false;
+                TimerOfAutoNtp.Interval = 10 * 1000;        // TODO: 2020-05-26 调试用，暂时将60秒改为10秒钟
+                TimerOfAutoNtp.Enabled = true;
+
+                btnNtp_Click(null, null);
+            }));            
+        }
+
         private void btnOpenComport_Click(object sender, RoutedEventArgs e)
         {
-            //btnOpenComport.Content.ToString();
             if (btnOpenComport.Content.ToString() == "Open")
             {
                 SerialPort = new SerialPortHelper();
@@ -124,6 +175,8 @@ namespace HyperWSN_Setup_GM
                 if (SerialPort.OpenPort())
                 {
                     btnOpenComport.Content = "Close";
+
+                    TimerOfAutoNtp_Start();
                 }
             }
             else
@@ -132,6 +185,8 @@ namespace HyperWSN_Setup_GM
                 {
                     SerialPort.ClosePort();
                     btnOpenComport.Content = "Open";
+
+                    TimerOfAutoNtp_Stop();
                 }
             }
         }
@@ -146,7 +201,7 @@ namespace HyperWSN_Setup_GM
         {
             // 数据包的总长度
             UInt16 SrcLen = (UInt16)(SrcData.Length - IndexOfStart);
-            if (SrcLen < 11)
+            if (SrcLen < 9)
             {
                 return -1;
             }
@@ -197,7 +252,7 @@ namespace HyperWSN_Setup_GM
 
             // 软件版本
             UInt16 SwRevision = (UInt16)(SrcData[IndexOfStart + 12] * 256 + SrcData[IndexOfStart + 13]);
-            if(SwRevision >= 0xA41F)
+            if (SwRevision >= 0xA41F || (SwRevision & 0xFF00) == 0x0000)
             {
                 ReadCfg(0x0E);
                 return 1;
@@ -278,6 +333,13 @@ namespace HyperWSN_Setup_GM
                 return -1;
             }
 
+            // 数据包的长度
+            byte pktLen = SrcData[IndexOfStart + 2];
+            if (pktLen != 0x2B)
+            {
+                return -2;
+            }
+
             UInt16 iCnt = (UInt16)(IndexOfStart + 4);
 
             tbxMac.Text = SrcData[iCnt].ToString("X2") + " " + SrcData[iCnt + 1].ToString("X2") + " " + SrcData[iCnt + 2].ToString("X2") + " " + SrcData[iCnt + 3].ToString("X2");
@@ -324,8 +386,16 @@ namespace HyperWSN_Setup_GM
             tbxTransPolicy.Text = SrcData[iCnt].ToString("D");
             iCnt += 1;
 
-            tbxReserved.Text = SrcData[iCnt].ToString("X2") + " " + SrcData[iCnt + 1].ToString("X2");
-            iCnt += 2;
+            Int16 rssiThr = SrcData[iCnt];
+            if(rssiThr >= 0x80)
+            {
+                rssiThr -= 0x100;
+            }
+            tbxRssiThr.Text = rssiThr.ToString("D");
+            iCnt += 1;
+
+            tbxLogEnable.Text = SrcData[iCnt].ToString("D");
+            iCnt += 1;
 
             tbxRam.Text = SrcData[iCnt].ToString("D");
             iCnt += 1;
@@ -434,8 +504,16 @@ namespace HyperWSN_Setup_GM
             tbxTransPolicy.Text = SrcData[iCnt].ToString("D");
             iCnt += 1;
 
-            tbxReserved.Text = SrcData[iCnt].ToString("X2") + " " + SrcData[iCnt + 1].ToString("X2");
-            iCnt += 2;
+            Int16 rssiThr = SrcData[iCnt];
+            if (rssiThr >= 0x80)
+            {
+                rssiThr -= 0x100;
+            }
+            tbxRssiThr.Text = rssiThr.ToString("D");
+            iCnt += 1;
+
+            tbxLogEnable.Text = SrcData[iCnt].ToString("D");
+            iCnt += 1;
 
             ReadCfg(0x01);
 
@@ -823,6 +901,167 @@ namespace HyperWSN_Setup_GM
             return 0;
         }
 
+        private Int16 RxPkt_ReadHistoryInfo(byte[] SrcData, UInt16 IndexOfStart)
+        {
+            // 数据包的总长度
+            UInt16 SrcLen = (UInt16)(SrcData.Length - IndexOfStart);
+            if (SrcLen < 30)
+            {
+                return -1;
+            }
+
+            // Error
+            Int16 Error = (Int16)SrcData[IndexOfStart + 10];
+            if (Error > 0x80)
+            {
+                Error -= 0x100;
+            }
+
+            if (Error < 0)
+            {
+                tbxSensorMac.Text = "失败";
+                return -2;
+            }
+
+            UInt16 iCnt = (UInt16)(IndexOfStart + 6);
+
+            tbxSensorMac.Text = SrcData[iCnt].ToString("X2") + " " + SrcData[iCnt + 1].ToString("X2") + " " + SrcData[iCnt + 2].ToString("X2") + " " + SrcData[iCnt + 3].ToString("X2");
+            iCnt += 4;
+
+            iCnt += 1;
+
+            tbxNbrOfHistory.Text = (SrcData[iCnt] * 256 * 256 + SrcData[iCnt + 1] * 256 + SrcData[iCnt + 2]).ToString("D");
+            iCnt += 3;
+
+            tbxStartTime.Text = "20" + SrcData[iCnt].ToString("X2") + "-" + SrcData[iCnt + 1].ToString("X2") + "-" + SrcData[iCnt + 2].ToString("X2") + " " + SrcData[iCnt + 3].ToString("X2") + ":" + SrcData[iCnt + 4].ToString("X2") + ":" + SrcData[iCnt + 5].ToString("X2");
+            iCnt += 6;
+
+            tbxEndTime.Text = "20" + SrcData[iCnt].ToString("X2") + "-" + SrcData[iCnt + 1].ToString("X2") + "-" + SrcData[iCnt + 2].ToString("X2") + " " + SrcData[iCnt + 3].ToString("X2") + ":" + SrcData[iCnt + 4].ToString("X2") + ":" + SrcData[iCnt + 5].ToString("X2");
+            iCnt += 6;
+
+            return 0;
+        }
+
+
+        private Int16 RxPkt_ReadHistoryData(byte[] SrcData, UInt16 IndexOfStart)
+        {
+            // 数据包的总长度
+            UInt16 SrcLen = (UInt16)(SrcData.Length - IndexOfStart);
+            if (SrcLen < 16)
+            {
+                return -1;
+            }
+
+            // 数据包的长度
+            byte pktLen = SrcData[IndexOfStart + 2];
+
+            // 协议版本
+            byte protocol = SrcData[IndexOfStart + 4];
+            if (protocol != 1)
+            {
+                return -2;
+            }
+
+            // Step
+            byte Step = SrcData[IndexOfStart + 10];
+
+            // Error
+            Int16 Error = (Int16)SrcData[IndexOfStart + 11];
+            if (Error > 0x80)
+            {
+                Error -= 0x100;
+            }
+
+            if (Step == 0)
+            {
+                tbkReadHistoryStatus.Text = "开始";
+                tbxStartExportTime.Text = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
+                tabItemConsole.IsEnabled = false;
+                tabItemSetup.IsEnabled = false;
+                tabItemM1.IsEnabled = false;
+                tabItemM20.IsEnabled = false;
+                tabItemAO2.IsEnabled = false;
+            }
+            else if (Step == 1)
+            {
+                tbkReadHistoryStatus.Text = "导出";
+
+                tabItemM1Beetech.IsEnabled = true;
+
+                tabItemConsole.IsEnabled = false;
+                tabItemSetup.IsEnabled = false;
+                tabItemM1.IsEnabled = false;
+                tabItemM20.IsEnabled = false;
+                tabItemAO2.IsEnabled = false;
+            }
+            else if (Step == 2)
+            {
+                tbkReadHistoryStatus.Text = "结束";
+                tbxEndExportTime.Text = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
+                tabItemConsole.IsEnabled = true;
+                tabItemSetup.IsEnabled = true;
+                tabItemM1.IsEnabled = true;
+                tabItemM20.IsEnabled = true;
+                tabItemAO2.IsEnabled = true;
+            }
+            else
+            {
+                tbkReadHistoryStatus.Text = "未知" + Step.ToString();
+
+                tabItemConsole.IsEnabled = true;
+                tabItemSetup.IsEnabled = true;
+                tabItemM1.IsEnabled = true;
+                tabItemM20.IsEnabled = true;
+                tabItemAO2.IsEnabled = true;
+            }
+
+            if (Error < 0)
+            {
+                tbkReadHistoryStatus.Text += ", " + Error.ToString();
+                return -3;
+            }
+
+
+            if (Step == 0)
+            {
+
+            }
+            else if (Step == 1)
+            {
+                if (SrcLen < 39 || pktLen != 0x20)
+                {
+                    return -4;
+                }
+
+                M1 ThisM1 = new M1(SrcData, IndexOfStart, Device.DataPktType.ExportFromM1Beetech, Device.DeviceType.M1_Beetech);
+                if (ThisM1 == null)
+                {
+                    return -5;
+                }
+
+                // 添加到显示列表中
+                ThisM1.DisplayID = GridLineOfM1Beetech;
+                if (++GridLineOfM1Beetech == 0)
+                {
+                    GridLineOfM1Beetech++;
+                }
+
+                GridDataOfM1Beetech.Add((M1)ThisM1);
+            }
+            else if (Step == 2)
+            {
+
+            }
+            else
+            {
+
+            }
+
+            return 0;
+        }
+
         /// <summary>
         /// 记录日志
         /// </summary>
@@ -831,9 +1070,7 @@ namespace HyperWSN_Setup_GM
         private void ConsoleLog(string direct, byte[] Txt, UInt16 IndexOfStart, UInt16 TxtLen)
         {
             if (Txt.Length != 0 && chkLockLog.IsChecked == false)
-            {   
-                // TODO: 2019-07-09 日志记录有问题
-                
+            {                
                 tbxConsole.Text = Logger.GetTimeString() + "\t" + direct + "\t" + MyCustomFxn.ToHexString(Txt, IndexOfStart, TxtLen) + "\r\n" + tbxConsole.Text;               
 
                 UInt16 ConsoleMaxLine = Convert.ToUInt16(txtLogLineLimit.Text);
@@ -843,8 +1080,44 @@ namespace HyperWSN_Setup_GM
                     int length = tbxConsole.GetLineLength(ConsoleMaxLine);                  // 末尾行字符串的长度
                     tbxConsole.Select(start, start + length);                               // 选中末尾一行
                     tbxConsole.SelectedText = "END";
-                }                              
+                }     
+                                         
             }
+        }
+
+        private void ConsoleLog_HexAndStr(string direct, byte[] Buf, UInt16 IndexOfStart, UInt16 Len)
+        {
+            if (Buf.Length == 0 || chkLockLog.IsChecked == true)
+            {
+                return;
+            }
+
+            Int16 HandleLen = 0;
+
+            for (UInt16 iCnt = 0; iCnt < Len; iCnt++)
+            {
+                try
+                {
+                    HandleLen = RxPkt_IsRight(Buf, iCnt);
+                    if (HandleLen < 0)
+                    {
+                        continue;
+                    }
+
+                    if (HandleLen > 0)
+                    {
+                        HandleLen--;        // 因为马上就要执行iCnt++
+                    }
+
+                    iCnt = (UInt16)(iCnt + HandleLen);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("分拣接收数据包存储日志时出错！" + ex.Message);
+                }
+            }
+
+            // Logger.AddLogAutoTime(tip + "\t" + CommArithmetic.ToHexString(Buf, StartIndex, Len));
         }
 
         /// <summary>
@@ -928,9 +1201,24 @@ namespace HyperWSN_Setup_GM
                                     ExeError = RxPkt_ReadData(e.ReceivedBytes, iCnt);                                    
                                     break;
                                 }
+                            case 0x0D:
+                                {
+                                    if(tabItemM1Beetech.IsSelected == true)
+                                    {
+                                        ExeError = RxPkt_ReadHistoryInfo(e.ReceivedBytes, iCnt);
+                                    }
+                                    break;
+                                }
                             case 0x0E:
                                 {
-                                    ExeError = RxPkt_ReadCfgV2(e.ReceivedBytes, iCnt);
+                                    if (tabItemM1Beetech.IsSelected == true)
+                                    {
+                                        ExeError = RxPkt_ReadHistoryData(e.ReceivedBytes, iCnt);
+                                    }
+                                    else
+                                    {
+                                        ExeError = RxPkt_ReadCfgV2(e.ReceivedBytes, iCnt);
+                                    }
                                     break;
                                 }
                             case 0x0F:
@@ -1049,7 +1337,8 @@ namespace HyperWSN_Setup_GM
             tbxChannelNew.Text = tbxChannel.Text;
             tbxTxPowerNew.Text = tbxTxPower.Text;
             tbxTransPolicyNew.Text = tbxTransPolicy.Text;
-            tbxReservedNew.Text = tbxReserved.Text;
+            tbxRssiThrNew.Text = tbxRssiThr.Text;
+            tbxLogEnableNew.Text = tbxLogEnable.Text;
         }
 
         /// <summary>
@@ -1078,7 +1367,8 @@ namespace HyperWSN_Setup_GM
             tbxSendOk.Text = "";
             tbxVolt.Text = "";
             tbxTransPolicy.Text = "";
-            tbxReserved.Text = "";
+            tbxRssiThr.Text = "";
+            tbxLogEnable.Text = "";
             tbxBindNum.Text = "";
         }
 
@@ -1219,13 +1509,8 @@ namespace HyperWSN_Setup_GM
                     {
                         TxBuf[TxLen++] = (byte)Convert.ToInt16(tbxTxPowerNew.Text);
                         TxBuf[TxLen++] = Convert.ToByte(tbxTransPolicyNew.Text);
-                        ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxReservedNew.Text);
-                        if (ByteBufTmp == null || ByteBufTmp.Length < 2)
-                        {
-                            return;
-                        }
-                        TxBuf[TxLen++] = ByteBufTmp[0];
-                        TxBuf[TxLen++] = ByteBufTmp[1];
+                        TxBuf[TxLen++] = (byte)Convert.ToInt16(tbxRssiThrNew.Text);
+                        TxBuf[TxLen++] = Convert.ToByte(tbxLogEnableNew.Text);
                     }
                     else if (SwRevisionL >= 0x17)
                     {
@@ -1242,13 +1527,8 @@ namespace HyperWSN_Setup_GM
                 {
                     TxBuf[TxLen++] = (byte)Convert.ToInt16(tbxTxPowerNew.Text);
                     TxBuf[TxLen++] = Convert.ToByte(tbxTransPolicyNew.Text);
-                    ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxReservedNew.Text);
-                    if (ByteBufTmp == null || ByteBufTmp.Length < 2)
-                    {
-                        return;
-                    }
-                    TxBuf[TxLen++] = ByteBufTmp[0];
-                    TxBuf[TxLen++] = ByteBufTmp[1];
+                    TxBuf[TxLen++] = (byte)Convert.ToInt16(tbxRssiThrNew.Text);
+                    TxBuf[TxLen++] = Convert.ToByte(tbxLogEnableNew.Text);
                 }
           
                 // CRC16
@@ -1338,6 +1618,8 @@ namespace HyperWSN_Setup_GM
         /// <param name="e"></param>
         private void btnNtp_Click(object sender, RoutedEventArgs e)
         {
+            TimerOfAutoNtp_Start();
+
             try
             {
                 byte[] TxBuf = new byte[24];
@@ -1366,7 +1648,7 @@ namespace HyperWSN_Setup_GM
                 TxBuf[TxLen++] = 0x15;
                 TxBuf[TxLen++] = 0x06;
 
-                if (cbxAutoNtp.IsChecked == true)
+                if (cbxUseSysTime.IsChecked == true)
                 {
                     tbxNtpCalendar.Text = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
                 }
@@ -1598,30 +1880,25 @@ namespace HyperWSN_Setup_GM
         /// <param name="e"></param>
         private void btnClearData_Click(object sender, RoutedEventArgs e)
         {
-            switch (tabControl.SelectedIndex)
+            if (tabItemM1.IsSelected == true)
             {
-                case 2:
-                    {
-                        GridLineOfM1 = 1;
-                        GridDataOfM1.Clear();
-                        break;
-                    }
-                case 3:
-                    {
-                        GridLineOfM20 = 1;
-                        GridDataOfM20.Clear();
-                        break;
-                    }
-                case 4:
-                    {
-                        GridLineOfAO2 = 1;
-                        GridDataOfAO2.Clear();
-                        break;
-                    }
-                default:
-                    {
-                        break;
-                    }
+                GridLineOfM1 = 1;
+                GridDataOfM1.Clear();
+            }
+            else if (tabItemM20.IsSelected == true)
+            {
+                GridLineOfM20 = 1;
+                GridDataOfM20.Clear();
+            }
+            else if (tabItemAO2.IsSelected == true)
+            {
+                GridLineOfAO2 = 1;
+                GridDataOfAO2.Clear();
+            }
+            else if (tabItemM1Beetech.IsSelected == true)
+            {
+                GridLineOfM1Beetech = 1;
+                GridDataOfM1Beetech.Clear();
             }
         }
 
@@ -1835,6 +2112,199 @@ namespace HyperWSN_Setup_GM
         {
             tbxBindNum.Text = "";
             tbxBindDev.Text = "";
+        }
+
+        /// <summary>
+        /// 发送串口指令，读取M1 Beetech历史数据的开始时间、结束时间、已存数量。
+        /// </summary>
+        private void M1Beetech_ReadHistoryInfo()
+        {
+            byte[] TxBuf = new byte[10];
+            UInt16 TxLen = 0;
+
+            // Start
+            TxBuf[TxLen++] = 0xCA;
+            TxBuf[TxLen++] = 0xCA;
+
+            // Length
+            TxBuf[TxLen++] = 0x00;
+
+            // Cmd
+            TxBuf[TxLen++] = 0x0D;
+
+            // Protocol
+            TxBuf[TxLen++] = 0x01;
+
+            // CRC16
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 3, (UInt16)(TxLen - 3));
+            TxBuf[TxLen++] = (byte)((crc & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((crc & 0x00FF) >> 0);
+
+            // End
+            TxBuf[TxLen++] = 0xAC;
+            TxBuf[TxLen++] = 0xAC;
+
+            // 重写长度位
+            TxBuf[2] = (byte)(TxLen - 7);
+
+            SerialPort_Send(TxBuf, 0, TxLen);
+        }
+
+        private void btnReadHistoryInfo_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                tbxSensorMac.Text = "";
+                tbxStartTime.Text = "";
+                tbxEndTime.Text = "";
+                tbxNbrOfHistory.Text = "";
+
+                M1Beetech_ReadHistoryInfo();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("参数错误" + ex.Message);
+            }
+        }
+
+        private void M1Beetech_ReadHistoryData()
+        {
+            byte[] TxBuf = new byte[26];
+            UInt16 TxLen = 0;
+
+            // Start
+            TxBuf[TxLen++] = 0xCA;
+            TxBuf[TxLen++] = 0xCA;
+
+            // Length
+            TxBuf[TxLen++] = 0x00;
+
+            // Cmd
+            TxBuf[TxLen++] = 0x0E;
+
+            // Protocol
+            TxBuf[TxLen++] = 0x01;
+
+            // 起始时间
+            try
+            {
+                if (tbxStartTime.Text == null || tbxStartTime.Text == string.Empty)
+                {
+                    MessageBox.Show("请输入起止时间！");
+                    return;
+                }
+
+                DateTime StartT = Convert.ToDateTime(tbxStartTime.Text);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(StartT.Year - 2000);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(StartT.Month);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(StartT.Day);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(StartT.Hour);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(StartT.Minute);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(StartT.Second);
+            }
+            catch
+            {
+                MessageBox.Show("起始时间解析错误！");
+                return;
+            }
+
+            // 结束时间
+            try
+            {
+                if (tbxEndTime.Text == null || tbxEndTime.Text == string.Empty)
+                {
+                    MessageBox.Show("请输入起止时间！");
+                    return;
+                }
+
+                DateTime EndT = Convert.ToDateTime(tbxEndTime.Text);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(EndT.Year - 2000);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(EndT.Month);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(EndT.Day);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(EndT.Hour);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(EndT.Minute);
+                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(EndT.Second);
+            }
+            catch
+            {
+                MessageBox.Show("结束时间解析错误！");
+                return;
+            }
+
+            // 传输间隔
+            try
+            {
+                if (tbxReadIntervalMs.Text == null || tbxReadIntervalMs.Text == string.Empty)
+                {
+                    TxBuf[TxLen++] = 25;
+                }
+                else
+                {
+                    TxBuf[TxLen++] = Convert.ToByte(tbxReadIntervalMs.Text);
+                }
+            }
+            catch
+            {
+                MessageBox.Show("传输间隔解析错误！");
+                return;
+            }
+
+            // CRC16
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 3, (UInt16)(TxLen - 3));
+            TxBuf[TxLen++] = (byte)((crc & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((crc & 0x00FF) >> 0);
+
+            // End
+            TxBuf[TxLen++] = 0xAC;
+            TxBuf[TxLen++] = 0xAC;
+
+            // 重写长度位
+            TxBuf[2] = (byte)(TxLen - 7);
+
+            SerialPort_Send(TxBuf, 0, TxLen);
+        }
+
+        private void btnReadHistoryData_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                tbkReadHistoryStatus.Text = "";
+                tbxStartExportTime.Text = "";
+                tbxEndExportTime.Text = "";
+
+                M1Beetech_ReadHistoryData();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("参数错误" + ex.Message);
+            }
+        }
+
+        private void btnExportHistoryData_Click(object sender, RoutedEventArgs e)
+        {
+            string SensorId = "MAC";
+
+            SensorId += tbxSensorMac.Text;
+            SensorId = SensorId.Replace(" ", "");
+
+            SaveFileDialog SaveDlg = new SaveFileDialog();
+            SaveDlg.Filter = "XLS文件|*.xls|所有文件|*.*";
+            SaveDlg.FileName = "Export_M1Beetech_" + SensorId + "_" + DateTime.Now.ToString("yyMMdd_hhmmss");
+
+            // 生成备注
+            string Comment = string.Empty;
+            Comment += "Sensor MAC: " + tbxSensorMac.Text + "\n";
+            Comment += "起始时间: " + tbxStartTime.Text + "\n";
+            Comment += "结束时间: " + tbxEndTime.Text + "\n";
+            Comment += "历史数量: " + tbxNbrOfHistory.Text + "\n";
+            Comment += "导出操作的开始时间: " + tbxStartExportTime.Text + "\n";
+            Comment += "导出操作的结束时间: " + tbxEndExportTime.Text;
+
+            if (SaveDlg.ShowDialog() == true)
+            {
+                ExportXLS export = new ExportXLS();
+                export.ExportWPFDataGrid(GridOfM1Beetech, SaveDlg.FileName, GridDataOfM1Beetech, Comment);
+            }
         }
     }
 }

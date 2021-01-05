@@ -12,10 +12,27 @@ namespace YyWsnCommunicatonLibrary
 {
     public class SerialPortHelper
     {
+        /// <summary>
+        /// 正在接收
+        /// </summary>
+        private bool Receiving = false;
+
+        /// <summary>
+        /// 是否自动生成日志文件
+        /// </summary>
+        public bool IsLogger { get; set; }        
+
+        /// <summary>
+        /// 抓到异常时，产生的提示语
+        /// </summary>
+        public string ExceptString { get; set; }
+
         public delegate void SerialPortReceivedEventHandler(object sender, SerialPortEventArgs e);
         public event SerialPortReceivedEventHandler SerialPortReceived;
 
         SerialPort Port1;
+
+        bool EnableRxAfterTimer = false;
 
         System.Timers.Timer WaitTotalTimer;             // 等待接收数据的超时计时器
         System.Timers.Timer AfterReceivedTimer;         // 收到数据后，开始计时，若是一定时间内没有再收到新的数据，则退出接收；
@@ -31,9 +48,41 @@ namespace YyWsnCommunicatonLibrary
         string RxExpStr;                                // 接收过程中，希望收到的字符串
         bool ReceivedExpStr = false;                    // 是否已经收到了期望的字符串了
 
-        //初始化SerialPort对象方法.PortName为COM口名称,例如"COM1","COM2"等,注意是string类型
+        public int ReceiveDelayMs = 60;                 // 接收的延时时间
 
-        public void InitCOM(string PortName, int BaudRate)
+        /// <summary>
+        /// 获取符合特征值的SerialPort 端口名称
+        /// </summary>
+        /// <param name="id">特征字符串，比如 CP</param>
+        /// <returns></returns>
+        public static String[] GetSerialPorts(string id)
+        {
+            String[] ss = MulGetHardwareInfo(HardwareEnum.Win32_SerialPort, "Name");    //调用方式通过WMI获取COM端口 
+
+            List<string> checkSS = new List<string>();
+            foreach (string item in ss)
+            {
+                if (item.Contains(id))
+                {
+                    checkSS.Add(item);
+                }
+            }
+
+            String[] result = new String[checkSS.Count];
+            for (int i = 0; i < checkSS.Count; i++)
+            {
+                result[i] = checkSS[i];
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="PortName"> 例如："COM5"  </param>
+        /// <param name="BaudRate"></param>
+        public void InitCOM(string PortName, int BaudRate, Parity parity)
         {
             //释放以前的端口
             if (Port1 != null)
@@ -49,12 +98,26 @@ namespace YyWsnCommunicatonLibrary
             }
 
             Port1 = new SerialPort(PortName);
-            Port1.BaudRate = 115200;                    // 波特率
-            Port1.Parity = Parity.None;                 // 无奇偶校验位
+            Port1.BaudRate = BaudRate;                  // 波特率
+            Port1.Parity = parity;                      // 奇偶校验位
             Port1.StopBits = StopBits.One;              // 一个停止位
             Port1.ReadBufferSize = 16384;
             Port1.WriteBufferSize = 16384;
             Port1.DataReceived += Port1_DataReceived;   // DataReceived事件委托
+
+            ExceptString = String.Empty;
+
+            ReceiveDelayMs = 60;
+
+            AfterReceivedTimer = new System.Timers.Timer();
+            AfterReceivedTimer.Interval = 100;
+            AfterReceivedTimer.Enabled = false;
+            AfterReceivedTimer.Elapsed += AfterReceivedTimer_Elapsed;
+        }
+
+        public void InitCOM(string PortName, int BaudRate)
+        {
+            InitCOM(PortName, BaudRate, Parity.None);
         }
 
         public void InitCOM(string PortName)
@@ -80,7 +143,8 @@ namespace YyWsnCommunicatonLibrary
             }
             catch (Exception ex)
             {
-                throw ex;
+                ExceptString = ex.Message;
+                return false;
             }
 
             if (Port1.IsOpen)
@@ -115,12 +179,17 @@ namespace YyWsnCommunicatonLibrary
             {
                 if(Port1.IsOpen)
                 {
+                    while (Receiving == true)
+                    {
+                        System.Threading.Thread.Sleep(100);
+                    }
+
                     Port1.Close();
                 }               
             }
             catch (Exception ex)
             {
-                throw ex;
+                ExceptString = ex.Message;
             }
         }
 
@@ -133,12 +202,22 @@ namespace YyWsnCommunicatonLibrary
         /// <param name="Len"></param>
         private void AddLog(string tip, byte[] Buf, int StartIndex, int Len)
         {
-            Logger.AddLogAutoTime(tip + "\t" + CommArithmetic.ToHexString(Buf, StartIndex, Len));
+            if (IsLogger == true)
+            {
+                Logger.AddLogAutoTime(tip + "\t" + CommArithmetic.ToHexString(Buf, StartIndex, Len));
+            }
         }
 
         private void AddLog(string tip, byte[] Buf)
         {
-            Logger.AddLogAutoTime(tip + "\t" + CommArithmetic.ToHexString(Buf, 0, Buf.Length));
+            if (Buf == null)
+            {
+                AddLog(tip, null, 0, 0);
+            }
+            else
+            {
+                AddLog(tip, Buf, 0, Buf.Length);
+            }
         }
 
         private int Write(byte[] Buf, int Start, int Len)
@@ -192,7 +271,7 @@ namespace YyWsnCommunicatonLibrary
         /// <param name="CommandBytes"></param>
         public byte[] SendReceive(byte[] TxBuf, UInt16 IndexOfStart, UInt16 TxLen, UInt16 RxTimeoutMs)
         {
-            if(Port1 == null)
+            if (Port1 == null)
             {
                 return null;
             }
@@ -204,10 +283,16 @@ namespace YyWsnCommunicatonLibrary
 
             Write(TxBuf, IndexOfStart, TxLen);
 
-            if(RxTimeoutMs != 0)
+            if (RxTimeoutMs != 0)
             {
+                RxByteStr = null;
+                RxByteBuf = null;
+
+                RxExpStr = null;
+                ReceivedExpStr = false;
+
                 ReceivedData = false;
-                WaitTotalTimeout = false;
+                WaitTotalTimeout = false;                
 
                 WaitTotalTimer = new System.Timers.Timer();
                 WaitTotalTimer.Interval = RxTimeoutMs;
@@ -216,7 +301,7 @@ namespace YyWsnCommunicatonLibrary
 
                 while (WaitTotalTimeout == false && ReceivedData == false)
                 {
-                    System.Threading.Thread.Sleep(25);
+                    System.Threading.Thread.Sleep(1);
                 }
 
                 WaitTotalTimer.Enabled = false;
@@ -225,7 +310,69 @@ namespace YyWsnCommunicatonLibrary
 
                 WaitTotalTimeout = false;
                 ReceivedData = false;
-            }            
+
+                AddLog("RX", RxByteBuf);
+            }
+
+            return RxByteBuf;
+        }
+
+        public byte[] SendReceive(byte[] TxBuf, UInt16 IndexOfStart, UInt16 TxLen, UInt16 RxTotalMs, UInt16 RxAfterMs)
+        {
+            if (Port1 == null)
+            {
+                return null;
+            }
+
+            if (Port1.IsOpen == false)
+            {
+                return null;
+            }
+
+            Write(TxBuf, IndexOfStart, TxLen);
+
+            if (RxTotalMs != 0)
+            {
+                RxByteStr = null;
+                RxByteBuf = null;
+
+                RxExpStr = null;
+                ReceivedExpStr = false;
+
+                ReceivedData = false;
+                WaitTotalTimeout = false;
+                AfterReceivedTimeout = false;
+
+                WaitTotalTimer = new System.Timers.Timer();
+                WaitTotalTimer.Interval = RxTotalMs;
+                WaitTotalTimer.Enabled = true;
+                WaitTotalTimer.Elapsed += WaitTotalTimer_Elapsed;
+
+                if (RxAfterMs != 0)
+                {
+                    EnableRxAfterTimer = true;
+                    AfterReceivedTimer.Interval = RxAfterMs;
+                    AfterReceivedTimer.Enabled = false;
+                }
+
+                while (WaitTotalTimeout == false && AfterReceivedTimeout == false)
+                {
+                    System.Threading.Thread.Sleep(1);
+                }
+
+                WaitTotalTimer.Enabled = false;
+                WaitTotalTimer.Stop();
+                WaitTotalTimer.Dispose();
+
+                AfterReceivedTimer.Enabled = false;
+                EnableRxAfterTimer = false;
+
+                WaitTotalTimeout = false;
+                AfterReceivedTimeout = false;
+                ReceivedData = false;
+
+                AddLog("RX", RxByteBuf);
+            }
 
             return RxByteBuf;
         }
@@ -235,12 +382,17 @@ namespace YyWsnCommunicatonLibrary
             WaitTotalTimeout = true;
         }
 
-        private void Port1_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        private void AfterReceivedTimer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            AfterReceivedTimeout = true;
+        }
+
+        private void inPort1_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
             if (SerialPortReceived == null)
             {
                 StringBuilder currentline = new StringBuilder();
-                System.Threading.Thread.Sleep(60);                  // 尝试不要断开接收数据，在SurfaceBook 上，断开的时间大约为22ms
+                System.Threading.Thread.Sleep(ReceiveDelayMs);           //
 
                 // 非常重要  isOpen的判断是临时的
                 while (Port1.IsOpen && Port1.BytesToRead > 0)
@@ -250,7 +402,7 @@ namespace YyWsnCommunicatonLibrary
                 }
 
                 //补丁，防止收到单个字符
-                if (currentline.Length >= 2)
+                if (currentline.Length > 0)
                 {
                     RxByteStr += currentline.ToString();
                     RxByteBuf = CommArithmetic.HexStringToByteArray(RxByteStr);
@@ -266,7 +418,7 @@ namespace YyWsnCommunicatonLibrary
                     }
 
                     // 刷新计时器，重新计时
-                    if (AfterReceivedTimer != null && AfterReceivedTimer.Enabled == true)
+                    if (EnableRxAfterTimer == true)
                     {
                         AfterReceivedTimer.Stop();
                         AfterReceivedTimer.Start();
@@ -277,38 +429,40 @@ namespace YyWsnCommunicatonLibrary
             {
                 SerialPortEventArgs args = new SerialPortEventArgs();
 
-                try
+                StringBuilder currentline = new StringBuilder();
+
+                Thread.Sleep(60);                   //尝试不要断开接收数据，在SurfaceBook 上，断开的时间大约为22ms
+
+                while (Port1.BytesToRead > 0)
                 {
-                    StringBuilder currentline = new StringBuilder();
-
-                    Thread.Sleep(60);                   //尝试不要断开接收数据，在SurfaceBook 上，断开的时间大约为22ms
-
-                    while (Port1.BytesToRead > 0)
-                    {
-                        byte ch = (byte)Port1.ReadByte();
-                        currentline.Append(ch.ToString("X2"));
-                    }
-
-                    args.ReceivedBytes = CommArithmetic.HexStringToByteArray(currentline.ToString());
-
-                    RxByteBuf = args.ReceivedBytes;
-
-                    Logger.AddLogAutoTime("RX:\t" + CommArithmetic.ToHexString(args.ReceivedBytes));
-
-                    ReceivedData = true;
+                    byte ch = (byte)Port1.ReadByte();
+                    currentline.Append(ch.ToString("X2"));
                 }
-                catch (Exception ex)
-                {
-                    throw (ex);
-                }
+
+                args.ReceivedBytes = CommArithmetic.HexStringToByteArray(currentline.ToString());
+
+                RxByteBuf = args.ReceivedBytes;
+
+                Logger.AddLogAutoTime("RX:\t" + CommArithmetic.ToHexString(args.ReceivedBytes));
+
+                ReceivedData = true;
 
                 SerialPortReceived.Invoke(this, args);
             }
         }
 
-        public static String[] GetSerialPorts()
+        private void Port1_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            return MulGetHardwareInfo(HardwareEnum.Win32_PnPEntity, "Name");   // 调用方式通过WMI获取COM端口 
+            try
+            {
+                Receiving = true;
+                inPort1_DataReceived(sender, e);
+                Receiving = false;
+            }
+            catch (Exception)
+            {
+                return;
+            }
         }
 
         public static string[] MulGetHardwareInfo(HardwareEnum hardType, string propKey)
@@ -316,7 +470,9 @@ namespace YyWsnCommunicatonLibrary
             List<string> strs = new List<string>();
             try
             {
-                using (ManagementObjectSearcher searcher = new ManagementObjectSearcher("select * from " + hardType))
+                string queryString = "select * from " + hardType;
+
+                using (ManagementObjectSearcher searcher = new ManagementObjectSearcher(queryString))
                 {
                     var hardInfos = searcher.Get();
                     foreach (var hardInfo in hardInfos)
@@ -344,6 +500,11 @@ namespace YyWsnCommunicatonLibrary
             int first = DeviceName.IndexOf('(');
             int last = DeviceName.IndexOf(')');
             return DeviceName.Substring(first + 1, last - first - 1);
+        }
+
+        public static String[] GetSerialPorts()
+        {
+            return MulGetHardwareInfo(HardwareEnum.Win32_SerialPort, "Name");    //调用方式通过WMI获取COM端口 
         }
 
     }
