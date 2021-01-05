@@ -2201,6 +2201,8 @@ namespace HyperWSN_Setup_M30
                 LoadStatus += "\r\n";
             }
 
+            // TODO: 2021-01-05 暂时注释掉MSP432的Bootloader，调试CC1310的Bootloader。
+            /* 
             OnlyLoadImage = cbxOnlyLoadImage2.IsChecked;
             SerialPortName = SerialPortHelper.GetSerialPortName(cbSerialPort.SelectedValue.ToString());
 
@@ -2215,6 +2217,10 @@ namespace HyperWSN_Setup_M30
             TimerOfBsl = new System.Timers.Timer(1000);
             TimerOfBsl.Elapsed += TimerEventOfBsl2;
             TimerOfBsl.Enabled = true;
+            */
+
+            Bootloader aBootloader = new Bootloader(SerialPortHelper.GetSerialPortName(cbSerialPort.SelectedValue.ToString()), ofd);
+            aBootloader.Execute();
         }
 
         private void btnEnterBsl_Click(object sender, RoutedEventArgs e)

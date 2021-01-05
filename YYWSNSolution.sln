@@ -79,8 +79,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PictureTransfer", "PictureT
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReceiveFile", "ReceiveFile\ReceiveFile.csproj", "{8121E6C6-9064-4BA0-B71E-BE5B5DE8F1C8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HyperWSN_Tool_WP", "HyperWSN_Tool_WP\HyperWSN_Tool_WP.csproj", "{AA90403F-0B4E-42D8-991F-F8C5136A049E}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -191,10 +189,6 @@ Global
 		{8121E6C6-9064-4BA0-B71E-BE5B5DE8F1C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8121E6C6-9064-4BA0-B71E-BE5B5DE8F1C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8121E6C6-9064-4BA0-B71E-BE5B5DE8F1C8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AA90403F-0B4E-42D8-991F-F8C5136A049E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AA90403F-0B4E-42D8-991F-F8C5136A049E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AA90403F-0B4E-42D8-991F-F8C5136A049E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AA90403F-0B4E-42D8-991F-F8C5136A049E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

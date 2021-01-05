@@ -7,6 +7,8 @@ using System.Diagnostics;
 
 namespace YyWsnCommunicatonLibrary
 {
+    // TODO: 2021-01-05 为方便调试CC1310的串口升级，暂时将此class注释掉。
+    /* 
     public class BootLoader
     {
         public enum BootLoaderResult
@@ -411,6 +413,7 @@ namespace YyWsnCommunicatonLibrary
             this.OutputRxLogEvent(this, evtArgs);
         }
 
-        /*********/
+        //*********
     }
+    */
 }
