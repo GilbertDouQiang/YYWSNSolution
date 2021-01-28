@@ -210,7 +210,16 @@ namespace YyWsnDeviceLibrary
             {
                 try
                 {
-                    if (M1.isNtpPktV1(SrcData, iCnt, true) >= 0 )
+                    if (WP.isAdhocDataV1(SrcData, iCnt, true) >= 0)
+                    {
+                        WP wp = new WP(SrcData, iCnt, true);
+                        if (wp != null)
+                        {
+                            devices.Add(wp);
+                            continue;
+                        }
+                    }
+                    else if (M1.isNtpPktV1(SrcData, iCnt, true) >= 0)
                     {   // 授时
                         M1 m1 = new M1(SrcData, iCnt);
                         if (m1 != null)

@@ -53,6 +53,16 @@ namespace YyWsnDeviceLibrary
         public byte BaudRate { get; set; }
 
         /// <summary>
+        /// RSSI阈值/反馈的RSSI值
+        /// </summary>
+        public double ExpRxRssi { get; set; }
+
+        /// <summary>
+        /// 当前时间
+        /// </summary>
+        public DateTime Current { get; set; }
+
+        /// <summary>
         /// HOP
         /// </summary>
         public byte Hop { get; set; }
@@ -71,6 +81,50 @@ namespace YyWsnDeviceLibrary
         /// 状态数据包的数量
         /// </summary>
         public UInt32 StatusPktNum { get; set; }
+
+        /// <summary>
+        /// 传输方向
+        /// </summary>
+        public string transDirectS { get; set; }
+
+        /// <summary>
+        /// 命令位
+        /// </summary>
+        public string cmdS { get; set; }
+
+        /// <summary>
+        /// 目的地址
+        /// </summary>
+        public UInt32 DstIdV { get; set; }
+
+        public string DstIdS { get; set; }
+
+        /// <summary>
+        /// 源地址
+        /// </summary>
+        public UInt32 SrcIdV { get; set; }
+
+        public string SrcIdS { get; set; }
+
+        /// <summary>
+        /// HOP
+        /// </summary>
+        public byte hop { get; set; }
+
+        /// <summary>
+        /// 上行路由的数量
+        /// </summary>
+        public byte up { get; set; }
+
+        /// <summary>
+        /// 下行路由的数量
+        /// </summary>
+        public byte down { get; set; }
+
+        /// <summary>
+        /// 保留位
+        /// </summary>
+        public string reserved { get; set; }
 
 
         /**************************************
@@ -211,6 +265,17 @@ namespace YyWsnDeviceLibrary
             return;
         }
 
+        public WP(byte[] SrcData, UInt16 IndexOfStart, bool ExistRssi)
+        {
+            if(isAdhocDataV1(SrcData,IndexOfStart, ExistRssi) >= 0)
+            {
+                ExplainAdhocDataV1(SrcData, IndexOfStart, ExistRssi);
+                return;                
+            }
+
+            return;
+        }
+
         /// <summary>
         /// 判断是不是监测工具监测到的L1发出的传感器数据包（V3版本）
         /// </summary>
@@ -294,7 +359,178 @@ namespace YyWsnDeviceLibrary
 
             return 0;
         }
-        
+
+        /// <summary>
+        /// 判断是不是自组网的数据包
+        /// </summary>
+        /// <param name="SrcData"></param>
+        /// <param name="IndexOfStart"></param>
+        /// <param name="ExistRssi"></param>
+        /// <returns></returns>
+        static public Int16 isAdhocDataV1(byte[] SrcData, UInt16 IndexOfStart, bool ExistRssi)
+        {
+            UInt16 AppendLen = 0;
+            if (ExistRssi == true)
+            {
+                AppendLen = 1;
+            }
+
+            // 数据包的总长度
+            UInt16 SrcLen = (UInt16)(SrcData.Length - IndexOfStart);
+            if (SrcLen < 38 + AppendLen)
+            {
+                return -1;
+            }
+
+            // 起始位
+            if (SrcData[IndexOfStart + 0] != 0xED && SrcData[IndexOfStart + 0] != 0xDE)
+            {
+                return -2;
+            }
+
+            // 长度位
+            byte pktLen = SrcData[IndexOfStart + 1];
+            if (pktLen + 5 + AppendLen > SrcLen)
+            {
+                return -3;
+            }
+
+            if ((SrcData[IndexOfStart + 0] == 0xED && SrcData[IndexOfStart + 2 + pktLen + 2] != 0xDE) || (SrcData[IndexOfStart + 0] == 0xDE && SrcData[IndexOfStart + 2 + pktLen + 2] != 0xED))
+            {
+                return -4;
+            }
+
+            // CRC16
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, SrcData, (UInt16)(IndexOfStart + 2), pktLen);
+            UInt16 crc_chk = (UInt16)(SrcData[IndexOfStart + 2 + pktLen + 0] * 256 + SrcData[IndexOfStart + 2 + pktLen + 1]);
+            if (crc_chk != crc && crc_chk != 0)
+            {
+                return -5;
+            }
+
+            return 0;
+        }
+
+        /// <summary>
+        /// 解析自组网数据包
+        /// </summary>
+        /// <param name="SrcData"></param>
+        /// <param name="IndexOfStart"></param>
+        /// <param name="ExistRssi"></param>
+        private void ExplainAdhocDataV1(byte[] SrcData, UInt16 IndexOfStart, bool ExistRssi)
+        {
+            // 传输方向
+            byte StartByte = SrcData[IndexOfStart + 0];
+            if (StartByte == 0xED)
+            {
+                transDirectS = "上行请求";
+            }
+            else if (StartByte == 0xDE)
+            {
+                transDirectS = "下行反馈";
+            }
+            else
+            {
+                transDirectS = StartByte.ToString("X2");
+            }
+
+            STP = StartByte;
+
+            // 功能
+            byte Cmd = SrcData[IndexOfStart + 2];
+            Pattern = Cmd;
+            if (Cmd == 0x11)
+            {
+                cmdS = "搜索网络";
+            }
+            else if (Cmd == 0x12)
+            {
+                cmdS = "确定网络";
+            }
+            else if (Cmd == 0x13)
+            {
+                cmdS = "维系网络";
+            }
+            else
+            {
+                transDirectS = Cmd.ToString("X2");
+            }
+
+            // 设备类型
+            SetDeviceName(SrcData[IndexOfStart + 3]);
+
+            // 协议版本
+            ProtocolVersion = SrcData[IndexOfStart + 4];
+
+            // 客户码
+            SetDeviceCustomer(SrcData, (UInt16)(IndexOfStart + 5));
+
+            // 目的地址
+            DstIdV = CommArithmetic.ByteBuf_to_UInt32(SrcData, IndexOfStart + 7);
+            DstIdS = CommArithmetic.ToHexString(SrcData, IndexOfStart + 7, 4);
+
+            // 源地址
+            SrcIdV = CommArithmetic.ByteBuf_to_UInt32(SrcData, IndexOfStart + 11);
+            SrcIdS = CommArithmetic.ToHexString(SrcData, IndexOfStart + 11, 4);
+            SetDeviceMac(SrcData, (UInt16)(IndexOfStart + 11));
+
+            // 序列号
+            Serial = CommArithmetic.ByteBuf_to_UInt16(SrcData, IndexOfStart + 15);
+
+            // RSSI
+            byte rssi = SrcData[IndexOfStart + 17];
+            if (rssi >= 0x80)
+            {
+                ExpRxRssi = (double)(rssi - 0x100);
+            }
+            else
+            {
+                ExpRxRssi = (double)rssi;
+            }
+
+            // 当前时间
+            Current = CommArithmetic.DecodeDateTime(SrcData, IndexOfStart + 18);
+
+            // HOP
+            hop = SrcData[IndexOfStart + 24];
+
+            // UP
+            hop = SrcData[IndexOfStart + 25];
+
+            // DOWN
+            hop = SrcData[IndexOfStart + 26];
+
+            // 保留
+            reserved = CommArithmetic.ToHexString(SrcData, IndexOfStart + 27, 8);
+
+            // 系统时间
+            SensorTransforTime = System.DateTime.Now;
+
+            // RSSI
+            if(ExistRssi == true)
+            {
+                rssi = SrcData[IndexOfStart + 38];
+                if (rssi >= 0x80)
+                {
+                    RSSI = (double)(rssi - 0x100);
+                }
+                else
+                {
+                    RSSI = (double)rssi;
+                }
+            }
+
+            // 源数据
+            if (ExistRssi == true)
+            {
+                this.SourceData = CommArithmetic.ToHexString(SrcData, IndexOfStart, 39);
+            }
+            else
+            {
+                this.SourceData = CommArithmetic.ToHexString(SrcData, IndexOfStart, 38);
+            }            
+        }
+
         //----------------        
 
     }

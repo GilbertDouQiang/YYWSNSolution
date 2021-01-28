@@ -96,6 +96,16 @@ namespace YyWsnDeviceLibrary
             return null;
         }
 
+        public static UInt32 ByteBuf_to_UInt32(byte[] source, int start)
+        {
+            return ((UInt32)source[start] << 24) | ((UInt32)source[start + 1] << 16) | ((UInt32)source[start + 2] << 8) | ((UInt32)source[start + 3] << 0);
+        }
+
+        public static UInt16 ByteBuf_to_UInt16(byte[] source, int start)
+        {
+            return (UInt16)(((UInt16)source[start] << 8) | ((UInt16)source[start + 1] << 0));
+        }
+
         /// <summary>
         /// 将数组中的MAC地址解析出来，但只解析后2个Byte
         /// </summary>

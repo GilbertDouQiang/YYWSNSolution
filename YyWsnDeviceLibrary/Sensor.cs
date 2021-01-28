@@ -11,7 +11,10 @@ namespace YyWsnDeviceLibrary
 
         public int PSensorSN { get; set; }
 
-        public int Serial { get; set; }
+        /// <summary>
+        /// 序列号
+        /// </summary>
+        public UInt16 Serial { get; set; }
 
         public int CSensorSN { get; set; }
 

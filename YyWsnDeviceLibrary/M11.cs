@@ -140,9 +140,6 @@ namespace YyWsnDeviceLibrary
                 //Error
                 Error = SrcData[11];
 
-                //序号
-                Serial = SrcData[12] * 256 * 256 + SrcData[13] * 256 + SrcData[14];
-
                 //SendOK
                 SendOK = SrcData[15];
 

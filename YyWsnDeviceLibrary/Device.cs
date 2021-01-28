@@ -108,6 +108,7 @@ namespace YyWsnDeviceLibrary
             SensorDataMax31855Debug, // MAX31855 Debug数据包
             SelfTestFromUsbToPc,    // USB修改工具接收到的Sensor的上电自检数据包
             ExportFromM1Beetech,    // 从M1Beetech USB导出数据
+            Adhoc,                  // 自组网数据包
         }
 
         /// <summary>
@@ -664,6 +665,21 @@ namespace YyWsnDeviceLibrary
                 case 0xA4:
                     {
                         Name = "M70_MAX31855";
+                        break;
+                    }
+                case 0xA5:
+                    {
+                        Name = "S1+";
+                        break;
+                    }
+                case 0xA6:
+                    {
+                        Name = "SG9";
+                        break;
+                    }
+                case 0xA7:
+                    {
+                        Name = "SG6Lite";
                         break;
                     }
                 default:
