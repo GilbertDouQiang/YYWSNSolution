@@ -205,6 +205,7 @@ namespace DeviceSetup_HyperWSN
                         case Device.DeviceType.M6:
                         case Device.DeviceType.M20:
                         case Device.DeviceType.M1X:
+                        case Device.DeviceType.Beetech_M20:
                             {
                                 M1 aM1 = new M1(e.ReceivedBytes, iX, Device.DataPktType.SelfTestFromUsbToPc, deviceType);
                                 if (aM1 != null)

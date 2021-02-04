@@ -92,7 +92,7 @@
                             <TextBlock Grid.Column="0" Text="设备名称:" Margin="0,0,10,0" HorizontalAlignment="Right" />
                             <TextBox Grid.Column="1" x:Name="tbxDeviceNameOfM1"  Text="{Binding Name}"  Padding="2" Margin="0 0 10 0"/>
 
-                            <TextBlock Grid.Column="2" Text="设备类型:" Margin="0,0,10,0" HorizontalAlignment="Right" />
+                            <TextBlock Grid.Column="2" Text="设备类型:" Margin="0,0,10,0" HorizontalAlignment="Right" FontWeight="Bold"/>
                             <TextBox Grid.Column="3" x:Name="tbxDeviceTypeOfM1"  Text="{Binding DeviceTypeV,StringFormat='{}{0:X2}'}"  Padding="2" Margin="0 0 10 0"/>
 
                             <TextBlock Grid.Column="4" Text=" 协议版本号:"  Margin="0,0,10,0" HorizontalAlignment="Right"/>
@@ -167,10 +167,10 @@
                                 <ColumnDefinition Width="*"/>
 
                             </Grid.ColumnDefinitions>
-                            <TextBlock  Grid.Column="0" Text=" 客户码:" Margin="0,0,9.5,0" HorizontalAlignment="Right"/>
+                            <TextBlock  Grid.Column="0" Text=" 客户码:" Margin="0,0,9.5,0" HorizontalAlignment="Right" FontWeight="Bold"/>
                             <TextBox x:Name="tbxCustomerOfM1" Text="{Binding CustomerS}" Grid.Column="1" Padding="2" Margin="0.5,0,10,0"/>
                             <TextBox x:Name="tbxNewCustomerOfM1"   Grid.Column="2" Padding="2" Margin="0.5,0,10,0"/>
-                            <TextBlock   Grid.Column="3" Text="Debug状态:" Margin="0,0,9.5,0" HorizontalAlignment="Right" />
+                            <TextBlock   Grid.Column="3" Text="Debug:" Margin="0,0,9.5,0" HorizontalAlignment="Right" FontWeight="Bold" />
                             <TextBox x:Name="tbxDebugOfM1" Text="{Binding DebugS}" Padding="2" Margin="0,0,9.5,0" Grid.Column="4" />
                             <TextBox x:Name="tbxNewDebugOfM1"  Padding="2" Margin="0,0,9.5,0" Grid.Column="5" />
                             <TextBlock  Grid.Column="6" Text=" 分类码:" Margin="0,0,9.5,0" HorizontalAlignment="Right"/>
@@ -445,10 +445,10 @@
                             <TextBox x:Name="txtFlashRear" Text="{Binding FlashRear}" Grid.Column="5" Padding="2" Margin="0 0 10 0"/>
                             <TextBlock   Grid.Column="6" Text="Queue Len:" Margin="0,0,10,0" HorizontalAlignment="Right" />
                             <TextBox x:Name="txtFlashQueueLength" Text="{Binding FlashQueueLength}" Grid.Column="7" Padding="2" Margin="0 0 10 0"/>
-                            <TextBlock   Grid.Column="8" Text="RstSrc:" Margin="0,0,10,0" HorizontalAlignment="Right" />
+                            <TextBlock   Grid.Column="8" Text="RstSrc:" Margin="0,0,10,0" HorizontalAlignment="Right" FontWeight="Bold"/>
                             <TextBox  x:Name="tbxRstSrc" Text="{Binding RstSrc, StringFormat='{}{0:X2}'}" Grid.Column="9" Padding="2" Margin="0 0 20 0" IsReadOnly="True" MaxLength="2" MaxLines="1" />
-                            <Button x:Name="btnDeleteDataOfM1" Content="Delete Data" Grid.Column="10" Grid.ColumnSpan="2" Click="btnDeleteDataOfM1_Click" Margin="0,0,10,0" Height="21" VerticalAlignment="Bottom"/>
 
+                            <Button x:Name="btnDeleteDataOfM1" Content="Delete Data" Grid.Column="10" Grid.ColumnSpan="2" Click="btnDeleteDataOfM1_Click" Margin="0,0,10,0" Height="21" VerticalAlignment="Bottom"/>
                         </Grid>
 
                     </StackPanel>

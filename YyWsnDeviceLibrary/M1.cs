@@ -186,7 +186,27 @@ namespace YyWsnDeviceLibrary
         /// <returns></returns>
         static public bool isDeviceType(byte iDeviceType)
         {
-            if (iDeviceType == (byte)DeviceType.M1 || iDeviceType == (byte)DeviceType.S1P || iDeviceType == (byte)DeviceType.M1_NTC || iDeviceType == (byte)DeviceType.M1_Beetech || iDeviceType == (byte)DeviceType.M6 || iDeviceType == (byte)DeviceType.M2_SHT30 || iDeviceType == (byte)DeviceType.M30 || iDeviceType == (byte)DeviceType.ZQM1 || iDeviceType == (byte)DeviceType.M10 || iDeviceType == (byte)DeviceType.M20 || iDeviceType == (byte)DeviceType.M1X || iDeviceType == (byte)DeviceType.EK_SHT30 || iDeviceType == (byte)DeviceType.M60_SHT30 || iDeviceType == (byte)DeviceType.M60_MAX31855 || iDeviceType == (byte)DeviceType.M70_SHT30 || iDeviceType == (byte)DeviceType.M70_MAX31855)
+            if (iDeviceType == (byte)DeviceType.M1
+                || iDeviceType == (byte)DeviceType.S1P
+                || iDeviceType == (byte)DeviceType.M1_NTC
+                || iDeviceType == (byte)DeviceType.M1_Beetech
+                || iDeviceType == (byte)DeviceType.M6
+                || iDeviceType == (byte)DeviceType.M2_SHT30
+                || iDeviceType == (byte)DeviceType.S1
+                || iDeviceType == (byte)DeviceType.S2
+                || iDeviceType == (byte)DeviceType.M30
+                || iDeviceType == (byte)DeviceType.ZQM1
+                || iDeviceType == (byte)DeviceType.M10
+                || iDeviceType == (byte)DeviceType.M44MSP432
+                || iDeviceType == (byte)DeviceType.M1X
+                || iDeviceType == (byte)DeviceType.M24
+                || iDeviceType == (byte)DeviceType.M24_CSF11
+                || iDeviceType == (byte)DeviceType.EK_SHT30
+                || iDeviceType == (byte)DeviceType.M60_SHT30
+                || iDeviceType == (byte)DeviceType.M60_MAX31855
+                || iDeviceType == (byte)DeviceType.M70_SHT30
+                || iDeviceType == (byte)DeviceType.M70_MAX31855
+                || iDeviceType == (byte)DeviceType.Beetech_M20)
             {
                 return true;
             }

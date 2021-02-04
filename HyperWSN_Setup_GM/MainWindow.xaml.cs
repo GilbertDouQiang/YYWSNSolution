@@ -634,14 +634,23 @@ namespace HyperWSN_Setup_GM
             {
                 case Device.DeviceType.M1:
                 case Device.DeviceType.S1P:
-                case Device.DeviceType.S1:
                 case Device.DeviceType.M1_NTC:
                 case Device.DeviceType.M1_Beetech:
                 case Device.DeviceType.M6:
-                case Device.DeviceType.M2_PT100:
                 case Device.DeviceType.M2_SHT30:
+                case Device.DeviceType.S1:
                 case Device.DeviceType.S2:
                 case Device.DeviceType.M30:
+                case Device.DeviceType.ZQM1:
+                case Device.DeviceType.M10:
+                case Device.DeviceType.M44MSP432:
+                case Device.DeviceType.M1X:
+                case Device.DeviceType.M24:
+                case Device.DeviceType.M24_CSF11:
+                case Device.DeviceType.EK_SHT30:
+                case Device.DeviceType.M70_SHT30:
+                case Device.DeviceType.M70_MAX31855:
+                case Device.DeviceType.Beetech_M20:
                     {
                         if (SrcLen < 69)
                         {
@@ -729,7 +738,7 @@ namespace HyperWSN_Setup_GM
                     return -3;
                 }
 
-                if ((Device.DeviceType)reValue == Device.DeviceType.M1 || (Device.DeviceType)reValue == Device.DeviceType.M2)
+                if (M1.isDeviceType((byte)reValue) == true)
                 {   // 创建一个M1的对象
                     M1 ThisM1 = new M1(SrcData, IndexOfStart, Device.DataPktType.SensorDataFromGmToPc, (Device.DeviceType)reValue);
                     if (ThisM1 == null)
@@ -745,6 +754,10 @@ namespace HyperWSN_Setup_GM
                     }
 
                     GridDataOfM1.Add((M1)ThisM1);
+                }
+
+                if ((Device.DeviceType)reValue == Device.DeviceType.M1 || (Device.DeviceType)reValue == Device.DeviceType.M2)
+                {   
                 }
                 else if ((Device.DeviceType)reValue == Device.DeviceType.M20)
                 {   // 创建一个M20的对象

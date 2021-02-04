@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using YyWsnDeviceLibrary;
@@ -83,8 +84,99 @@ namespace PictureTransfer
             ComportRefersh();
         }
 
+        /// <summary>
+        /// 获取文件名称中的扩展名
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
+        private string GetExtension(string fileName)
+        {
+            // 拆分字符串
+            string[] Sections = fileName.Split(new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries);
+            if (Sections == null || Sections.Length == 0)
+            {
+                return null;
+            }
+
+            return Sections[Sections.Length - 1];
+        }
+
+        private byte[] Content { get; set; }
+        const int FileSize = 0x20000;
+        UInt32 StartAddr = 0;
+        string SafeFileName = null;
+        bool IsTxtImage = false;                // 是不是烧录的镜像文件
+
+        private int CreateImageBuf(string filePath, int fileSize)
+        {            
+            // 构造全0x00的字节数组
+            Content = new byte[fileSize];
+            for (int iX = 0; iX < Content.Length; iX++)
+            {
+                Content[iX] = 0x00;
+            }
+
+            // 读取烧录文件的内容
+            StreamReader FileReader = new StreamReader(filePath, Encoding.ASCII);
+            string fileTxt = FileReader.ReadToEnd();
+            FileReader.Close();
+            FileReader = null;
+
+            // 拆分字符串
+            string[] Sections = fileTxt.Split(new char[] { '@', 'q' }, StringSplitOptions.RemoveEmptyEntries);
+            if (Sections == null || Sections.Length == 0)
+            {
+                return -2;
+            }
+
+            int error = 0;
+
+            for (int iX = 0; iX < Sections.Length; iX++)
+            {
+                string[] aSection = Sections[iX].Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+                if (aSection == null || aSection.Length < 2)
+                {
+                    continue;
+                }
+
+                // 第一个元素是地址                
+                UInt32 Addr = MyCustomFxn.HexStringToUInt32(aSection[0]);
+
+                if(iX == 0)
+                {
+                    StartAddr = Addr;
+                }
+
+                UInt32 Sum = 0;        // 累计该@后面跟随的数据的数量
+
+                // 后面的元素都是数据内容
+                for (int iJ = 1; iJ < aSection.Length; iJ++)
+                {   // 处理一行数据
+                    byte[] ByteBuf = MyCustomFxn.HexStringToByteArray(aSection[iJ]);
+                    if (ByteBuf == null || ByteBuf.Length == 0)
+                    {
+                        continue;
+                    }
+
+                    if (Addr + Sum > Content.Length)
+                    {
+                        return -4;      // 烧录文件的大小超过了RAM镜像文件的大小
+                    }
+
+                    ByteBuf.CopyTo(Content, Addr + Sum);
+
+                    Sum = (UInt32)(Sum + ByteBuf.Length);
+                }
+
+            }
+
+            return 0;
+        }
+
         private void btnOpenFile_Click(object sender, EventArgs e)
         {
+            IsTxtImage = false;
+
             //open file
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Filter = "所有文件|*.*|JPG文件|*.jpg|PNG文件|*.png|ICO文件|*.ico";
@@ -94,9 +186,22 @@ namespace PictureTransfer
             {
                 txtOpenFile.Text = openFileDialog.SafeFileName;
 
-                pic1.SizeMode = PictureBoxSizeMode.StretchImage;
-                pic1.Load(openFileDialog.FileName);
+                string extension = GetExtension(txtOpenFile.Text);
 
+                if (extension.Equals("txt") == true)
+                {
+                    IsTxtImage = true;
+                    SafeFileName = openFileDialog.SafeFileName;
+                    CreateImageBuf(openFileDialog.FileName, FileSize);
+                }
+                else
+                {
+                    // 显示图片
+                    pic1.SizeMode = PictureBoxSizeMode.StretchImage;
+                    pic1.Load(openFileDialog.FileName);                    
+                }
+
+                // 获取文件的字节流
                 bFile = new BinaryFile();
                 bFile.SafeFileName = openFileDialog.SafeFileName;
                 bFile.PacketSize = Convert.ToInt32(numericUpDown1.Value);
@@ -119,8 +224,14 @@ namespace PictureTransfer
 
                 if (bFile != null)
                 {
-                    // 传输图片
-                    TransferPicture(bFile.PacketSize);
+                    if (IsTxtImage == true)
+                    {   // 烧录          
+                        TransferPicture(Content, (int)StartAddr);
+                    }
+                    else
+                    {   // 传输图片
+                        TransferPicture(bFile.Content, 0);
+                    }                    
 
                     endDatetime = DateTime.Now;
                     TimeSpan ts1 = new TimeSpan(startDatetime.Ticks);
@@ -200,7 +311,7 @@ namespace PictureTransfer
             TxBuf[TxLen++] = 0x00;
 
             // 触发方式
-            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = (byte)'T';
 
             // 拍摄时间
             DateTime ThisCalendar = Convert.ToDateTime(System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
@@ -272,6 +383,138 @@ namespace PictureTransfer
             return 0;
         }
 
+        public int SendApplyTxt()
+        {
+            if (SafeFileName == string.Empty)
+            {
+                return -1;
+            }
+
+            byte[] NameBuf = Encoding.ASCII.GetBytes(SafeFileName);
+            if (NameBuf == null || NameBuf.Length == 0)
+            {
+                return -2;
+            }
+
+            if (NameBuf.Length > 32)
+            {
+                return -3;
+            }
+
+            byte Len = (byte)(45 + 8 + 1 + NameBuf.Length);
+
+            byte[] TxBuf = new byte[4 + Len];
+            UInt16 TxLen = 0;
+
+            TxBuf[TxLen++] = Len;
+            TxBuf[TxLen++] = 0xCA;
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x0A;
+
+            // 设备类型
+            TxBuf[TxLen++] = (byte)'C';
+            TxBuf[TxLen++] = (byte)'A';
+            TxBuf[TxLen++] = (byte)'N';
+            TxBuf[TxLen++] = (byte)'G';
+            TxBuf[TxLen++] = (byte)'L';
+            TxBuf[TxLen++] = (byte)'U';
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+
+            // 保护区编码
+            TxBuf[TxLen++] = (byte)'W';
+            TxBuf[TxLen++] = (byte)'i';
+            TxBuf[TxLen++] = (byte)'l';
+            TxBuf[TxLen++] = (byte)'d';
+            TxBuf[TxLen++] = (byte)'P';
+            TxBuf[TxLen++] = (byte)'r';
+            TxBuf[TxLen++] = (byte)'3';
+            TxBuf[TxLen++] = (byte)'9';
+
+            // 设备编码
+            TxBuf[TxLen++] = (byte)'B';
+            TxBuf[TxLen++] = (byte)'M';
+            TxBuf[TxLen++] = (byte)'0';
+            TxBuf[TxLen++] = (byte)'5';
+            TxBuf[TxLen++] = (byte)'0';
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+
+            // 触发方式
+            TxBuf[TxLen++] = (byte)'T';
+
+            // 拍摄时间
+            DateTime ThisCalendar = Convert.ToDateTime(System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+            byte[] ByteBufTmp = MyCustomFxn.DataTimeToByteArray(ThisCalendar);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[0]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[1]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[2]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[3]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[4]);
+            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[5]);
+
+            // 温度
+            TxBuf[TxLen++] = 0x0A;
+            TxBuf[TxLen++] = 0x13;
+
+            // 经纬度
+            TxBuf[TxLen++] = 0x05;
+            TxBuf[TxLen++] = 0xE2;
+            TxBuf[TxLen++] = 0x3B;
+            TxBuf[TxLen++] = 0x60;
+            TxBuf[TxLen++] = 0x01;
+            TxBuf[TxLen++] = 0xB8;
+            TxBuf[TxLen++] = 0xB3;
+            TxBuf[TxLen++] = 0xDA;
+
+            // 高度
+            TxBuf[TxLen++] = 0x0F;
+            TxBuf[TxLen++] = 0xD4;
+
+            // 电量
+            TxBuf[TxLen++] = 0x16;
+            TxBuf[TxLen++] = 0x89;
+
+            // 文件标志码
+            TxBuf[TxLen++] = 0x12;
+            TxBuf[TxLen++] = 0x34;
+            TxBuf[TxLen++] = 0x56;
+            TxBuf[TxLen++] = 0x78;
+
+            // 文件大小
+            UInt32 fileSize = (UInt32)(Content.Length - StartAddr);
+            TxBuf[TxLen++] = (byte)((fileSize & 0xFF000000) >> 24);
+            TxBuf[TxLen++] = (byte)((fileSize & 0x00FF0000) >> 16);
+            TxBuf[TxLen++] = (byte)((fileSize & 0x0000FF00) >> 8);
+            TxBuf[TxLen++] = (byte)((fileSize & 0x000000FF) >> 0);
+
+            // 文件名称
+            TxBuf[TxLen++] = (byte)NameBuf.Length;
+
+            for (int iX = 0; iX < NameBuf.Length; iX++)
+            {
+                TxBuf[TxLen++] = NameBuf[iX];
+            }
+
+            // 计算校验和
+            TxBuf[2] = MyCustomFxn.CheckSum8(0, TxBuf, 3, (UInt16)(Len + 1));
+
+            byte[] RxBuf = Serial.SendReceive(TxBuf, 0, (UInt16)TxBuf.Length, 1000);
+            if (RxBuf == null || RxBuf.Length == 0)
+            {
+                return -1;
+            }
+
+            int error = RxBuf_IsRight(RxBuf, TxBuf);
+            if (error < 0)
+            {
+                return -2;
+            }
+
+            return 0;
+        }
+
         /// <summary>
         /// 申请传输文件
         /// </summary>
@@ -279,14 +522,21 @@ namespace PictureTransfer
         /// <param name="e"></param>
         private void btnApply_Click(object sender, EventArgs e)
         {
-            if(bFile == null)
+            if (bFile == null)
             {
                 return;
             }
 
             Serial_Init();
 
-            SendApply();
+            if (IsTxtImage == true)
+            {
+                SendApplyTxt();
+            }
+            else
+            {
+                SendApply();
+            }
 
             Serial_Close();
         }
@@ -333,12 +583,22 @@ namespace PictureTransfer
 
         int FailCnt = 0;
 
-        public int TransferPicture(int PacketLength)
+        public int TransferPicture(byte[] Buf, int startOfIndex)
         {
-            int totalLength = bFile.Content.Length;         // 文件的总大小
-            int offset = 0;                                 // 已发送成功的大小
+            if(startOfIndex > Buf.Length)
+            {
+                return -1;
+            }
 
-            int frames = 0;                                 // 帧
+            if(startOfIndex == Buf.Length)
+            {
+                return 1;
+            }
+
+            int totalLength = Buf.Length - startOfIndex;            // 文件的总大小
+            int offset = 0;                                         // 已发送成功的大小
+
+            int frames = 0;                                         // 帧
 
             Serial_Init();
 
@@ -364,7 +624,7 @@ namespace PictureTransfer
                 }
 
                 // 开始传输
-                if (SendFrameOfPicture(bFile.Content, offset, TxLen) < 0)
+                if (SendFrameOfPicture(Buf, startOfIndex + offset, TxLen) < 0)
                 {
                     FailCnt++;
 
@@ -744,7 +1004,16 @@ namespace PictureTransfer
             TxBuf[2] = 0x00;
             TxBuf[3] = 0x0C;
 
-            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, bFile.Content, 0, (UInt32)bFile.Content.Length);
+            UInt16 crc = 0;
+
+            if(IsTxtImage == true)
+            {
+                crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, Content, StartAddr, (UInt32)(FileSize - StartAddr));
+            }
+            else
+            {
+                crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, bFile.Content, 0, (UInt32)bFile.Content.Length);
+            }            
 
             TxBuf[4] = (byte)((crc & 0xFF00) >> 8);
             TxBuf[5] = (byte)((crc & 0x00FF) >> 0);

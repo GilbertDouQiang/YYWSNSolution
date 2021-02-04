@@ -203,27 +203,27 @@ namespace SnifferGUI
             else if (cbSensorType.SelectedIndex == 1)
             {
                 // M1
-                ExDeviceType = 0x51;
+                ExDeviceType = (byte)Device.DeviceType.M1;
             }
             else if (cbSensorType.SelectedIndex == 2)
             {
                 // M1_NTC
-                ExDeviceType = 0x5C;
+                ExDeviceType = (byte)Device.DeviceType.M1_NTC;
             }
             else if (cbSensorType.SelectedIndex == 3)
             {
                 // M1_Beetech
-                ExDeviceType = 0x5D;
+                ExDeviceType = (byte)Device.DeviceType.M1_Beetech;
             }
             else if (cbSensorType.SelectedIndex == 4)
             {
                 // M9
-                ExDeviceType = 0x77;
+                ExDeviceType = (byte)Device.DeviceType.M9;
             }
             else if (cbSensorType.SelectedIndex == 5)
             {
                 // M30
-                ExDeviceType = 0x79;
+                ExDeviceType = (byte)Device.DeviceType.M30;
             }
             else if (cbSensorType.SelectedIndex == 6)
             {
@@ -264,6 +264,11 @@ namespace SnifferGUI
                 }
 
                 ExDeviceType = rxDeviceType;
+            }
+            else if (cbSensorType.SelectedIndex == 13)
+            {
+                // Beetech M20
+                ExDeviceType = (byte)Device.DeviceType.Beetech_M20;
             }
             else
             {
@@ -401,6 +406,12 @@ namespace SnifferGUI
                 TableLineOfNtpRes = 1;
                 SensorDataOfNtpRes.Clear();
             }
+
+            if (TableAdhoc.IsSelected == true)
+            {
+                TableLineOfAdhoc = 1;
+                SensorDataOfAdhoc.Clear();
+            }
         }
 
         /// <summary>
@@ -448,6 +459,9 @@ namespace SnifferGUI
 
             TableLineOfNtpRes = 1;
             SensorDataOfNtpRes.Clear();
+
+            TableLineOfAdhoc = 1;
+            SensorDataOfAdhoc.Clear();
         }
 
         /// <summary>

@@ -70,6 +70,7 @@ namespace YyWsnDeviceLibrary
             L1 = 0x85,                  // L1(光照传感器)
             ESK = 0x8A,                 // 爱立信，ESK
             IR20 = 0x8B,                // IR20
+            M44MSP432,                  // M44(MSP432)
             WP = 0x8E,                  // WP            
             AC2 = 0x8F,                 // AC2，生物安全柜，485接口，modbus协议
             CO2_INCUBATOR = 0x90,       // CO2培养箱，485接口，modbus协议，CO2数据
@@ -93,6 +94,10 @@ namespace YyWsnDeviceLibrary
             M60_MAX31855 = 0xA2,        //
             M70_SHT30 = 0xA3,           //
             M70_MAX31855 = 0xA4,        //
+            S1P_Find = 0xA5,            // S1+ 找货神器
+            SG9 = 0xA6,                 // SG9 野保网关
+            SG6Lite = 0xA7,             // SG6Lite
+            Beetech_M20 = 0xA8          // Beetech M20
         }
 
         /// <summary>
@@ -680,6 +685,11 @@ namespace YyWsnDeviceLibrary
                 case 0xA7:
                     {
                         Name = "SG6Lite";
+                        break;
+                    }
+                case 0xA8:
+                    {
+                        Name = "Beetech M20";
                         break;
                     }
                 default:

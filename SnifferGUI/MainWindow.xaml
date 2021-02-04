@@ -95,6 +95,7 @@
                         <ListBoxItem Content="L1" />
                         <ListBoxItem Content="M40（门磁）" />
                         <ListBoxItem Content="M70" />
+                        <ListBoxItem Content="Beetech M20" />
                     </ComboBox>
                     <TextBlock Grid.Column="6" Margin="0,4,4,0" Text="MAC" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" Width="28" HorizontalAlignment="Right"/>
                     <TextBox Grid.Column="7" Margin="0,0,0,0" x:Name="txtDestMac" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" AcceptsReturn="True" AcceptsTab="True" MaxLines="128" MaxLength="1000" Text="" />
