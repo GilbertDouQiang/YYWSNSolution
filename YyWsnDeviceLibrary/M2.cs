@@ -66,9 +66,9 @@ namespace YyWsnDeviceLibrary
 
                 //Falsh
                 FlashID = CommArithmetic.DecodeClientID(SrcData, 51);
-                FlashFront = SrcData[54] * 256 * 256 + SrcData[55] * 256 + SrcData[56];
-                FlashRear = SrcData[57] * 256 * 256 + SrcData[58] * 256 + SrcData[59];
-                FlashQueueLength = SrcData[60] * 256 * 256 + SrcData[61] * 256 + SrcData[62];
+                FlashFront = (UInt32)(SrcData[54] * 256 * 256 + SrcData[55] * 256 + SrcData[56]);
+                FlashRear = (UInt32)(SrcData[57] * 256 * 256 + SrcData[58] * 256 + SrcData[59]);
+                FlashQueueLength = (UInt32)(SrcData[60] * 256 * 256 + SrcData[61] * 256 + SrcData[62]);
             }
 
 

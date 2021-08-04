@@ -47,7 +47,6 @@ namespace HyperWSN_Setup_M30
             FindComport();
         }
 
-
         private void FindComport()
         {
             cbSerialPort.Items.Clear();
@@ -752,19 +751,26 @@ namespace HyperWSN_Setup_M30
         /// <param name="TxLen"></param>
         private void SerialPort_Send(byte[] TxBuf, UInt16 IndexOfStart, UInt16 TxLen)
         {
-            if (SerialPort_isReady() < 0)
+            try
             {
-                return;
+                if (SerialPort_isReady() < 0)
+                {
+                    return;
+                }
+
+                // 在Console显示Log
+                ConsoleLog("TX", TxBuf, IndexOfStart, TxLen);
+
+                // 发送数据
+                SerialPort.Send(TxBuf, IndexOfStart, TxLen);
             }
-
-            // 在Console显示Log
-            ConsoleLog("TX", TxBuf, IndexOfStart, TxLen);
-
-            // 发送数据
-            SerialPort.Send(TxBuf, IndexOfStart, TxLen);
+            catch (Exception ex)
+            {
+                MessageBox.Show("UART通信出错：" + ex.Message);
+            }
         }
 
-        private byte[] SerialPort_SendReceive(byte[] TxBuf, UInt16 IndexOfStart, UInt16 TxLen, UInt16 RxTimeoutMs)
+        private byte[] SerialPort_SendReceive(byte[] TxBuf, Int32 IndexOfStart, Int32 TxLen, UInt16 RxTimeoutMs)
         {
             if (SerialPort_isReady() < 0)
             {
@@ -772,13 +778,19 @@ namespace HyperWSN_Setup_M30
             }
 
             // 在Console显示Log
-            ConsoleLog("TX", TxBuf, IndexOfStart, TxLen);
+            if(TxBuf != null)
+            {
+                ConsoleLog("TX", TxBuf, (UInt16)IndexOfStart, (UInt16)TxLen);
+            }            
 
             // 发送数据
-            byte[] RxBuf = SerialPort.SendReceive(TxBuf, IndexOfStart, TxLen, RxTimeoutMs);
+            byte[] RxBuf = SerialPort.SendReceive(TxBuf, (UInt16)IndexOfStart, (UInt16)TxLen, RxTimeoutMs);
 
             // 在Console显示Log
-            ConsoleLog("RX", RxBuf, 0, (UInt16)RxBuf.Length);
+            if(RxBuf != null)
+            {
+                ConsoleLog("RX", RxBuf, 0, (UInt16)RxBuf.Length);
+            }            
 
             return RxBuf;
         }
@@ -802,63 +814,58 @@ namespace HyperWSN_Setup_M30
 
             for (UInt16 iCnt = 0; iCnt < SrcLen; iCnt++)
             {
-                try
+
+                HandleLen = RxPkt_IsRight(SrcData, iCnt);
+                if (HandleLen < 0)
                 {
-                    HandleLen = RxPkt_IsRight(SrcData, iCnt);
-                    if (HandleLen < 0)
-                    {
-                        continue;
-                    }
-
-                    switch (SrcData[iCnt + 4])
-                    {
-                        case 0x00:
-                            {
-                                ExeError = RxPkt_ReadCfg(SrcData, iCnt);
-                                break;
-                            }
-                        case 0x01:
-                            {
-                                ExeError = RxPkt_SetFactoryCfg(SrcData, iCnt);
-                                break;
-                            }
-                        case 0x02:
-                            {
-                                ExeError = RxPkt_SetAppCfg(SrcData, iCnt);
-                                break;
-                            }
-                        case 0x03:
-                            {
-                                ExeError = RxPkt_DeleteHistory(SrcData, iCnt);
-                                break;
-                            }
-                        case 0x38:
-                            {
-                                ExeError = RxPkt_Bootloader(SrcData, iCnt);
-                                break;
-                            }
-                        default:
-                            {
-                                break;
-                            }
-                    }
-
-                    if (ExeError < 0)
-                    {
-                        continue;
-                    }
-
-                    if (HandleLen > 0)
-                    {
-                        HandleLen--;        // 因为马上就要执行iCnt++
-                    }
-
-                    iCnt = (UInt16)(iCnt + HandleLen);
+                    continue;
                 }
-                catch (Exception ex)
+
+                switch (SrcData[iCnt + 4])
                 {
-                    MessageBox.Show("处理接收数据包错误" + ex.Message);
+                    case 0x00:
+                        {
+                            ExeError = RxPkt_ReadCfg(SrcData, iCnt);
+                            break;
+                        }
+                    case 0x01:
+                        {
+                            ExeError = RxPkt_SetFactoryCfg(SrcData, iCnt);
+                            break;
+                        }
+                    case 0x02:
+                        {
+                            ExeError = RxPkt_SetAppCfg(SrcData, iCnt);
+                            break;
+                        }
+                    case 0x03:
+                        {
+                            ExeError = RxPkt_DeleteHistory(SrcData, iCnt);
+                            break;
+                        }
+                    case 0x38:
+                        {
+                            ExeError = RxPkt_Bootloader(SrcData, iCnt);
+                            break;
+                        }
+                    default:
+                        {
+                            break;
+                        }
                 }
+
+                if (ExeError < 0)
+                {
+                    continue;
+                }
+
+                if (HandleLen > 0)
+                {
+                    HandleLen--;        // 因为马上就要执行iCnt++
+                }
+
+                iCnt = (UInt16)(iCnt + HandleLen);
+
             }
             return 0;
         }
@@ -878,7 +885,14 @@ namespace HyperWSN_Setup_M30
                 // 显示Log
                 ConsoleLog("RX", e.ReceivedBytes, 0, (UInt16)e.ReceivedBytes.Length);
 
-                RxPkt_Handle(e.ReceivedBytes);
+                try
+                {
+                    RxPkt_Handle(e.ReceivedBytes);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("处理接收数据包错误" + ex.Message);
+                }
 
             }));
         }
@@ -1648,7 +1662,8 @@ namespace HyperWSN_Setup_M30
                 if (RxBuf[10] != 0x01)
                 {
                     SupportBsl = false;
-                }else
+                }
+                else
                 {
                     SupportBsl = true;
                 }
@@ -1915,7 +1930,7 @@ namespace HyperWSN_Setup_M30
             int error = 0;
 
             for (int iX = 0; iX < 4; iX++)
-            {   
+            {
                 TxBuf = BSL.MyMassErase();
                 RxBuf = SerialPort.SendReceive(TxBuf, 0, (UInt16)TxBuf.Length, 400, 20);
 
@@ -1955,10 +1970,10 @@ namespace HyperWSN_Setup_M30
                     Size = (UInt16)(ExpTotal - CurTotal);
                 }
 
-                for (int iX = 0; iX < 4; iX++)
+                for (int iX = 0; iX < 8; iX++)
                 {
                     TxBuf = bsl.MyCheck(CurTotal, Size);
-                    RxBuf = SerialPort.SendReceive(TxBuf, 0, (UInt16)TxBuf.Length, 800, 10);
+                    RxBuf = SerialPort.SendReceive(TxBuf, 0, (UInt16)TxBuf.Length, 800, (UInt16)(10 * (iX + 1)));
 
                     error = bsl.MyRxRight(RxBuf, TxBuf);
                     if (error < 0)
@@ -2006,7 +2021,7 @@ namespace HyperWSN_Setup_M30
                     Len = (UInt16)(ExpTotal - CurTotal);
                 }
 
-                for (int iX = 0; iX < 4; iX++)
+                for (int iX = 0; iX < 8; iX++)
                 {
                     TxBuf = bsl.MyWrite(CurTotal, Len, ref Ignore);
                     if (Ignore == true)
@@ -2014,7 +2029,7 @@ namespace HyperWSN_Setup_M30
                         break;
                     }
 
-                    RxBuf = SerialPort.SendReceive(TxBuf, 0, (UInt16)TxBuf.Length, 200, 2);
+                    RxBuf = SerialPort.SendReceive(TxBuf, 0, (UInt16)TxBuf.Length, 200, (UInt16)(10 * (iX + 1)));
 
                     error = bsl.MyRxRight(RxBuf, TxBuf);
                     if (error < 0)
@@ -2088,7 +2103,7 @@ namespace HyperWSN_Setup_M30
 
                     if (OnlyLoadImage == false)
                     {   // 需要手动进入BSL
-                        error = Ping(60);
+                        error = Ping(80);
                     }
                     else
                     {
@@ -2202,7 +2217,7 @@ namespace HyperWSN_Setup_M30
             }
 
             // TODO: 2021-01-05 暂时注释掉MSP432的Bootloader，调试CC1310的Bootloader。
-            /* 
+
             OnlyLoadImage = cbxOnlyLoadImage2.IsChecked;
             SerialPortName = SerialPortHelper.GetSerialPortName(cbSerialPort.SelectedValue.ToString());
 
@@ -2217,10 +2232,10 @@ namespace HyperWSN_Setup_M30
             TimerOfBsl = new System.Timers.Timer(1000);
             TimerOfBsl.Elapsed += TimerEventOfBsl2;
             TimerOfBsl.Enabled = true;
-            */
 
-            Bootloader aBootloader = new Bootloader(SerialPortHelper.GetSerialPortName(cbSerialPort.SelectedValue.ToString()), ofd);
-            aBootloader.Execute();
+            // CC1310 Bootloader
+            //Bootloader aBootloader = new Bootloader(SerialPortHelper.GetSerialPortName(cbSerialPort.SelectedValue.ToString()), ofd);
+            //aBootloader.Execute();
         }
 
         private void btnEnterBsl_Click(object sender, RoutedEventArgs e)
@@ -2266,6 +2281,731 @@ namespace HyperWSN_Setup_M30
             tbxLoadStatus.Text = LoadStatus;
 
             BSL_SerialPort_Close();
+        }
+
+        void WakeEK()
+        {
+            byte[] txPkt = new byte[1];
+            txPkt[0] = 0xFF;
+
+            byte[] rxPkt = SerialPort_SendReceive(txPkt, 0, txPkt.Length, 100);
+            if (rxPkt == null || rxPkt.Length < 1)
+            {
+                return;
+            }
+        }
+
+        private void btnWakeOfEK_Click(object sender, RoutedEventArgs e)
+        {
+            WakeEK();
+        }
+
+        private void btnReadCfgOfEK_Click(object sender, RoutedEventArgs e)
+        {
+            WakeEK();
+
+            byte[] txPkt = NewReadCfg_EK(1);
+
+            byte[] rxPkt = SerialPort_SendReceive(txPkt, 0, txPkt.Length, 400);
+            if (rxPkt == null || rxPkt.Length < 4)
+            {
+                return;
+            }
+
+            Int32 error = EK_RxPkt_Handle(rxPkt);
+            if(error < 0)
+            {
+                return;
+            }
+
+            return;
+        }
+
+        private void btnSetFactoryCfgOfEK_Click(object sender, RoutedEventArgs e)
+        {
+            WakeEK();
+
+            byte[] txPkt = NewWriteFactoryCfg_EK();
+
+            byte[] rxPkt = SerialPort_SendReceive(txPkt, 0, txPkt.Length, 400);
+            if (rxPkt == null || rxPkt.Length < 4)
+            {
+                return;
+            }
+
+            Int32 error = EK_RxPkt_Handle(rxPkt);
+            if (error < 0)
+            {
+                return;
+            }
+
+            return;
+        }
+
+        private void btnCopyCfgOfEK_Click(object sender, RoutedEventArgs e)
+        {
+            tbxNewHwRevOfEK.Text = tbxHwRevOfEK.Text;
+            tbxNewDeviceMacOfEK.Text = tbxDeviceMacOfEK.Text;
+
+            tbxNewCustomerOfEK.Text = tbxCustomerOfEK.Text;
+            tbxNewDebugOfEK.Text = tbxDebugOfEK.Text;
+            tbxNewCategoryOfEK.Text = tbxCategoryOfEK.Text;
+
+            tbxNewPatternOfEK.Text = tbxPatternOfEK.Text;
+            tbxNewBpsOfEK.Text = tbxBpsOfEK.Text;
+            tbxNewChannelOfEK.Text = tbxChannelOfEK.Text;
+
+            tbxNewTxPowerOfEK.Text = tbxTxPowerOfEK.Text;
+            tbxNewAlertWayOfEK.Text = tbxAlertWayOfEK.Text;
+            tbxNewAlertIntervalOfEK.Text = tbxAlertIntervalOfEK.Text;
+
+            tbxNewPingIntervalOfEK.Text = tbxPingIntervalOfEK.Text;
+            tbxNewStatusIntervalOfEK.Text = tbxStatusIntervalOfEK.Text;
+            tbxNewUploadIntervalOfEK.Text = tbxUploadIntervalOfEK.Text;
+
+            tbxNewForewardOfEK.Text = tbxForewardOfEK.Text;
+            tbxNewBackwardOfEK.Text = tbxBackwardOfEK.Text;
+            tbxNewOpenTimeoutOfEK.Text = tbxOpenTimeoutOfEK.Text;
+
+            tbxNewSwipeTimeoutOfEK.Text = tbxSwipeTimeoutOfEK.Text;
+            tbxNewSecurityOfEK.Text = tbxSecurityOfEK.Text;
+            tbxNewSwipeOrderOfEK.Text = tbxSwipeOrderOfEK.Text;
+
+            tbxNewBeepOfEK.Text = tbxBeepOfEK.Text;
+        }
+
+        private void btnClearCfgOfEK_Click(object sender, RoutedEventArgs e)
+        {
+            tbxDeviceTypeOfEK.Text = "";
+            tbxPrototcolOfEK.Text = "";
+            tbxMSP432RstSrcOfEK.Text = "";
+            tbxCC13XXRstSrcOfEK.Text = "";
+
+            tbxBuildTimefEK.Text = "";
+            tbxMSP432SwRevOfEK.Text = "";
+            tbxCC13XXSwRevOfEK.Text = "";
+            tbxPrimaryMacOfEK.Text = "";
+
+            tbxCurrentTimeOfEK.Text = "";
+            tbxHwRevOfEK.Text = "";
+            tbxDeviceMacOfEK.Text = "";
+
+            //
+
+            tbxCustomerOfEK.Text = "";
+            tbxDebugOfEK.Text = "";
+            tbxCategoryOfEK.Text = "";
+
+            tbxPatternOfEK.Text = "";
+            tbxBpsOfEK.Text = "";
+            tbxChannelOfEK.Text = "";
+
+            tbxTxPowerOfEK.Text = "";
+            tbxAlertWayOfEK.Text = "";
+            tbxAlertIntervalOfEK.Text = "";
+
+            tbxPingIntervalOfEK.Text = "";
+            tbxStatusIntervalOfEK.Text = "";
+            tbxUploadIntervalOfEK.Text = "";
+
+            tbxForewardOfEK.Text = "";
+            tbxBackwardOfEK.Text = "";
+            tbxOpenTimeoutOfEK.Text = "";
+
+            tbxSwipeTimeoutOfEK.Text = "";
+            tbxSecurityOfEK.Text = "";
+            tbxSwipeOrderOfEK.Text = "";
+
+            tbxBeepOfEK.Text = "";
+
+            //
+
+            tbxVoltageOfEK.Text = "";
+            tbxStatusDataNumOfEK.Text = "";
+            tbxSensorDataNumOfEK.Text = "";
+
+            tbxUpRssiOfEK.Text = "";
+            tbxDownRssiOfEK.Text = "";
+        }
+
+        private void btnSetUserCfgOfEK_Click(object sender, RoutedEventArgs e)
+        {
+            WakeEK();
+
+            byte[] txPkt = NewWriteUserCfg_EK();
+
+            byte[] rxPkt = SerialPort_SendReceive(txPkt, 0, txPkt.Length, 400);
+            if (rxPkt == null || rxPkt.Length < 4)
+            {
+                return;
+            }
+
+            Int32 error = EK_RxPkt_Handle(rxPkt);
+            if (error < 0)
+            {
+                return;
+            }
+
+            btnReadCfgOfEK_Click(sender, e);
+
+            return;
+        }
+
+        private void btnDeleteHistoryOfEK_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+
+        private Int32 EK_RxPkt_Handle(byte[] RxPkt)
+        {
+            if (RxPkt == null)
+            {
+                return -1;
+            }
+
+            if (RxPkt.Length == 1)
+            {
+                if (RxPkt[0] == 0x00 || RxPkt[0] == 0x5A)
+                {
+                    return 1;
+                }
+            }
+
+            Int32 RxLen = RxPkt.Length;
+
+            Int32 aPktLen = 0;
+            Int32 ExeError = 0;
+
+            for (Int32 iCnt = 0; iCnt < RxLen; iCnt++)
+            {
+
+                aPktLen = EK_RxPkt_IsRight(RxPkt, iCnt);
+                if (aPktLen < 0)
+                {
+                    continue;
+                }
+
+                switch (RxPkt[iCnt + 3])
+                {
+                    case 0x03:
+                        {
+                            ExeError = EK_RxPkt_ReadCfg(RxPkt, iCnt);
+                            break;
+                        }
+                    case 0x05:
+                        {
+                            ExeError = EK_RxPkt_WriteFactoryCfg(RxPkt, iCnt);
+                            break;
+                        }
+                    case 0x06:
+                        {
+                            ExeError = EK_RxPkt_WriteUserCfg(RxPkt, iCnt);
+                            break;
+                        }
+                    default:
+                        {
+                            break;
+                        }
+                }
+
+                if (ExeError < 0)
+                {
+                    continue;
+                }
+
+                if (aPktLen > 0)
+                {
+                    aPktLen--;        // 因为马上就要执行iCnt++
+                }
+
+                iCnt = iCnt + aPktLen;
+            }
+            return 0;
+        }
+
+        private Int32 EK_RxPkt_IsRight(byte[] RxPkt, Int32 IndexOfStart)
+        {
+            // 数据包的总长度
+            Int32 RxLen = RxPkt.Length - IndexOfStart;
+            if (RxLen < 4)
+            {
+                return -1;
+            }
+
+            byte pktLen = RxPkt[IndexOfStart + 0];
+
+            // 起始位
+            if (RxPkt[IndexOfStart + 1] != 0xBC)
+            {
+                return -2;
+            }
+
+            // 校验和
+            byte chk_sum = RxPkt[IndexOfStart + 2];
+            byte chk_val = MyCustomFxn.CheckSum8(0, RxPkt, (UInt16)(IndexOfStart + 3), (UInt16)(1 + pktLen));
+            if (chk_sum != chk_val)
+            {
+                return -3;
+            }
+
+            return (Int32)(pktLen + 4);
+        }
+
+        private Int32 EK_RxPkt_ReadCfg(byte[] RxPkt, Int32 IndexOfStart)
+        {
+            // 数据包的总长度
+            Int32 RxLen = RxPkt.Length - IndexOfStart;
+            if (RxLen < 72)
+            {
+                return -1;
+            }
+
+            Int32 inx = IndexOfStart + 4;
+
+            byte protocol = RxPkt[inx];
+            if (protocol != 1)
+            {
+                return -2;
+            }
+
+            tbxPrototcolOfEK.Text = protocol.ToString("X2");
+            inx += 1;
+
+            tbxDeviceTypeOfEK.Text = RxPkt[inx].ToString("X2");
+            inx += 1;
+
+            tbxPrimaryMacOfEK.Text = CommArithmetic.ByteBuf_to_HexStr(RxPkt, inx, 4);
+            inx += 4;
+
+            tbxDeviceMacOfEK.Text = CommArithmetic.ByteBuf_to_HexStr(RxPkt, inx, 4);
+            inx += 4;
+
+            tbxHwRevOfEK.Text = CommArithmetic.ByteBuf_to_HexStr(RxPkt, inx, 4);
+            inx += 4;
+
+            tbxMSP432SwRevOfEK.Text = CommArithmetic.ByteBuf_to_HexStr(RxPkt, inx, 2);
+            inx += 2;
+
+            tbxMSP432RstSrcOfEK.Text = RxPkt[inx].ToString("X2");
+            inx += 1;
+
+            tbxCC13XXSwRevOfEK.Text = CommArithmetic.ByteBuf_to_HexStr(RxPkt, inx, 2);
+            inx += 2;
+
+            tbxCC13XXRstSrcOfEK.Text = RxPkt[inx].ToString("X2");
+            inx += 1;
+
+            tbxCurrentTimeOfEK.Text = CommArithmetic.DecodeDateTime(RxPkt, inx).ToString("yyyy-MM-dd HH:mm:ss");
+            inx += 6;
+
+            tbxCustomerOfEK.Text = CommArithmetic.ByteBuf_to_HexStr(RxPkt, inx, 2);
+            inx += 2;
+
+            tbxDebugOfEK.Text = CommArithmetic.ByteBuf_to_HexStr(RxPkt, inx, 2);
+            inx += 2;
+
+            tbxCategoryOfEK.Text = RxPkt[inx].ToString("X2");
+            inx += 1;
+
+            tbxPatternOfEK.Text = RxPkt[inx].ToString("G");
+            inx += 1;
+
+            tbxBpsOfEK.Text = RxPkt[inx].ToString("G");
+            inx += 1;
+
+            tbxChannelOfEK.Text = RxPkt[inx].ToString("G");
+            inx += 1;
+
+            tbxTxPowerOfEK.Text = CommArithmetic.ByteBuf_to_Int8(RxPkt, inx).ToString("G");
+            inx += 1;
+
+            tbxAlertWayOfEK.Text = RxPkt[inx].ToString("G");
+            inx += 1;
+
+            tbxAlertIntervalOfEK.Text = CommArithmetic.ByteBuf_to_UInt16(RxPkt, inx).ToString("G");
+            inx += 2;
+
+            tbxPingIntervalOfEK.Text = CommArithmetic.ByteBuf_to_UInt16(RxPkt, inx).ToString("G");
+            inx += 2;
+
+            tbxStatusIntervalOfEK.Text = CommArithmetic.ByteBuf_to_UInt16(RxPkt, inx).ToString("G");
+            inx += 2;
+
+            tbxUploadIntervalOfEK.Text = CommArithmetic.ByteBuf_to_UInt16(RxPkt, inx).ToString("G");
+            inx += 2;
+
+            tbxForewardOfEK.Text = CommArithmetic.ByteBuf_to_UInt16(RxPkt, inx).ToString("G");
+            inx += 2;
+
+            tbxBackwardOfEK.Text = CommArithmetic.ByteBuf_to_UInt16(RxPkt, inx).ToString("G");
+            inx += 2;
+
+            tbxOpenTimeoutOfEK.Text = CommArithmetic.ByteBuf_to_UInt16(RxPkt, inx).ToString("G");
+            inx += 2;
+
+            tbxSwipeTimeoutOfEK.Text = CommArithmetic.ByteBuf_to_UInt16(RxPkt, inx).ToString("G");
+            inx += 2;
+
+            tbxSecurityOfEK.Text = RxPkt[inx].ToString("G");
+            inx += 1;
+
+            tbxSwipeOrderOfEK.Text = RxPkt[inx].ToString("G");
+            inx += 1;
+
+            tbxBeepOfEK.Text = CommArithmetic.ByteBuf_to_UInt16(RxPkt, inx).ToString("G");
+            inx += 2;
+
+            tbxStatusDataNumOfEK.Text = CommArithmetic.ByteBuf_to_UInt32(RxPkt, inx).ToString("G");
+            inx += 4;
+
+            tbxSensorDataNumOfEK.Text = CommArithmetic.ByteBuf_to_UInt32(RxPkt, inx).ToString("G");
+            inx += 4;
+
+            tbxVoltageOfEK.Text = CommArithmetic.DecodeVoltage(RxPkt, inx).ToString("F3");
+            inx += 2;
+
+            tbxUpRssiOfEK.Text = CommArithmetic.ByteBuf_to_Int8(RxPkt, inx).ToString("G");
+            inx += 1;
+
+            tbxDownRssiOfEK.Text = CommArithmetic.ByteBuf_to_Int8(RxPkt, inx).ToString("G");
+            inx += 1;
+
+            return 0;
+        }
+
+        private Int32 EK_RxPkt_WriteFactoryCfg(byte[] RxPkt, Int32 IndexOfStart)
+        {
+            // 数据包的总长度
+            Int32 RxLen = RxPkt.Length - IndexOfStart;
+            if (RxLen < 13)
+            {
+                return -1;
+            }
+
+            Int32 inx = IndexOfStart + 4;
+
+            byte protocol = RxPkt[inx];
+            if (protocol != 1)
+            {
+                return -2;
+            }
+
+            tbxPrototcolOfEK.Text = protocol.ToString("X2");
+            inx += 1;
+
+            tbxDeviceMacOfEK.Text = CommArithmetic.ByteBuf_to_HexStr(RxPkt, inx, 4);
+            inx += 4;
+
+            tbxHwRevOfEK.Text = CommArithmetic.ByteBuf_to_HexStr(RxPkt, inx, 4);
+            inx += 4;            
+
+            return 0;
+        }
+
+        private Int32 EK_RxPkt_WriteUserCfg(byte[] RxPkt, Int32 IndexOfStart)
+        {
+            // 数据包的总长度
+            Int32 RxLen = RxPkt.Length - IndexOfStart;
+            if (RxLen < 13)
+            {
+                return -1;
+            }
+
+            Int32 inx = IndexOfStart + 4;
+
+            byte protocol = RxPkt[inx];
+            if (protocol != 1)
+            {
+                return -2;
+            }
+
+            inx += 1;
+
+            Int16 error = CommArithmetic.ByteBuf_to_Int8(RxPkt, inx);
+            if (error < 0)
+            {
+                return -3;
+            }
+
+            return 0;
+        }
+
+        private byte[] NewReadCfg_EK(byte protocol)
+        {
+            byte[] txPkt = new byte[5];
+            Int32 txLen = 0;
+
+            Int32 lenIndex = 0;
+            Int32 chkSumIndex = 0;
+
+            try
+            {
+                // 长度
+                lenIndex = txLen;
+                txPkt[txLen++] = 0x00;
+
+                // 方向
+                txPkt[txLen++] = 0xCB;
+
+                // 校验和
+                chkSumIndex = txLen;
+                txPkt[txLen++] = 0x00;
+
+                // 命令
+                txPkt[txLen++] = 0x03;
+
+                // 协议版本
+                txPkt[txLen++] = protocol;
+
+                // 计算校验和
+                txPkt[chkSumIndex] = MyCustomFxn.CheckSum8(0, txPkt, 3, (UInt16)(txLen - 3));
+
+                // 重写长度位
+                txPkt[lenIndex] = (byte)(txLen - 4);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+
+            return txPkt;
+        }
+
+        private byte[] NewWriteFactoryCfg_EK()
+        {
+            byte[] txPkt = new byte[13];
+            Int32 txLen = 0;
+
+            Int32 lenIndex = 0;
+            Int32 chkSumIndex = 0;
+
+            byte[] hexBuf = null;
+
+            try
+            {
+                // 长度
+                lenIndex = txLen;
+                txPkt[txLen++] = 0x00;
+
+                // 方向
+                txPkt[txLen++] = 0xCB;
+
+                // 校验和
+                chkSumIndex = txLen;
+                txPkt[txLen++] = 0x00;
+
+                // 命令
+                txPkt[txLen++] = 0x05;
+
+                // 协议版本
+                txPkt[txLen++] = 0x01;
+
+                // MAC
+                hexBuf = MyCustomFxn.HexStringToByteArray(tbxNewDeviceMacOfEK.Text);
+                if (hexBuf == null || hexBuf.Length < 4)
+                {
+                    MessageBox.Show("Device Mac错误!");
+                    return null;
+                }
+                else
+                {
+                    txPkt[txLen++] = hexBuf[0];
+                    txPkt[txLen++] = hexBuf[1];
+                    txPkt[txLen++] = hexBuf[2];
+                    txPkt[txLen++] = hexBuf[3];
+                }
+
+                // HW Revision
+                hexBuf = MyCustomFxn.HexStringToByteArray(tbxNewHwRevOfEK.Text);
+                if (hexBuf == null || hexBuf.Length < 4)
+                {
+                    MessageBox.Show("硬件版本错误!");
+                    return null;
+                }
+                else
+                {
+                    txPkt[txLen++] = hexBuf[0];
+                    txPkt[txLen++] = hexBuf[1];
+                    txPkt[txLen++] = hexBuf[2];
+                    txPkt[txLen++] = hexBuf[3];
+                }
+
+                // 计算校验和
+                txPkt[chkSumIndex] = MyCustomFxn.CheckSum8(0, txPkt, 3, (UInt16)(txLen - 3));
+
+                // 重写长度位
+                txPkt[lenIndex] = (byte)(txLen - 4);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+
+            return txPkt;
+        }
+
+        private byte[] NewWriteUserCfg_EK()
+        {
+            byte[] txPkt = new byte[41];
+            Int32 txLen = 0;
+
+            Int32 lenIndex = 0;
+            Int32 chkSumIndex = 0;
+
+            byte[] hexBuf = null;
+
+            try
+            {
+                // 长度
+                lenIndex = txLen;
+                txPkt[txLen++] = 0x00;
+
+                // 方向
+                txPkt[txLen++] = 0xCB;
+
+                // 校验和
+                chkSumIndex = txLen;
+                txPkt[txLen++] = 0x00;
+
+                // 命令
+                txPkt[txLen++] = 0x06;
+
+                // 协议版本
+                txPkt[txLen++] = 0x01;
+
+                // 当前时间
+                hexBuf = MyCustomFxn.DataTimeToByteArray(Convert.ToDateTime(System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")));
+                if (hexBuf == null || hexBuf.Length < 6)
+                {
+                    MessageBox.Show("当前时间错误!");
+                    return null;
+                }
+                txPkt[txLen++] = MyCustomFxn.DecimalToBcd(hexBuf[0]);
+                txPkt[txLen++] = MyCustomFxn.DecimalToBcd(hexBuf[1]);
+                txPkt[txLen++] = MyCustomFxn.DecimalToBcd(hexBuf[2]);
+                txPkt[txLen++] = MyCustomFxn.DecimalToBcd(hexBuf[3]);
+                txPkt[txLen++] = MyCustomFxn.DecimalToBcd(hexBuf[4]);
+                txPkt[txLen++] = MyCustomFxn.DecimalToBcd(hexBuf[5]);
+
+                // 客户码
+                hexBuf = MyCustomFxn.HexStringToByteArray(tbxNewCustomerOfEK.Text);
+                if (hexBuf == null || hexBuf.Length < 2)
+                {
+                    MessageBox.Show("客户码错误!");
+                    return null;
+                }
+                else
+                {
+                    txPkt[txLen++] = hexBuf[0];
+                    txPkt[txLen++] = hexBuf[1];
+                }
+
+                // Debug
+                hexBuf = MyCustomFxn.HexStringToByteArray(tbxNewDebugOfEK.Text);
+                if (hexBuf == null || hexBuf.Length < 2)
+                {
+                    MessageBox.Show("Debug错误!");
+                    return null;
+                }
+                else
+                {
+                    txPkt[txLen++] = hexBuf[0];
+                    txPkt[txLen++] = hexBuf[1];
+                }
+
+                // Category
+                hexBuf = MyCustomFxn.HexStringToByteArray(tbxNewCategoryOfEK.Text);
+                if (hexBuf == null || hexBuf.Length < 1)
+                {
+                    MessageBox.Show("Category错误!");
+                    return null;
+                }
+                else
+                {
+                    txPkt[txLen++] = hexBuf[0];
+                }
+
+                // Pattern
+                txPkt[txLen++] = Convert.ToByte(tbxNewPatternOfEK.Text);
+
+                // Bps
+                txPkt[txLen++] = Convert.ToByte(tbxNewBpsOfEK.Text);
+
+                // Channel
+                txPkt[txLen++] = Convert.ToByte(tbxNewChannelOfEK.Text);
+
+                // TxPower
+                txPkt[txLen++] = (byte)Convert.ToInt16(tbxNewTxPowerOfEK.Text);
+
+                // 报警方式
+                txPkt[txLen++] = Convert.ToByte(tbxNewAlertWayOfEK.Text);
+
+                // 报警间隔
+                UInt16 u16Val = 0;
+                u16Val = Convert.ToUInt16(tbxNewAlertIntervalOfEK.Text);
+                txPkt[txLen++] = (byte)((u16Val & 0xFF00) >> 8);
+                txPkt[txLen++] = (byte)((u16Val & 0x00FF) >> 0);
+
+                // Ping间隔
+                u16Val = Convert.ToUInt16(tbxNewPingIntervalOfEK.Text);
+                txPkt[txLen++] = (byte)((u16Val & 0xFF00) >> 8);
+                txPkt[txLen++] = (byte)((u16Val & 0x00FF) >> 0);
+
+                // 状态间隔
+                u16Val = Convert.ToUInt16(tbxNewStatusIntervalOfEK.Text);
+                txPkt[txLen++] = (byte)((u16Val & 0xFF00) >> 8);
+                txPkt[txLen++] = (byte)((u16Val & 0x00FF) >> 0);
+
+                // 上传间隔
+                u16Val = Convert.ToUInt16(tbxNewUploadIntervalOfEK.Text);
+                txPkt[txLen++] = (byte)((u16Val & 0xFF00) >> 8);
+                txPkt[txLen++] = (byte)((u16Val & 0x00FF) >> 0);
+
+                // 正转时长
+                u16Val = Convert.ToUInt16(tbxNewForewardOfEK.Text);
+                txPkt[txLen++] = (byte)((u16Val & 0xFF00) >> 8);
+                txPkt[txLen++] = (byte)((u16Val & 0x00FF) >> 0);
+
+                // 反转时长
+                u16Val = Convert.ToUInt16(tbxNewBackwardOfEK.Text);
+                txPkt[txLen++] = (byte)((u16Val & 0xFF00) >> 8);
+                txPkt[txLen++] = (byte)((u16Val & 0x00FF) >> 0);
+
+                // 门开超时
+                u16Val = Convert.ToUInt16(tbxNewOpenTimeoutOfEK.Text);
+                txPkt[txLen++] = (byte)((u16Val & 0xFF00) >> 8);
+                txPkt[txLen++] = (byte)((u16Val & 0x00FF) >> 0);
+
+                // 刷卡超时
+                u16Val = Convert.ToUInt16(tbxNewSwipeTimeoutOfEK.Text);
+                txPkt[txLen++] = (byte)((u16Val & 0xFF00) >> 8);
+                txPkt[txLen++] = (byte)((u16Val & 0x00FF) >> 0);
+
+                // 安全级别
+                txPkt[txLen++] = Convert.ToByte(tbxNewSecurityOfEK.Text);
+
+                // 刷卡顺序
+                txPkt[txLen++] = Convert.ToByte(tbxNewSwipeOrderOfEK.Text);
+
+                // 蜂鸣时间
+                u16Val = Convert.ToUInt16(tbxNewBeepOfEK.Text);
+                txPkt[txLen++] = (byte)((u16Val & 0xFF00) >> 8);
+                txPkt[txLen++] = (byte)((u16Val & 0x00FF) >> 0);
+
+
+                // 计算校验和
+                txPkt[chkSumIndex] = MyCustomFxn.CheckSum8(0, txPkt, 3, (UInt16)(txLen - 3));
+
+                // 重写长度位
+                txPkt[lenIndex] = (byte)(txLen - 4);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+
+            return txPkt;
         }
 
         /*******************/

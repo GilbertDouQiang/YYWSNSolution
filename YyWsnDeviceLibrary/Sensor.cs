@@ -68,11 +68,11 @@ namespace YyWsnDeviceLibrary
 
         public string FlashID { get; set; }
 
-        public Int32 FlashFront { get; set; }
+        public UInt32 FlashFront { get; set; }
 
-        public Int32 FlashRear { get; set; }
+        public UInt32 FlashRear { get; set; }
 
-        public Int32 FlashQueueLength { get; set; }
+        public UInt32 FlashQueueLength { get; set; }
 
         public byte MaxLength { get; set; }
 

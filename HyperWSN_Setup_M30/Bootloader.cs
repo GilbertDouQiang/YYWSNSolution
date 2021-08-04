@@ -11,6 +11,7 @@ using YyWsnDeviceLibrary;
 
 namespace HyperWSN_Setup_M30
 {
+    /*
     public enum BslDeviceType
     {
         BslDeviceType_CC1310 = 0,
@@ -777,7 +778,6 @@ namespace HyperWSN_Setup_M30
 
                     ByteBuf.CopyTo(Content, Addr + Sum);
 
-                    /*
                     // 如果这部分数据会跨越是一个Sector的起始地址，则先擦除，再写入。
                     const UInt32 SectorSize = 4096;                                             // 一个Sector的大小，单位：Byte
 
@@ -808,7 +808,7 @@ namespace HyperWSN_Setup_M30
 
                     // 将数据写入
 
-                    */
+     
 
                     Sum = (UInt32)(Sum + ByteBuf.Length);
                 }
@@ -898,7 +898,6 @@ namespace HyperWSN_Setup_M30
                         LogText += System.DateTime.Now.ToString("HH:mm:ss.fff") + "   使能成功" + "\r\n";
                     }
 
-                    /*
                     error = Read(0x1000, 1024);     // TODO: 2021-01-06 调试用
                     //error = Read(0x1FC000, 512);
                     if (error < 0)
@@ -909,7 +908,6 @@ namespace HyperWSN_Setup_M30
                     {
                         LogText += System.DateTime.Now.ToString("HH:mm:ss.fff") + "   备份成功" + "\r\n";
                     }
-                    */
 
 
                     error = Reset();
@@ -929,7 +927,6 @@ namespace HyperWSN_Setup_M30
                 SerialPort_Close();
             }
 
-            /*
             if (Suc == true)
             {
                 LogText += System.DateTime.Now.ToString("HH:mm:ss.fff") + "   烧录成功\t耗时" + TimeCntOfBsl.ToString() + "秒钟\r\n";
@@ -938,7 +935,6 @@ namespace HyperWSN_Setup_M30
             {
                 LogText += System.DateTime.Now.ToString("HH:mm:ss.fff") + "   烧录失败" + "\r\n";
             }
-            */
 
             LogText += "\r\n*****************************************************************************\r\n";
         }
@@ -949,4 +945,5 @@ namespace HyperWSN_Setup_M30
             ThisThread.Start();
         }       
     }
+*/
 }

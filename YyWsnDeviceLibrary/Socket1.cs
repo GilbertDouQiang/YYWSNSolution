@@ -127,9 +127,9 @@ namespace YyWsnDeviceLibrary
 
                 //Falsh
                 FlashID = CommArithmetic.DecodeClientID(SourceData, 61);
-                FlashFront = SourceData[64] * 256 * 256 + SourceData[65] * 256 + SourceData[66];
-                FlashRear = SourceData[67] * 256 * 256 + SourceData[68] * 256 + SourceData[69];
-                FlashQueueLength = SourceData[70] * 256 * 256 + SourceData[71] * 256 + SourceData[72];
+                FlashFront = (UInt32)(SourceData[64] * 256 * 256 + SourceData[65] * 256 + SourceData[66]);
+                FlashRear = (UInt32)(SourceData[67] * 256 * 256 + SourceData[68] * 256 + SourceData[69]);
+                FlashQueueLength = (UInt32)(SourceData[70] * 256 * 256 + SourceData[71] * 256 + SourceData[72]);
             }
 
             //模式1 正常传输的数据，兼容原Z版本

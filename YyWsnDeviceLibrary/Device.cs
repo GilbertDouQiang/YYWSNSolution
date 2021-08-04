@@ -97,7 +97,8 @@ namespace YyWsnDeviceLibrary
             S1P_Find = 0xA5,            // S1+ 找货神器
             SG9 = 0xA6,                 // SG9 野保网关
             SG6Lite = 0xA7,             // SG6Lite
-            Beetech_M20 = 0xA8          // Beetech M20
+            Beetech_M20 = 0xA8,         // Beetech M20
+            M1000 = 0xA9                // M1000
         }
 
         /// <summary>
@@ -140,6 +141,8 @@ namespace YyWsnDeviceLibrary
         /// 电池电压，单位：V
         /// </summary>
         public double voltF { get; set; }
+
+        public double minVoltF { get; set; }
 
         /// <summary>
         /// 是否连接了充电器
@@ -467,9 +470,29 @@ namespace YyWsnDeviceLibrary
                         Name = "PM";
                         break;
                     }
+                case 0x71:
+                    {
+                        Name = "LBGZ_TC04";
+                        break;
+                    }
+                case 0x73:
+                    {
+                        Name = "SG6X";
+                        break;
+                    }
                 case 0x77:
                     {
                         Name = "M9(振动)";
+                        break;
+                    }
+                case 0x78:
+                    {
+                        Name = "ACO2";
+                        break;
+                    }
+                case 0x79:
+                    {
+                        Name = "M30";
                         break;
                     }
                 case 0x7A:
@@ -477,9 +500,24 @@ namespace YyWsnDeviceLibrary
                         Name = "AO2";
                         break;
                     }
+                case 0x7B:
+                    {
+                        Name = "RT";
+                        break;
+                    }
+                case 0x7C:
+                    {
+                        Name = "GMP";
+                        break;
+                    }
                 case 0x7D:
                     {
                         Name = "M1_Zigin";
+                        break;
+                    }
+                case 0x7E:
+                    {
+                        Name = "M5(气压)";
                         break;
                     }
                 case 0x7F:
@@ -690,6 +728,11 @@ namespace YyWsnDeviceLibrary
                 case 0xA8:
                     {
                         Name = "Beetech M20";
+                        break;
+                    }
+                case 0xA9:
+                    {
+                        Name = "M1000";
                         break;
                     }
                 default:

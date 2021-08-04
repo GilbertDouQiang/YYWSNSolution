@@ -210,7 +210,15 @@ namespace YyWsnDeviceLibrary
             {
                 try
                 {
-                    if (WP.isAdhocDataV1(SrcData, iCnt, true) >= 0)
+                    if (WP.isAdhocV1(SrcData, iCnt, true) >= 0)
+                    {
+                        WP wp = new WP(SrcData, iCnt, true);
+                        if (wp != null)
+                        {
+                            devices.Add(wp);
+                            continue;
+                        }
+                    }else if(WP.isAdhocDataUpV1(SrcData, iCnt, true) >= 0)
                     {
                         WP wp = new WP(SrcData, iCnt, true);
                         if (wp != null)
@@ -237,7 +245,7 @@ namespace YyWsnDeviceLibrary
                             continue;
                         }
                     }
-                    else if (M1.isSensorDataV1(SrcData, iCnt, true) >= 0 || M1.isSensorDataV3(SrcData, iCnt, true) >= 0 || M1.isSensorDataV1_MAX31855(SrcData, iCnt, true) >= 0)
+                    else if (M1.isSensorDataV1(SrcData, iCnt, true) >= 0 || M1.isSensorDataV3(SrcData, iCnt, true) >= 0 || M1.isSensorDataV4(SrcData, iCnt, true) >= 0 || M1.isSensorDataV1_MAX31855(SrcData, iCnt, true) >= 0)
                     {
                         M1 m1 = new M1(SrcData, iCnt);
                         if (m1 != null)

@@ -177,9 +177,9 @@ namespace YyWsnDeviceLibrary
                 //Falsh
                 FlashID = CommArithmetic.DecodeClientID(SourceData, 76);
                 MaxLength = SourceData[78];
-                FlashFront = SourceData[79] * 256 * 256 + SourceData[80] * 256 + SourceData[81];
-                FlashRear = SourceData[82] * 256 * 256 + SourceData[83] * 256 + SourceData[84];
-                FlashQueueLength = SourceData[85] * 256 * 256 + SourceData[86] * 256 + SourceData[87];
+                FlashFront = (UInt32)(SourceData[79] * 256 * 256 + SourceData[80] * 256 + SourceData[81]);
+                FlashRear = (UInt32)(SourceData[82] * 256 * 256 + SourceData[83] * 256 + SourceData[84]);
+                FlashQueueLength = (UInt32)(SourceData[85] * 256 * 256 + SourceData[86] * 256 + SourceData[87]);
 
                 Temperature = CommArithmetic.DecodeTemperature(SourceData, 88);
                 Humidity = CommArithmetic.DecodeHumidity(SourceData, 90);

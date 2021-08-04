@@ -101,20 +101,23 @@ namespace PictureTransfer
             return Sections[Sections.Length - 1];
         }
 
-        private byte[] Content { get; set; }
-        const int FileSize = 0x20000;
-        UInt32 StartAddr = 0;
+        private byte[] Content { get; set; }    // CC13XX内部Flash的镜像
+        const int FileSizeMax = 512 * 1024;     
+        UInt32 StartAddr = 0;                   // 镜像文件在CC13XX内部Flash中的起始地址
+        UInt32 FileSize = 0;                    // 镜像文件的大小
         string SafeFileName = null;
         bool IsTxtImage = false;                // 是不是烧录的镜像文件
 
-        private int CreateImageBuf(string filePath, int fileSize)
-        {            
+        private int CreateImageBuf(string filePath)
+        {          
             // 构造全0x00的字节数组
-            Content = new byte[fileSize];
+            Content = new byte[FileSizeMax];
             for (int iX = 0; iX < Content.Length; iX++)
             {
                 Content[iX] = 0x00;
             }
+
+            FileSize = 0;
 
             // 读取烧录文件的内容
             StreamReader FileReader = new StreamReader(filePath, Encoding.ASCII);
@@ -130,6 +133,7 @@ namespace PictureTransfer
             }
 
             int error = 0;
+            UInt32 EndAddr = 0;
 
             for (int iX = 0; iX < Sections.Length; iX++)
             {
@@ -168,7 +172,10 @@ namespace PictureTransfer
                     Sum = (UInt32)(Sum + ByteBuf.Length);
                 }
 
+                EndAddr = Addr + Sum;
             }
+
+            FileSize = EndAddr - StartAddr;
 
             return 0;
         }
@@ -192,7 +199,7 @@ namespace PictureTransfer
                 {
                     IsTxtImage = true;
                     SafeFileName = openFileDialog.SafeFileName;
-                    CreateImageBuf(openFileDialog.FileName, FileSize);
+                    CreateImageBuf(openFileDialog.FileName);
                 }
                 else
                 {
@@ -226,7 +233,7 @@ namespace PictureTransfer
                 {
                     if (IsTxtImage == true)
                     {   // 烧录          
-                        TransferPicture(Content, (int)StartAddr);
+                        TransferText(Content, StartAddr, FileSize);
                     }
                     else
                     {   // 传输图片
@@ -483,11 +490,10 @@ namespace PictureTransfer
             TxBuf[TxLen++] = 0x78;
 
             // 文件大小
-            UInt32 fileSize = (UInt32)(Content.Length - StartAddr);
-            TxBuf[TxLen++] = (byte)((fileSize & 0xFF000000) >> 24);
-            TxBuf[TxLen++] = (byte)((fileSize & 0x00FF0000) >> 16);
-            TxBuf[TxLen++] = (byte)((fileSize & 0x0000FF00) >> 8);
-            TxBuf[TxLen++] = (byte)((fileSize & 0x000000FF) >> 0);
+            TxBuf[TxLen++] = (byte)((FileSize & 0xFF000000) >> 24);
+            TxBuf[TxLen++] = (byte)((FileSize & 0x00FF0000) >> 16);
+            TxBuf[TxLen++] = (byte)((FileSize & 0x0000FF00) >> 8);
+            TxBuf[TxLen++] = (byte)((FileSize & 0x000000FF) >> 0);
 
             // 文件名称
             TxBuf[TxLen++] = (byte)NameBuf.Length;
@@ -634,6 +640,64 @@ namespace PictureTransfer
                 iX++;
 
                 offset += TxLen;
+                frames++;
+            }
+
+            Serial_Close();
+
+            return frames;
+        }
+
+        public int TransferText(byte[] Buf, UInt32 StartAddr, UInt32 Size)
+        {
+            if (StartAddr > Buf.Length || Size > Buf.Length)
+            {
+                return -1;
+            }
+
+            if (StartAddr + Size > Buf.Length)
+            {
+                return -2;
+            }
+
+            int total = 0;                                          // 已发送成功的大小
+
+            int frames = 0;                                         // 帧
+
+            Serial_Init();
+
+            FailCnt = 0;
+
+            int iX = 0;
+            labError.Text = "Error: ";
+
+            const byte TxUnitLen = 255;                     // 一帧数据中最多可以有255个字节的有效数据
+            byte TxLen = 0;
+
+            while (total < Size)
+            {
+                if (Size - total >= TxUnitLen)
+                {
+                    //需要传输的字节数量为一个满编的PacketLength,用于非最后一次传输
+                    TxLen = TxUnitLen;
+                }
+                else
+                {
+                    //需要传输的字节数量不满一个PacketLength,基本上就是最后一次传输
+                    TxLen = (byte)(Size - total);
+                }
+
+                // 开始传输
+                if (SendFrameOfPicture(Buf, (int)(StartAddr + total), TxLen) < 0)
+                {
+                    FailCnt++;
+
+                    labError.Text += "  " + iX.ToString("G");
+                }
+
+                iX++;
+
+                total += TxLen;
                 frames++;
             }
 
@@ -1008,7 +1072,7 @@ namespace PictureTransfer
 
             if(IsTxtImage == true)
             {
-                crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, Content, StartAddr, (UInt32)(FileSize - StartAddr));
+                crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, Content, StartAddr, FileSize);
             }
             else
             {
@@ -1021,7 +1085,7 @@ namespace PictureTransfer
             // 计算校验和
             TxBuf[2] = MyCustomFxn.CheckSum8(0, TxBuf, 3, (UInt16)(TxBuf.Length - 3));
 
-            byte[] RxBuf = Serial.SendReceive(TxBuf, 0, (UInt16)TxBuf.Length, 600);
+            byte[] RxBuf = Serial.SendReceive(TxBuf, 0, (UInt16)TxBuf.Length, 2200);
             if (RxBuf == null || RxBuf.Length == 0)
             {
                 return -2;

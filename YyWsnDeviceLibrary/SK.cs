@@ -185,9 +185,9 @@ namespace YyWsnDeviceLibrary
                         FlashID = CommArithmetic.DecodeClientID(SrcData, IndexOfStart + 61);
                         MaxLength = SrcData[IndexOfStart + 63];
 
-                        FlashFront = SrcData[IndexOfStart + 64] * 256 * 256 + SrcData[IndexOfStart + 65] * 256 + SrcData[IndexOfStart + 66];
-                        FlashRear = SrcData[IndexOfStart + 67] * 256 * 256 + SrcData[IndexOfStart + 68] * 256 + SrcData[IndexOfStart + 69];
-                        FlashQueueLength = SrcData[IndexOfStart + 70] * 256 * 256 + SrcData[IndexOfStart + 71] * 256 + SrcData[IndexOfStart + 72];
+                        FlashFront = (UInt32)(SrcData[IndexOfStart + 64] * 256 * 256 + SrcData[IndexOfStart + 65] * 256 + SrcData[IndexOfStart + 66]);
+                        FlashRear = (UInt32)(SrcData[IndexOfStart + 67] * 256 * 256 + SrcData[IndexOfStart + 68] * 256 + SrcData[IndexOfStart + 69]);
+                        FlashQueueLength = (UInt32)(SrcData[IndexOfStart + 70] * 256 * 256 + SrcData[IndexOfStart + 71] * 256 + SrcData[IndexOfStart + 72]);
 
                         loadPower = (UInt16)(SrcData[IndexOfStart + 73] * 256 + SrcData[IndexOfStart + 74]);
                         supplyVolt = (UInt16)(SrcData[IndexOfStart + 75] * 256 + SrcData[IndexOfStart + 76]);
@@ -244,9 +244,9 @@ namespace YyWsnDeviceLibrary
                         FlashID = CommArithmetic.DecodeClientID(SrcData, IndexOfStart + 61);
                         MaxLength = SrcData[IndexOfStart + 63];
 
-                        FlashFront = SrcData[IndexOfStart + 64] * 256 * 256 + SrcData[IndexOfStart + 65] * 256 + SrcData[IndexOfStart + 66];
-                        FlashRear = SrcData[IndexOfStart + 67] * 256 * 256 + SrcData[IndexOfStart + 68] * 256 + SrcData[IndexOfStart + 69];
-                        FlashQueueLength = SrcData[IndexOfStart + 70] * 256 * 256 + SrcData[IndexOfStart + 71] * 256 + SrcData[IndexOfStart + 72];
+                        FlashFront = (UInt32)(SrcData[IndexOfStart + 64] * 256 * 256 + SrcData[IndexOfStart + 65] * 256 + SrcData[IndexOfStart + 66]);
+                        FlashRear = (UInt32)(SrcData[IndexOfStart + 67] * 256 * 256 + SrcData[IndexOfStart + 68] * 256 + SrcData[IndexOfStart + 69]);
+                        FlashQueueLength = (UInt32)(SrcData[IndexOfStart + 70] * 256 * 256 + SrcData[IndexOfStart + 71] * 256 + SrcData[IndexOfStart + 72]);
 
                         loadPower = (UInt16)(SrcData[IndexOfStart + 73] * 256 + SrcData[IndexOfStart + 74]);
                         supplyVolt = (UInt16)(SrcData[IndexOfStart + 75] * 256 + SrcData[IndexOfStart + 76]);

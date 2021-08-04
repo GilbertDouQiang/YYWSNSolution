@@ -206,6 +206,7 @@ namespace DeviceSetup_HyperWSN
                         case Device.DeviceType.M20:
                         case Device.DeviceType.M1X:
                         case Device.DeviceType.Beetech_M20:
+                        case Device.DeviceType.M1000:
                             {
                                 M1 aM1 = new M1(e.ReceivedBytes, iX, Device.DataPktType.SelfTestFromUsbToPc, deviceType);
                                 if (aM1 != null)
@@ -543,6 +544,138 @@ namespace DeviceSetup_HyperWSN
             btnStopMonitor.IsEnabled = false;
         }
 
+        private Int16 WriteFactoryCfgOfM1()
+        {
+            byte[] TxBuf = new byte[30];
+            UInt16 TxLen = 0;
+
+            byte[] ByteBufTmp = null;
+
+            // 设备类型
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceTypeOfM1.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 1)
+            {
+                return -1;
+            }
+            Device.DeviceType deviceType = (Device.DeviceType)ByteBufTmp[0];
+
+            // Protocol
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxProtocolOfM1.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 1)
+            {
+                return -2;
+            }
+            byte Protocol = ByteBufTmp[0];
+
+            // Start
+            TxBuf[TxLen++] = 0xCE;
+
+            // Length
+            TxBuf[TxLen++] = 0x00;
+
+            // Cmd
+            TxBuf[TxLen++] = 0xA1;
+
+            // USB Protocol
+            if (Protocol < 4)
+            {
+                TxBuf[TxLen++] = 0x01;
+            }
+            else
+            {
+                TxBuf[TxLen++] = 0x02;
+            }
+
+            // 设备类型
+            TxBuf[TxLen++] = (byte)deviceType;
+
+            // Protocol
+            if (Protocol < 4)
+            {
+                TxBuf[TxLen++] = 0x02;
+            }
+            else
+            {
+                TxBuf[TxLen++] = 0x04;
+            }
+
+            if (Protocol >= 4)
+            {
+                // Primary Mac
+                ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxPrimaryMacOfM1.Text);
+                if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+                {
+                    TxBuf[TxLen++] = 0;
+                    TxBuf[TxLen++] = 0;
+                    TxBuf[TxLen++] = 0;
+                    TxBuf[TxLen++] = 0;
+                }
+                else
+                {
+                    TxBuf[TxLen++] = ByteBufTmp[0];
+                    TxBuf[TxLen++] = ByteBufTmp[1];
+                    TxBuf[TxLen++] = ByteBufTmp[2];
+                    TxBuf[TxLen++] = ByteBufTmp[3];
+                }
+            }
+
+
+            // Sensor Mac
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfM1.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+            {
+                return -3;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+            TxBuf[TxLen++] = ByteBufTmp[2];
+            TxBuf[TxLen++] = ByteBufTmp[3];
+
+            // New Sensor MAC
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxNewDeviceMacOfM1.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+            {
+                return -4;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+            TxBuf[TxLen++] = ByteBufTmp[2];
+            TxBuf[TxLen++] = ByteBufTmp[3];
+
+            // New Hardware Revision
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxNewHwRevisionOfM1.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+            {
+                return -4;
+            }
+            TxBuf[TxLen++] = ByteBufTmp[0];
+            TxBuf[TxLen++] = ByteBufTmp[1];
+            TxBuf[TxLen++] = ByteBufTmp[2];
+            TxBuf[TxLen++] = ByteBufTmp[3];
+
+            if (Protocol >= 4)
+            {
+                // 保留
+                TxBuf[TxLen++] = 0;
+                TxBuf[TxLen++] = 0;
+            }
+
+            // CRC16
+            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 2, (UInt16)(TxLen - 2));
+            TxBuf[TxLen++] = (byte)((crc & 0xFF00) >> 8);
+            TxBuf[TxLen++] = (byte)((crc & 0x00FF) >> 0);
+
+            // End
+            TxBuf[TxLen++] = 0xEC;
+
+            // 重写长度位
+            TxBuf[1] = (byte)(TxLen - 5);
+
+            SerialPort_Send(TxBuf, 0, TxLen);
+
+            return 0;
+        }
+
         /// <summary>
         /// 更新工厂信息
         /// </summary>
@@ -552,37 +685,13 @@ namespace DeviceSetup_HyperWSN
         {
             tbkResultOfM1.Text = "";
 
-            M1 updateDevice = new M1();
             try
             {
-                updateDevice.DeviceTypeS = tbxDeviceNameOfM1.Text;
-                updateDevice.DeviceMacS = tbxDeviceMacOfM1.Text;
-                updateDevice.DeviceMacNewS = tbxNewDeviceMacOfM1.Text;
-                updateDevice.DeviceMacNewS = updateDevice.DeviceMacNewS.Replace("\r", "");
-                updateDevice.DeviceMacNewS = updateDevice.DeviceMacNewS.Replace("\n", "");
-                updateDevice.HwRevisionS = tbxNewHwRevisionOfM1.Text;
-
-                byte[] updateCommand = updateDevice.UpdateFactory();
-                string updateString = CommArithmetic.ToHexString(updateCommand);
-                SerialPort.Send(updateCommand);
-                System.Threading.Thread.Sleep(200);     //界面会卡
+                WriteFactoryCfgOfM1();
             }
             catch (Exception ex)
             {
-                tbkResultOfM1.Text = "参数错误" + ex.Message;
-
-                if (tbkResultOfM1.Foreground == System.Windows.Media.Brushes.Red)
-                {
-                    tbkResultOfM1.Foreground = System.Windows.Media.Brushes.Green;
-                }
-                else if (tbkResultOfM1.Foreground == System.Windows.Media.Brushes.Green)
-                {
-                    tbkResultOfM1.Foreground = System.Windows.Media.Brushes.Blue;
-                }
-                else
-                {
-                    tbkResultOfM1.Foreground = System.Windows.Media.Brushes.Red;
-                }
+                MessageBox.Show("参数错误" + ex.Message);
             }
         }
 
@@ -592,7 +701,7 @@ namespace DeviceSetup_HyperWSN
         /// <returns></returns>
         private Int16 WriteUserCfgOfM1()
         {
-            byte[] TxBuf = new byte[38];
+            byte[] TxBuf = new byte[64];
             UInt16 TxLen = 0;
 
             byte[] ByteBufTmp = null;
@@ -623,7 +732,7 @@ namespace DeviceSetup_HyperWSN
             TxBuf[TxLen++] = 0xA2;
 
             // USB Protocol
-            if (Protocol == 0x02)
+            if (Protocol <= 0x02)
             {
                 TxBuf[TxLen++] = 0x01;
             }
@@ -659,79 +768,166 @@ namespace DeviceSetup_HyperWSN
                 TxBuf[TxLen++] = ByteBufTmp[3];
             }
 
-            // Customer
-            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxNewCustomerOfM1.Text);
-            if (ByteBufTmp == null || ByteBufTmp.Length < 2)
+            if (Protocol <= 3)
             {
-                return -1;
-            }
-            TxBuf[TxLen++] = ByteBufTmp[0];
-            TxBuf[TxLen++] = ByteBufTmp[1];
-
-            // Debug
-            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxNewDebugOfM1.Text);
-            if (ByteBufTmp == null || ByteBufTmp.Length < 2)
-            {
-                return -1;
-            }
-            TxBuf[TxLen++] = ByteBufTmp[0];
-            TxBuf[TxLen++] = ByteBufTmp[1];
-
-            // Category
-            TxBuf[TxLen++] = Convert.ToByte(tbxNewCategoryOfM1.Text);
-
-            // Pattern
-            TxBuf[TxLen++] = Convert.ToByte(tbxNewPatternOfM1.Text);
-
-            // bps
-            TxBuf[TxLen++] = Convert.ToByte(tbxNewBpsOfM1.Text);
-
-            // Tx Power
-            Int16 txPower = Convert.ToInt16(tbxNewTxPowerOfM1.Text);
-            TxBuf[TxLen++] = (byte)txPower;
-
-            // channel
-            TxBuf[TxLen++] = Convert.ToByte(tbxNewChannelOfM1.Text);
-
-            if (Protocol == 0x02)
-            {
-                // 温度补偿 
-                double tempCompF = Convert.ToDouble(tbxNewTemperatureCompensationOfM1.Text);    // 单位：℃
-                Int16 tempComp = (Int16)Math.Round(tempCompF * 100.0f);                         // 单位：0.01℃
-                TxBuf[TxLen++] = (byte)((tempComp & 0xFF00) >> 8);
-                TxBuf[TxLen++] = (byte)((tempComp & 0x00FF) >> 0);
-
-                if (deviceType == Device.DeviceType.M2)
-                {   // M2数据包里没有湿度补偿
-
-                }
-                else
+                // Customer
+                ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxNewCustomerOfM1.Text);
+                if (ByteBufTmp == null || ByteBufTmp.Length < 2)
                 {
+                    return -1;
+                }
+                TxBuf[TxLen++] = ByteBufTmp[0];
+                TxBuf[TxLen++] = ByteBufTmp[1];
+
+                // Debug
+                ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxNewDebugOfM1.Text);
+                if (ByteBufTmp == null || ByteBufTmp.Length < 2)
+                {
+                    return -1;
+                }
+                TxBuf[TxLen++] = ByteBufTmp[0];
+                TxBuf[TxLen++] = ByteBufTmp[1];
+
+                // Category
+                TxBuf[TxLen++] = Convert.ToByte(tbxNewCategoryOfM1.Text);
+
+                // Pattern
+                TxBuf[TxLen++] = Convert.ToByte(tbxNewPatternOfM1.Text);
+
+                // bps
+                TxBuf[TxLen++] = Convert.ToByte(tbxNewBpsOfM1.Text);
+
+                // Tx Power
+                Int16 txPower = Convert.ToInt16(tbxNewTxPowerOfM1.Text);
+                TxBuf[TxLen++] = (byte)txPower;
+
+                // channel
+                TxBuf[TxLen++] = Convert.ToByte(tbxNewChannelOfM1.Text);
+
+                if (Protocol == 0x02)
+                {
+                    // 温度补偿 
+                    double tempCompF = Convert.ToDouble(tbxNewTemperatureCompensationOfM1.Text);    // 单位：℃
+                    Int16 tempComp = (Int16)Math.Round(tempCompF * 100.0f);                         // 单位：0.01℃
+                    TxBuf[TxLen++] = (byte)((tempComp & 0xFF00) >> 8);
+                    TxBuf[TxLen++] = (byte)((tempComp & 0x00FF) >> 0);
+
+                    if (deviceType == Device.DeviceType.M2)
+                    {   // M2数据包里没有湿度补偿
+
+                    }
+                    else
+                    {
+                        // 湿度补偿
+                        double humCompF = Convert.ToDouble(tbxNewHumidityCompensationOfM1.Text);        // 单位：%
+                        Int16 humComp = (Int16)Math.Round(humCompF * 100.0f);                           // 单位：0.01%
+                        TxBuf[TxLen++] = (byte)((humComp & 0xFF00) >> 8);
+                        TxBuf[TxLen++] = (byte)((humComp & 0x00FF) >> 0);
+                    }
+
+                    // MaxLength
+                    TxBuf[TxLen++] = Convert.ToByte(tbxNewMaxLengthOfM1.Text);
+                }
+                else if (Protocol == 0x03)
+                {
+                    // MaxLength
+                    TxBuf[TxLen++] = Convert.ToByte(tbxNewMaxLengthOfM1.Text);
+
+                    // 日期和时间
+                    tbxCalendarOfM1.Text = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                    DateTime ThisCalendar = Convert.ToDateTime(tbxCalendarOfM1.Text);
+                    ByteBufTmp = MyCustomFxn.DataTimeToByteArray(ThisCalendar);
+                    TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[0]);
+                    TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[1]);
+                    TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[2]);
+                    TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[3]);
+                    TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[4]);
+                    TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[5]);
+
+                    // 温度补偿 
+                    double tempCompF = Convert.ToDouble(tbxNewTemperatureCompensationOfM1.Text);    // 单位：℃
+                    Int16 tempComp = (Int16)Math.Round(tempCompF * 100.0f);                         // 单位：0.01℃
+                    TxBuf[TxLen++] = (byte)((tempComp & 0xFF00) >> 8);
+                    TxBuf[TxLen++] = (byte)((tempComp & 0x00FF) >> 0);
+
                     // 湿度补偿
                     double humCompF = Convert.ToDouble(tbxNewHumidityCompensationOfM1.Text);        // 单位：%
                     Int16 humComp = (Int16)Math.Round(humCompF * 100.0f);                           // 单位：0.01%
                     TxBuf[TxLen++] = (byte)((humComp & 0xFF00) >> 8);
                     TxBuf[TxLen++] = (byte)((humComp & 0x00FF) >> 0);
+
+                    // Reserved
+                    TxBuf[TxLen++] = 0x00;
+                    TxBuf[TxLen++] = 0x00;
                 }
-
-                // MaxLength
-                TxBuf[TxLen++] = Convert.ToByte(tbxNewMaxLengthOfM1.Text);
             }
-            else if (Protocol == 0x03)
+            else if (Protocol == 4)
             {
+                tbxCalendarOfM1.Text = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                UInt32 gt = MyCustomFxn.DateTime_to_UTC(System.DateTime.Now);
+                TxBuf[TxLen++] = (byte)((gt & 0xFF000000) >> 24);
+                TxBuf[TxLen++] = (byte)((gt & 0x00FF0000) >> 16);
+                TxBuf[TxLen++] = (byte)((gt & 0x0000FF00) >> 8);
+                TxBuf[TxLen++] = (byte)((gt & 0x000000FF) >> 0);
+
+                // Customer
+                ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxNewCustomerOfM1.Text);
+                if (ByteBufTmp == null || ByteBufTmp.Length < 2)
+                {
+                    return -1;
+                }
+                TxBuf[TxLen++] = ByteBufTmp[0];
+                TxBuf[TxLen++] = ByteBufTmp[1];
+
+                // Debug
+                ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxNewDebugOfM1.Text);
+                if (ByteBufTmp == null || ByteBufTmp.Length < 2)
+                {
+                    return -1;
+                }
+                TxBuf[TxLen++] = ByteBufTmp[0];
+                TxBuf[TxLen++] = ByteBufTmp[1];
+
+                // Catch
+                ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxNewCatchOfM1.Text);
+                if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+                {
+                    return -1;
+                }
+                TxBuf[TxLen++] = ByteBufTmp[0];
+                TxBuf[TxLen++] = ByteBufTmp[1];
+                TxBuf[TxLen++] = ByteBufTmp[2];
+                TxBuf[TxLen++] = ByteBufTmp[3];
+
+                // Trap
+                ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxNewTrapOfM1.Text);
+                if (ByteBufTmp == null || ByteBufTmp.Length < 4)
+                {
+                    return -1;
+                }
+                TxBuf[TxLen++] = ByteBufTmp[0];
+                TxBuf[TxLen++] = ByteBufTmp[1];
+                TxBuf[TxLen++] = ByteBufTmp[2];
+                TxBuf[TxLen++] = ByteBufTmp[3];
+
+                // Category
+                TxBuf[TxLen++] = Convert.ToByte(tbxNewCategoryOfM1.Text);
+
+                // Pattern
+                TxBuf[TxLen++] = Convert.ToByte(tbxNewPatternOfM1.Text);
+
+                // bps
+                TxBuf[TxLen++] = Convert.ToByte(tbxNewBpsOfM1.Text);
+
+                // Tx Power
+                Int16 txPower = Convert.ToInt16(tbxNewTxPowerOfM1.Text);
+                TxBuf[TxLen++] = (byte)txPower;
+
+                // channel
+                TxBuf[TxLen++] = Convert.ToByte(tbxNewChannelOfM1.Text);
+
                 // MaxLength
                 TxBuf[TxLen++] = Convert.ToByte(tbxNewMaxLengthOfM1.Text);
-
-                // 日期和时间
-                tbxCalendarOfM1.Text = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-                DateTime ThisCalendar = Convert.ToDateTime(tbxCalendarOfM1.Text);
-                ByteBufTmp = MyCustomFxn.DataTimeToByteArray(ThisCalendar);
-                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[0]);
-                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[1]);
-                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[2]);
-                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[3]);
-                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[4]);
-                TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[5]);
 
                 // 温度补偿 
                 double tempCompF = Convert.ToDouble(tbxNewTemperatureCompensationOfM1.Text);    // 单位：℃
@@ -745,10 +941,53 @@ namespace DeviceSetup_HyperWSN
                 TxBuf[TxLen++] = (byte)((humComp & 0xFF00) >> 8);
                 TxBuf[TxLen++] = (byte)((humComp & 0x00FF) >> 0);
 
+                // 正常组网间隔
+                UInt16 u16 = Convert.ToUInt16(tbxNewAdhocIntervalSucOfM1.Text);
+                TxBuf[TxLen++] = (byte)((u16 & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((u16 & 0x00FF) >> 0);
+
+                // 异常组网间隔
+                u16 = Convert.ToUInt16(tbxNewAdhocIntervalFaiOfM1.Text);
+                TxBuf[TxLen++] = (byte)((u16 & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((u16 & 0x00FF) >> 0);
+
+                // 组网阈值
+                TxBuf[TxLen++] = (byte)Convert.ToInt16(tbxNewAdhocRssiThrOfM1.Text);
+
+                // 传输阈值
+                TxBuf[TxLen++] = (byte)Convert.ToInt16(tbxNewTransRssiThrOfM1.Text);
+
+                // ExpHop
+                TxBuf[TxLen++] = Convert.ToByte(tbxNewExpHopOfM1.Text);
+
+                // 日志模式
+                ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxNewLogModeOfM1.Text);
+                if (ByteBufTmp == null || ByteBufTmp.Length < 1)
+                {
+                    return -1;
+                }
+                TxBuf[TxLen++] = ByteBufTmp[0];
+
+                // 温度变化系数
+                double curveCoe = Convert.ToDouble(tbxNewTempCurveCoeOfM1.Text);
+                curveCoe = curveCoe > 1.0f ? 1.0f : curveCoe;
+                curveCoe = curveCoe < 0.0f ? 0.0f : curveCoe;  
+                u16 = (UInt16)Math.Round(curveCoe * 10000.0f);                           
+                TxBuf[TxLen++] = (byte)((u16 & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((u16 & 0x00FF) >> 0);
+
+                // 湿度变化系数
+                curveCoe = Convert.ToDouble(tbxNewHumCurveCoeOfM1.Text);
+                curveCoe = curveCoe > 1.0f ? 1.0f : curveCoe;
+                curveCoe = curveCoe < 0.0f ? 0.0f : curveCoe;
+                u16 = (UInt16)Math.Round(curveCoe * 10000.0f);
+                TxBuf[TxLen++] = (byte)((u16 & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((u16 & 0x00FF) >> 0);             
+
                 // Reserved
                 TxBuf[TxLen++] = 0x00;
                 TxBuf[TxLen++] = 0x00;
-            }
+            }            
 
             // CRC16
             UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 2, (UInt16)(TxLen - 2));
@@ -820,7 +1059,7 @@ namespace DeviceSetup_HyperWSN
             TxBuf[TxLen++] = 0xA3;
 
             // USB Protocol
-            if (Protocol == 0x02)
+            if (Protocol <= 2)
             {
                 TxBuf[TxLen++] = 0x01;
             }
@@ -1038,7 +1277,92 @@ namespace DeviceSetup_HyperWSN
                 // Reserved
                 TxBuf[TxLen++] = 0x00;
                 TxBuf[TxLen++] = 0x00;
-            }            
+            }
+            else if (Protocol == 0x04)
+            {
+                // 日期和时间
+                tbxCalendarOfM1.Text = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                UInt32 gt = MyCustomFxn.DateTime_to_UTC(System.DateTime.Now);
+                TxBuf[TxLen++] = (byte)((gt & 0xFF000000) >> 24);
+                TxBuf[TxLen++] = (byte)((gt & 0x00FF0000) >> 16);
+                TxBuf[TxLen++] = (byte)((gt & 0x0000FF00) >> 8);
+                TxBuf[TxLen++] = (byte)((gt & 0x000000FF) >> 0);
+
+                // 采/发
+                TxBuf[TxLen++] = Convert.ToByte(tbxNewSampleSendOfM1.Text);
+
+                // 采集间隔
+                UInt16 Interval = Convert.ToUInt16(tbxNewIntervalOfM1.Text);
+                TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+                // 正常间隔
+                Interval = Convert.ToUInt16(tbxNewNormalIntervalOfM1.Text);
+                TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+                // 预警间隔
+                Interval = Convert.ToUInt16(tbxNewWarnIntervalOfM1.Text);
+                TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+                // 报警间隔
+                Interval = Convert.ToUInt16(tbxNewAlertIntervalOfM1.Text);
+                TxBuf[TxLen++] = (byte)((Interval & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((Interval & 0x00FF) >> 0);
+
+                // 温度预警上限
+                double tempF = Convert.ToDouble(tbxNewTemperatureWarnHighOfM1.Text);        // 单位：℃
+                Int16 temp = (Int16)Math.Round(tempF * 100.0f);                             // 单位：0.01℃
+                TxBuf[TxLen++] = (byte)((temp & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((temp & 0x00FF) >> 0);
+
+                // 温度预警下限
+                tempF = Convert.ToDouble(tbxNewTemperatureWarnLowOfM1.Text);                // 单位：℃
+                temp = (Int16)Math.Round(tempF * 100.0f);                                   // 单位：0.01℃
+                TxBuf[TxLen++] = (byte)((temp & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((temp & 0x00FF) >> 0);
+
+                // 湿度预警上限
+                double humF = Convert.ToDouble(tbxNewHumidityWarnHighOfM1.Text);            // 单位：%
+                UInt16 hum = (UInt16)Math.Round(humF * 100.0f);                             // 单位：0.01%
+                TxBuf[TxLen++] = (byte)((hum & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((hum & 0x00FF) >> 0);
+
+                // 湿度预警下限
+                humF = Convert.ToDouble(tbxNewHumidityWarnLowOfM1.Text);                    // 单位：%
+                hum = (UInt16)Math.Round(humF * 100.0f);                                    // 单位：0.01%
+                TxBuf[TxLen++] = (byte)((hum & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((hum & 0x00FF) >> 0);
+
+                // 温度阈值上限
+                tempF = Convert.ToDouble(tbxNewTemperatureAlertHighOfM1.Text);              // 单位：℃
+                temp = (Int16)Math.Round(tempF * 100.0f);                                   // 单位：0.01℃
+                TxBuf[TxLen++] = (byte)((temp & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((temp & 0x00FF) >> 0);
+
+                // 温度阈值下限
+                tempF = Convert.ToDouble(tbxNewTemperatureAlertLowOfM1.Text);               // 单位：℃
+                temp = (Int16)Math.Round(tempF * 100.0f);                                   // 单位：0.01℃
+                TxBuf[TxLen++] = (byte)((temp & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((temp & 0x00FF) >> 0);
+
+                // 湿度阈值上限
+                humF = Convert.ToDouble(tbxNewHumidityAlertHighOfM1.Text);                  // 单位：%
+                hum = (UInt16)Math.Round(humF * 100.0f);                                    // 单位：0.01%
+                TxBuf[TxLen++] = (byte)((hum & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((hum & 0x00FF) >> 0);
+
+                // 湿度阈值下限
+                humF = Convert.ToDouble(tbxNewHumidityAlertLowOfM1.Text);                   // 单位：%
+                hum = (UInt16)Math.Round(humF * 100.0f);                                    // 单位：0.01%
+                TxBuf[TxLen++] = (byte)((hum & 0xFF00) >> 8);
+                TxBuf[TxLen++] = (byte)((hum & 0x00FF) >> 0);
+
+                // Reserved
+                TxBuf[TxLen++] = 0x00;
+                TxBuf[TxLen++] = 0x00;
+            }
 
             // CRC16
             UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, TxBuf, 2, (UInt16)(TxLen - 2));
@@ -1066,87 +1390,6 @@ namespace DeviceSetup_HyperWSN
             {
                 MessageBox.Show("参数错误" + ex.Message);
             }
-
-            /*
-            M1 updateDevice = new M1();
-
-            try
-            {
-                updateDevice.DeviceMacS = tbxDeviceMacOfM1.Text;
-
-                if (tbxDeviceNameOfM1.Text == "M1")
-                {
-                    updateDevice.DeviceTypeS = "51";
-                }
-                else if (tbxDeviceNameOfM1.Text == "M1P")
-                {
-                    updateDevice.DeviceTypeS = "53";
-                }
-                else if (tbxDeviceNameOfM1.Text == "M1_Beetech")
-                {
-                    updateDevice.DeviceTypeS = "5D";
-                }
-                else if (tbxDeviceNameOfM1.Text == "M2")
-                {
-                    updateDevice.DeviceTypeS = "57";
-                }
-                else if (tbxDeviceNameOfM1.Text == "M1_ZheQin")
-                {
-                    updateDevice.DeviceTypeS = "7D";
-                }
-
-                updateDevice.ProtocolVersion = 2;
-                updateDevice.Interval = Convert.ToUInt16(txtNewInterval.Text);
-                updateDevice.SampleSend = Convert.ToByte(txtNewTXTimers.Text);
-                tbxCalendarOfM1.Text = System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-                updateDevice.Calendar = Convert.ToDateTime(tbxCalendarOfM1.Text);
-
-                updateDevice.TempWarnLow = Convert.ToDouble(txtTemperatureInfoLow.Text);
-                updateDevice.TempWarnHigh = Convert.ToDouble(txtTemperatureInfoHigh.Text);
-                updateDevice.TempAlertLow = Convert.ToDouble(txtTemperatureWarnLow.Text);
-                updateDevice.TempAlertHigh = Convert.ToDouble(txtTemperatureWarnHigh.Text);
-
-                updateDevice.HumWarnLow = Convert.ToDouble(txtHumidityInfoLow.Text);
-                updateDevice.HumWarnHigh = Convert.ToDouble(txtHumidityInfoHigh.Text);
-                updateDevice.HumAlertLow = Convert.ToDouble(txtHumidityWarnLow.Text);
-                updateDevice.HumAlertHigh = Convert.ToDouble(txtHumidityWarnHigh.Text);
-
-                if (tbxProtocolOfM1.Text == "3")
-                {
-                    updateDevice.ProtocolVersion = 3;
-                    updateDevice.Interval = Convert.ToUInt16(txtNewInterval.Text);
-                    updateDevice.NormalInterval = Convert.ToUInt16(txtIntervalNormal.Text);
-                    updateDevice.WarnInterval = Convert.ToUInt16(txtIntervalWarning.Text);
-                    updateDevice.AlertInterval = Convert.ToUInt16(txtIntervalAlarm.Text);
-                }
-
-                byte[] updateCommand = updateDevice.UpdateApplicationConfig();
-
-                if (cbxIsAllOfM1.IsChecked == true)
-                {
-                    updateCommand[6] = 0x00;
-                    updateCommand[7] = 0x00;
-                    updateCommand[8] = 0x00;
-                    updateCommand[9] = 0x00;
-                }
-
-                string updateString = CommArithmetic.ToHexString(updateCommand);
-
-                // monitorTimer.Enabled = false;
-
-                //System.Threading.Thread.Sleep(2000); //界面会卡
-
-                SerialPort.SendCommand(updateCommand);
-
-                System.Threading.Thread.Sleep(250); //界面会卡
-
-                btnStartMonitor_Click(this, null);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("参数错误：" + ex.Message);
-            }
-            */
         }
 
         /// <summary>
@@ -2415,6 +2658,16 @@ namespace DeviceSetup_HyperWSN
                 tbxNewTemperatureCompensationOfM1.Text = tbxTemperatureCompensationOfM1.Text;
                 tbxNewHumidityCompensationOfM1.Text = tbxHumidityCompensationOfM1.Text;
                 tbxNewMaxLengthOfM1.Text = tbxMaxLengthOfM1.Text;
+                tbxNewTempCurveCoeOfM1.Text = tbxTempCurveCoeOfM1.Text;
+                tbxNewHumCurveCoeOfM1.Text = tbxHumCurveCoeOfM1.Text;
+                tbxNewAdhocIntervalSucOfM1.Text = tbxAdhocIntervalSucOfM1.Text;
+                tbxNewAdhocIntervalFaiOfM1.Text = tbxAdhocIntervalFaiOfM1.Text;
+                tbxNewExpHopOfM1.Text = tbxExpHopOfM1.Text;
+                tbxNewAdhocRssiThrOfM1.Text = tbxAdhocRssiThrOfM1.Text;
+                tbxNewTransRssiThrOfM1.Text = tbxTransRssiThrOfM1.Text;
+                tbxNewLogModeOfM1.Text = tbxLogModeOfM1.Text;
+                tbxNewCatchOfM1.Text = tbxCatchOfM1.Text;
+                tbxNewTrapOfM1.Text = tbxTrapOfM1.Text;
 
                 tbxNewSampleSendOfM1.Text = tbxSampleSendOfM1.Text;
                 tbxNewIntervalOfM1.Text = tbxIntervalOfM1.Text;
@@ -2637,6 +2890,16 @@ namespace DeviceSetup_HyperWSN
                 tbxTemperatureCompensationOfM1.Text = "";
                 tbxHumidityCompensationOfM1.Text = "";
                 tbxMaxLengthOfM1.Text = "";
+                tbxTempCurveCoeOfM1.Text = "";
+                tbxHumCurveCoeOfM1.Text = "";
+                tbxAdhocIntervalSucOfM1.Text = "";
+                tbxAdhocIntervalFaiOfM1.Text = "";
+                tbxExpHopOfM1.Text = "";
+                tbxAdhocRssiThrOfM1.Text = "";
+                tbxTransRssiThrOfM1.Text = "";
+                tbxLogModeOfM1.Text = "";
+                tbxCatchOfM1.Text = "";
+                tbxTrapOfM1.Text = "";
 
                 tbxCalendarOfM1.Text = "";
                 tbxSampleSendOfM1.Text = "";
@@ -2656,6 +2919,7 @@ namespace DeviceSetup_HyperWSN
                 txtICTemperature.Text = "";
                 txtTemperature.Text = "";
                 txtHumidity.Text = "";
+                txtMinVolt.Text = "";
                 txtVolt.Text = "";
                 txtRSSI.Text = "";
                 txtFlashID.Text = "";

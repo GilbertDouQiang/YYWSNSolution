@@ -29,11 +29,7 @@ namespace YyWsnDeviceLibrary
             return 0;
 
         }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="s"></param>
-        /// <returns></returns>
+
         public static byte[] HexStringToByteArray(string s)
         {
             try
@@ -69,10 +65,8 @@ namespace YyWsnDeviceLibrary
             }
             catch (Exception)
             {
-
                 return null;
             }
-
         }
 
         /// <summary>
@@ -107,22 +101,40 @@ namespace YyWsnDeviceLibrary
         }
 
         /// <summary>
-        /// 将数组中的MAC地址解析出来，但只解析后2个Byte
+        /// 将一个字节按照有符号数来解析
         /// </summary>
         /// <param name="source"></param>
         /// <param name="start"></param>
         /// <returns></returns>
-        public static string DecodeMAC_Last2B(byte[] source, int start) {
+        public static Int16 ByteBuf_to_Int8(byte[] source, int start)
+        {
+            Int16 val = (Int16)source[start];
 
-            if (source == null || source.Length < start + 2) {
-                return null;
+            if (val >= 0x80)
+            {
+                val -= 0x100;
             }
 
-            byte[] mac = new byte[2];
-            mac[0] = source[start];
-            mac[1] = source[start + 1];
+            return val;
+        }
 
-            return ToHexString(mac);
+        public static string ByteBuf_to_HexStr(byte[] source, int start, int num)
+        {
+            if (num == 0 || start >= source.Length || (start + num) > source.Length)
+            {
+                return string.Empty;
+            }
+
+            string hexStr = string.Empty;
+
+            for (int iX = 0; iX < num; iX++)
+            {
+                hexStr += source[start + iX].ToString("X2") + " ";
+            }
+
+            hexStr = hexStr.TrimEnd();      // 删除末尾的空格
+
+            return hexStr;
         }
 
         /// <summary>
@@ -138,39 +150,6 @@ namespace YyWsnDeviceLibrary
             }
 
             return source[start];
-        }
-        public static string DecodePrimaryMAC(byte[] source,int start) {
-
-            byte[] primaryMAC = new byte[4];
-            if(source != null && source.Length > start + 3) 
-                { primaryMAC[0] = source[start];
-                  primaryMAC[1] = source[start + 1];
-                  primaryMAC[2] = source[start + 2];
-                  primaryMAC[3] = source[start + 3];
-                 return ToHexString(primaryMAC);
-            }
-            return null;
-        }
-        public static string DecodeHardwareVersion(byte[] source, int start) {
-            byte[] hardwareVersion = new byte[4];
-            if (source != null && source.Length > start + 3) {
-                hardwareVersion[0] = source[start];
-                hardwareVersion[1] = source[start + 1];
-                hardwareVersion[2] = source[start + 2];
-                hardwareVersion[3] = source[start + 3];
-                return ToHexString(hardwareVersion);
-            }
-            return null;
-        }
-        public static string DecodeSoftwareVersion(byte[] source, int start) {
-            byte[] softwareVersion = new byte[2];
-            if (source != null && source.Length > start + 1) {
-                softwareVersion[0] = source[start];
-                softwareVersion[1] = source[start + 1];
-               
-                return ToHexString(softwareVersion);
-            }
-            return null;
         }
        
         public static string DecodeClientID(byte[] source, int start)
@@ -189,7 +168,9 @@ namespace YyWsnDeviceLibrary
 
         public static string DecodeFlashID(byte[] source, int start) {
             byte[] flashid = new byte[2];
-            if (source != null && source.Length > start + 1) {
+
+            if (source != null && source.Length > start + 1)
+            {
                 flashid[0] = source[start];
                 flashid[1] = source[start + 1];
 
@@ -239,32 +220,22 @@ namespace YyWsnDeviceLibrary
             return hexString;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="source"></param>
-        /// <param name="start"></param>
-        /// <returns></returns>
         public static DateTime DecodeDateTime(byte[] source, int start)
         {
             DateTime dt;
-            byte[] tempDate = new byte[6];
 
-            if (source != null && source.Length > start + 5)
-            {
-                tempDate[0] = source[start];
-                tempDate[1] = source[start + 1];
-                tempDate[2] = source[start + 2];
-                tempDate[3] = source[start + 3];
-                tempDate[4] = source[start + 4];
-                tempDate[5] = source[start + 5];
-            }
-
-            string strDate = ToHexString(tempDate);
+            string dtStr = ByteBuf_to_HexStr(source, start, 6);
 
             try
             {
-                dt = DateTime.ParseExact(strDate, "yy MM dd HH mm ss", System.Globalization.CultureInfo.CurrentCulture);
+                if (dtStr == string.Empty || dtStr == "00 00 00 00 00 00")
+                {
+                    dt = DateTime.ParseExact("20010101", "yyyyMMdd", System.Globalization.CultureInfo.CurrentCulture);
+                }
+                else
+                {
+                    dt = DateTime.ParseExact(dtStr, "yy MM dd HH mm ss", System.Globalization.CultureInfo.CurrentCulture);
+                }
             }
             catch (Exception)
             {
@@ -349,35 +320,26 @@ namespace YyWsnDeviceLibrary
         public static double DecodeHumidity(byte[] SourceData, int Start)
         {
             return Math.Round(Convert.ToDouble((SourceData[Start] * 256 + SourceData[Start+1])) / 100, 2);
-
         }
 
         public static double DecodeVoltage(byte[] SourceData, int Start)
         {
-            UInt16 voltint =(UInt16)( (UInt16)SourceData[Start] * (UInt16)256 + (UInt16)SourceData[Start + 1]);
-            double volt;
-            if (voltint >= 32768)
-            {
-                //连接到充电器
-                volt =((double) voltint - 32768) / (double)1000;
-            }
-            else
-            {
-                //未连接充电器
-                volt = (double)voltint / (double)1000;
-            }
-            return Math.Round(volt, 2);
+            UInt16 voltInt = ByteBuf_to_UInt16(SourceData, Start);
 
+            if (voltInt >= 0x8000)
+            {   // 接入了充电器              
+                voltInt &= 0x7FFF;
+            }
+
+            return Math.Round((double)voltInt / 1000.0f, 2);
         }
 
 
         public static double DecodeSensorVoltage(byte[] SourceData, int Start)
         {
-            double volt = (double)(SourceData[Start] * 256 + SourceData[Start + 1])/(double)1000;
-           
-            return Math.Round(volt, 2);
-
+            return DecodeVoltage(SourceData, Start);
         }
+
         public static  byte[] EncodeDateTime(DateTime dateTime)
         {            
             string dateString = (dateTime.Year - 2000).ToString() ;
@@ -432,7 +394,6 @@ namespace YyWsnDeviceLibrary
             return datetimeByte;
         }
 
-
         public static double SHT20Temperature(byte a, byte b)
         {
             //double a = ((Convert.ToInt32(buf[bufRef + 5].ToString("X2"), 16) * 256 + Convert.ToInt32(buf[bufRef + 6].ToString("X2"), 16)) / 65536) * 175.72 - 46.85;
@@ -441,23 +402,18 @@ namespace YyWsnDeviceLibrary
             return c;
         }
 
-
         public static double SHT20Humidity(byte a, byte b)
         {
             //double a = ((Convert.ToInt32(buf[bufRef + 5].ToString("X2"), 16) * 256 + Convert.ToInt32(buf[bufRef + 6].ToString("X2"), 16)) / 65536) * 175.72 - 46.85;
             double c = Math.Round((0 - 6.0 + 125.0 * (a * 256.0 + b) / 65536),2);
 
             return c;
-
         }
 
         public static double SHT20Voltage(byte a, byte b)
         {
-            //x = MSB*256 + LSB， U = x*4/1023
-
             double c = Math.Round(((a * 256 + b) * 4 / (double)1023),2);
             return c;
-
         }
 
         public static byte DecodeACPower(byte a)
@@ -465,7 +421,6 @@ namespace YyWsnDeviceLibrary
             if (a >=0x80)
             {
                 return 1;
-
             }
             else
             {

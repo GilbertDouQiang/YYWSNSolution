@@ -27,6 +27,7 @@ namespace YyWsnCommunicatonLibrary
         {
             Content = File.ReadAllBytes(FileName);
             FileSize = Content.Length;
+
             if (PacketSize != 0)
             {
                 PacketCount = FileSize / PacketSize + 1;

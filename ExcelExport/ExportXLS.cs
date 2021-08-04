@@ -571,7 +571,21 @@ namespace ExcelExport
                 row.CreateCell(c).SetCellValue(SrcDataGrid.Columns[c].Header.ToString());
                 //row.Cells[c].CellStyle todo 控制Cell的宽度
                 row.Cells[c].CellStyle = cellStyle;
-                sheet.SetColumnWidth(c, Convert.ToInt32(SrcDataGrid.Columns[c].ActualWidth * 40));
+
+                double GridColumnActualWidth = SrcDataGrid.Columns[c].ActualWidth;
+                double ExcelColumnActualWidth = GridColumnActualWidth * 40.0f;
+
+                Int32 ExcelColumnActualWidth_i = Convert.ToInt32(ExcelColumnActualWidth);
+
+                if (ExcelColumnActualWidth_i > 30000)
+                {
+                    sheet.SetColumnWidth(c, 30000);
+                }
+                else
+                {
+                    sheet.SetColumnWidth(c, ExcelColumnActualWidth_i);
+                }
+
                 //CellRangeAddress c = CellRangeAddress.ValueOf();
                 // TODO: 自动筛选：http://blog.csdn.net/u011981242/article/details/50516328
             }
@@ -584,8 +598,14 @@ namespace ExcelExport
                 for (c = 0; c < SrcDataGrid.Columns.Count; c++)
                 {
                     cell = row.CreateCell(c);
+                    row.Cells[c].CellStyle = cellStyle;
                     DataGridTextColumn dgcol = SrcDataGrid.Columns[c] as DataGridTextColumn;
                     Binding binding = (Binding)dgcol.Binding;
+                    if (binding == null)
+                    {
+                        continue;
+                    }
+
                     string path = binding.Path.Path;  //对象属性的名称拿到了
                     PropertyInfo info1 = data[r].GetType().GetProperty(path);
                     if (info1 == null)
@@ -624,6 +644,7 @@ namespace ExcelExport
                             row.CreateCell(c).SetCellValue(cellString);
                             break;
                     }
+
                     row.Cells[c].CellStyle = cellStyle;
                 }
             }

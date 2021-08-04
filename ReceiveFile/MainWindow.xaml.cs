@@ -320,7 +320,6 @@ namespace ReceiveFile
 
                 image.Source = bmp;
             }
-
         }
 
         /*****/

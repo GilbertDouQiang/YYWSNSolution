@@ -32,6 +32,8 @@ namespace SnifferGUI
         ObservableCollection<M1> SensorDataOfNtp = new ObservableCollection<M1>();          // 授时申请
         ObservableCollection<M1> SensorDataOfNtpRes = new ObservableCollection<M1>();       // 授时反馈
         ObservableCollection<WP> SensorDataOfAdhoc = new ObservableCollection<WP>();        // 自组网
+        ObservableCollection<WP> SensorDataOfAdhocData = new ObservableCollection<WP>();    // 自组网数据
+        ObservableCollection<BulkM1> SensorDataOfBulkM1 = new ObservableCollection<BulkM1>(); // 批量M1
 
         DataSet DS = new DataSet();
 
@@ -53,7 +55,9 @@ namespace SnifferGUI
         int TableLineOfL1 = 1;                  // L1表格的行编号
         int TableLineOfNtp = 1;                 // 授时申请表格的行编号
         int TableLineOfNtpRes = 1;              // 授时反馈表格的行编号
-        int TableLineOfAdhoc = 1;              // 自组网表格的行编号
+        int TableLineOfAdhoc = 1;               // 自组网表格的行编号
+        int TableLineOfAdhocData = 1;           // 自组网数据表格的行编号
+        int TableLineOfBulk = 1;                // 批量传输温湿度的行编号
 
         UInt16 ExCustomer = 0x0000;             // 期望的客户码
 
@@ -83,6 +87,8 @@ namespace SnifferGUI
             TableOfNtp.ItemsSource = SensorDataOfNtp;
             TableOfNtpRes.ItemsSource = SensorDataOfNtpRes;
             TableOfAdhoc.ItemsSource = SensorDataOfAdhoc;
+            TableOfAdhocData.ItemsSource = SensorDataOfAdhocData;
+            TableOfBulkM1.ItemsSource = SensorDataOfBulkM1;
 
             //M1 排序用
             ICollectionView v = CollectionViewSource.GetDefaultView(TableOfM1.ItemsSource);
@@ -177,6 +183,21 @@ namespace SnifferGUI
 
             // 自组网 排序用
             v = CollectionViewSource.GetDefaultView(TableOfAdhoc.ItemsSource);
+            v.SortDescriptions.Clear();
+            d = ListSortDirection.Descending;
+            v.SortDescriptions.Add(new SortDescription("DisplayID", d));
+            v.Refresh();
+
+            // 自组网数据 排序用
+            v = CollectionViewSource.GetDefaultView(TableOfAdhocData.ItemsSource);
+            v.SortDescriptions.Clear();
+            d = ListSortDirection.Descending;
+            v.SortDescriptions.Add(new SortDescription("DisplayID", d));
+            v.Refresh();
+
+
+            // Bulk 排序用
+            v = CollectionViewSource.GetDefaultView(TableOfBulkM1.ItemsSource);
             v.SortDescriptions.Clear();
             d = ListSortDirection.Descending;
             v.SortDescriptions.Add(new SortDescription("DisplayID", d));
@@ -412,6 +433,18 @@ namespace SnifferGUI
                 TableLineOfAdhoc = 1;
                 SensorDataOfAdhoc.Clear();
             }
+
+            if (TableAdhocData.IsSelected == true)
+            {
+                TableLineOfAdhocData = 1;
+                SensorDataOfAdhocData.Clear();
+            }
+
+            if (TableBulkM1.IsSelected == true)
+            {
+                TableLineOfBulk = 1;
+                SensorDataOfBulkM1.Clear();
+            }
         }
 
         /// <summary>
@@ -462,6 +495,12 @@ namespace SnifferGUI
 
             TableLineOfAdhoc = 1;
             SensorDataOfAdhoc.Clear();
+
+            TableLineOfAdhocData = 1;
+            SensorDataOfAdhocData.Clear();
+
+            TableLineOfBulk = 1;
+            SensorDataOfBulkM1.Clear();
         }
 
         /// <summary>
@@ -501,6 +540,15 @@ namespace SnifferGUI
                     export.ExportWPFDataGridFromAdhoc(TableOfAdhoc, saveDlg.FileName, SensorDataOfAdhoc);
                 }
             }
+
+            if (TableAdhocData.IsSelected == true)
+            {
+                if (saveDlg.ShowDialog() == true)
+                {
+                    ExportXLS export = new ExportXLS();
+                    export.ExportWPFDataGridFromAdhoc(TableOfAdhocData, saveDlg.FileName, SensorDataOfAdhocData);
+                }
+            }
         }
 
 
@@ -537,12 +585,7 @@ namespace SnifferGUI
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void btnSendCommand_Click(object sender, RoutedEventArgs e)
-        {
-            if (btnOpenComPort.Content.ToString() == "Open")
-            {
-                return;
-            }
-
+        {        
             // bps
             byte bps = (byte)cbBps.SelectedIndex;
 
@@ -553,8 +596,15 @@ namespace SnifferGUI
             byte expNum = Convert.ToByte(tbxNum.Text);
 
             // Cmd
-            string Cmd = "CE 09 A0 01" + bps.ToString("X2") + freq.ToString("X8") + expNum.ToString("X2") + "01 00 00 EC";
-            
+            string Cmd = "CE 09 A0 01 " + bps.ToString("X2") + " " + freq.ToString("X8") + " " + expNum.ToString("X2") + " 01 00 00 EC";
+
+            tbxCommand.Text = Cmd;
+
+            if (btnOpenComPort.Content.ToString() == "Open")
+            {
+                return;
+            }
+
             comport.Send(Cmd);
         }
 
@@ -700,7 +750,7 @@ namespace SnifferGUI
             byte Cmd = device.Pattern;
             byte STP1 = device.STP;
 
-            if (Cmd == 0x01 || Cmd == 0x02 || Cmd == 0x03 || Cmd == 0x04 || Cmd == 0xA1 || Cmd == 0x11 || Cmd == 0x12 || Cmd == 0x13)
+            if (Cmd == 0x01 || Cmd == 0x02 || Cmd == 0x03 || Cmd == 0x04 || Cmd == 0xA1 || Cmd == 0x11 || Cmd == 0x12 || Cmd == 0x13 || Cmd == 0x30)
             {
                 // 接收到数据的客户码
                 if (ExCustomer != 0 && ExCustomer != device.CustomerV && device.CustomerV != 0)
@@ -709,8 +759,8 @@ namespace SnifferGUI
                 }
 
                 // 接收到数据的Sensor ID
-                if (Cmd == 0x11 || Cmd == 0x12 || Cmd == 0x13)
-                {
+                if (Cmd == 0x11 || Cmd == 0x12 || Cmd == 0x13 || Cmd == 0x30)
+                {   // 自组网过程和自组网数据
                     WP ThisDevice = (WP)device;
                     if (IsExpSensorId(ThisDevice.SrcIdV) == false)
                     {
@@ -725,19 +775,27 @@ namespace SnifferGUI
                     }
                 }
 
-                if (STP1 == 0xED || STP1 == 0xDE)
-                {
-                    if (Cmd == 0x11 || Cmd == 0x12 || Cmd == 0x13)
+                if ((STP1 == 0xED || STP1 == 0xDE) && (Cmd == 0x11 || Cmd == 0x12 || Cmd == 0x13))
+                {   // 自组网过程
+                    WP ThisDevice = (WP)device;
+                    device.DisplayID = TableLineOfAdhoc;
+                    if (++TableLineOfAdhoc == 0)
                     {
-                        WP ThisDevice = (WP)device;
-                        device.DisplayID = TableLineOfAdhoc;
-                        if (++TableLineOfAdhoc == 0)
-                        {
-                            TableLineOfAdhoc++;
-                        }
-
-                        SensorDataOfAdhoc.Add(ThisDevice);
+                        TableLineOfAdhoc++;
                     }
+
+                    SensorDataOfAdhoc.Add(ThisDevice);
+                }
+                else if ((STP1 == 0xB4 || STP1 == 0x4B) && Cmd == 0x30)
+                {   // 自组网数据
+                    WP ThisDevice = (WP)device;
+                    device.DisplayID = TableLineOfAdhocData;
+                    if (++TableLineOfAdhocData == 0)
+                    {
+                        TableLineOfAdhocData++;
+                    }
+
+                    SensorDataOfAdhocData.Add(ThisDevice);
                 }
                 else if (STP1 == 0xEA)
                 {

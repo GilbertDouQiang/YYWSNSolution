@@ -6,7 +6,7 @@ using System.Text;
 
 namespace YyWsnDeviceLibrary
 {
-    public class M1:Sensor
+    public class BulkM1:Sensor
     {
         /**************************************
          * 属性
@@ -166,17 +166,6 @@ namespace YyWsnDeviceLibrary
         /// </summary>
         public UInt16 ReservedUInt16 { get; set; }
 
-        public UInt32 catchVal { get; set; }
-        public UInt32 trapVal { get; set; }
-        public UInt16 adhocIntervalSuc { get; set; }
-        public UInt16 adhocIntervalFai { get; set; }
-        public Int16 adhocRssiThr { get; set; }
-        public Int16 transRssiThr { get; set; }
-        public byte expHop { get; set; }
-        public byte logMode { get; set; }
-        public double tempCurveCoe { get; set; }
-        public double humCurveCoe { get; set; }
-
         /**************************************
          * 方法
          * ************************************/
@@ -238,124 +227,10 @@ namespace YyWsnDeviceLibrary
             return dataPktType;
         }
 
-        public M1() { }
+        public BulkM1() { }
 
-        public M1(byte[] SrcData)
+        public BulkM1(byte[] SrcData)
         {
-            //2017版协议 v3.5
-            //判断第三位 ，01 代表从传感器发出的正常数据，长度不是固定值
-
-            if (SrcData[0] == 0xEA && SrcData[1] == 0x4B && (SrcData[3] == 0x51 || SrcData[3] == 0x5C || SrcData[3] == 0x5D))
-            {
-                // Cmd
-                Pattern = SrcData[2];
-
-                // Device type     
-                SetDeviceName(SrcData[3]);
-
-                // protocol
-                ProtocolVersion = SrcData[4];
-
-                //PrimaryMacS
-                SetDevicePrimaryMac(SrcData, 5);
-
-                // Sensor ID
-                SetDeviceMac(SrcData, 9);
-
-                //硬件版本
-                SetHardwareRevision(SrcData, 13);
-                
-                // 软件版本
-                SetSoftwareRevision(SrcData, 17);
-
-                // CustomerV
-                SetDeviceCustomer(SrcData, 19);
-
-                //Debug
-                SetDeviceDebug(SrcData, 21);
-
-                //category
-                Category = SrcData[23];
-
-                //interval
-                Interval = (UInt16)(SrcData[24] * 256 + SrcData[25]);
-
-                //SS的日期和时间
-                SensorCollectTime = CommArithmetic.DecodeDateTime(SrcData, 26);
-
-                //pattern
-                Pattern = SrcData[32];
-
-                //bps
-                Bps = SrcData[33];
-
-                //TxPower
-                SetTxPower(SrcData[34]);
-
-                //
-                SampleSend = SrcData[35];
-                //
-                Channel = SrcData[36];
-
-                //温度警戒上限/下限
-                TempWarnHigh = CommArithmetic.DecodeTemperature(SrcData, 37);
-                TempWarnLow = CommArithmetic.DecodeTemperature(SrcData, 39);
-
-                //湿度警戒上限/下限
-                HumWarnHigh = CommArithmetic.DecodeHumidity(SrcData, 41);
-                HumWarnLow = CommArithmetic.DecodeHumidity(SrcData, 43);
-
-                TempAlertHigh = CommArithmetic.DecodeTemperature(SrcData, 45);
-                TempAlertLow = CommArithmetic.DecodeTemperature(SrcData, 47);
-
-                HumAlertHigh = CommArithmetic.DecodeHumidity(SrcData, 49);
-                HumAlertLow = CommArithmetic.DecodeHumidity(SrcData, 51);
-
-                TempCompensation = CommArithmetic.DecodeTemperature(SrcData, 53);
-                HumCompensation = CommArithmetic.DecodeHumidity(SrcData, 55);
-
-                // IC temp
-                monTemp = SrcData[57];
-                ICTemperature = monTemp;
-                if (ICTemperature >= 128)
-                {
-                    ICTemperature -= 256;
-                }
-
-                // voltage
-                volt = (UInt16)(SrcData[58] * 256 + SrcData[59]);
-                voltF = (double)(volt / 1000.0f);
-
-                FlashID = CommArithmetic.DecodeFlashID(SrcData, 60);
-
-                MaxLength = SrcData[62];
-
-                FlashFront = (UInt32)(SrcData[63] * 256 * 256 + SrcData[64] * 256 + SrcData[65]);
-                FlashRear = (UInt32)(SrcData[66] * 256 * 256 + SrcData[67] * 256 + SrcData[68]);
-                FlashQueueLength = (UInt32)(SrcData[69] * 256 * 256 + SrcData[70] * 256 + SrcData[71]);
-
-                // temp
-                temp = (Int16)(SrcData[72] * 256 + SrcData[73]);
-                tempF = (double)(temp / 100.0f);
-
-                // hum
-                hum = (UInt16)(SrcData[74] * 256 + SrcData[75]);
-                humF = (double)(hum / 100.0f);
-
-                // 传输时间                
-                SensorTransforTime = System.DateTime.Now;
-
-                //可能收到没有RSSI的数据
-                if (SrcData.Length >= SrcData[1] + 6)
-                {
-                    RSSI = SrcData[39] - 256;
-                }
-
-                this.SourceData = CommArithmetic.ToHexString(SrcData);
-
-                return;
-            }
-
             if (SrcData[0] == 0xAE && (SrcData[1] == 0x0E || SrcData[1] == 0x08) && (SrcData[3] == 0x51 || SrcData[3] == 0x5C || SrcData[3] == 0x5D))
             {
                 UInt16 pktLen = SrcData[1];
@@ -408,47 +283,6 @@ namespace YyWsnDeviceLibrary
 
                 return;
             }
-
-            //兼容模式，兼容Z模式
-            if (SrcData.Length == 28)
-            {
-                SetDeviceName(0x51);
-                SetDeviceMac(SrcData, 5);
-
-                SetDeviceCustomer(SrcData, 3);
-
-                Pattern = SrcData[2];
-
-                ProtocolVersion = 0x00;
-
-                SensorSN = SrcData[12] * 256 + SrcData[13];
-
-                //传感器信息
-                ICTemperature = 0; //老协议中没有IC 温度
-
-                voltF = CommArithmetic.SHT20Voltage(SrcData[24], SrcData[25]);
-                volt = (UInt16)(voltF * 1000.0f);
-
-                tempF = CommArithmetic.SHT20Temperature(SrcData[16], SrcData[17]);
-                temp = (Int16)(tempF * 100.0f);
-
-                humF = CommArithmetic.SHT20Humidity(SrcData[20], SrcData[21]);
-                hum = (UInt16)(humF * 100.0f);
-
-                //广播模式，补充采集和传输时间
-                SensorCollectTime = System.DateTime.Now;
-                SensorTransforTime = System.DateTime.Now;
-                //RSSI = SrcData[30] / 2 - 138; //1101 方案
-                //可能收到没有RSSI的数据
-                if (SrcData.Length == 28)
-                {
-                    RSSI = SrcData[27] - 256;
-                }
-                this.SourceData = CommArithmetic.ToHexString(SrcData);
-
-                return;
-            }
-
 
             //模式1 正常传输的数据，
             if (SrcData.Length == 31)
@@ -511,15 +345,11 @@ namespace YyWsnDeviceLibrary
         /// 构造函数
         /// </summary>
         /// <param name="SrcData"></param>
-        public M1(byte[] SrcData, UInt16 IndexOfStart)
+        public BulkM1(byte[] SrcData, UInt16 IndexOfStart)
         {
             if (isSensorDataV3(SrcData, IndexOfStart, true) >= 0)
             {
                 ReadSensorDataV3(SrcData, IndexOfStart, true);
-            }
-            else if (isSensorDataV4(SrcData, IndexOfStart, true) >= 0)
-            {
-                ReadSensorDataV4(SrcData, IndexOfStart, true);
             }
             else if (isSensorDataV1(SrcData, IndexOfStart, true) >= 0)
             {
@@ -545,7 +375,7 @@ namespace YyWsnDeviceLibrary
         /// 构造函数
         /// </summary>
         /// <param name="SrcData"></param>
-        public M1(byte[] SrcData, UInt16 IndexOfStart, Device.DataPktType pktType, Device.DeviceType deviceType)
+        public BulkM1(byte[] SrcData, UInt16 IndexOfStart, Device.DataPktType pktType, Device.DeviceType deviceType)
         {
             if (isDeviceType((byte)deviceType) == false)
             {
@@ -833,170 +663,6 @@ namespace YyWsnDeviceLibrary
                     {
                         RSSI = (double)rssi;
                     }
-                }
-                else if (protocol == 4)
-                {
-                    int ios = IndexOfStart + 4;
-                    SetDeviceName(SrcData[ios]);
-                    ios += 1;
-
-                    ProtocolVersion = protocol;
-                    ios += 1;
-
-                    SetDevicePrimaryMac(SrcData, (UInt16)ios);
-                    ios += 4;
-
-                    SetDeviceMac(SrcData, (UInt16)ios);
-                    ios += 4;
-
-                    SetHardwareRevision(SrcData, (UInt16)ios);
-                    ios += 4;
-
-                    SetSoftwareRevision(SrcData, (UInt16)ios);
-                    ios += 2;
-
-                    SetDeviceCustomer(SrcData, (UInt16)ios);
-                    ios += 2;
-
-                    SetDeviceDebug(SrcData, (UInt16)ios);
-                    ios += 2;
-
-                    Category = SrcData[ios];
-                    ios += 1;
-
-                    Interval = CommArithmetic.ByteBuf_to_UInt16(SrcData, ios);
-                    ios += 2;
-
-                    Calendar = MyCustomFxn.UTC_to_DateTime(CommArithmetic.ByteBuf_to_UInt32(SrcData, ios));
-                    ios += 4;
-
-                    Pattern = SrcData[ios];
-                    ios += 1;
-
-                    Bps = SrcData[ios];
-                    ios += 1;
-
-                    SetTxPower(SrcData[ios]);
-                    ios += 1;
-
-                    SampleSend = SrcData[ios];
-                    ios += 1;
-
-                    Channel = SrcData[ios];
-                    ios += 1;
-
-                    TempWarnHigh = (double)(Int16)CommArithmetic.ByteBuf_to_UInt16(SrcData, ios) / 100.0f;
-                    ios += 2;
-
-                    TempWarnLow = (double)(Int16)CommArithmetic.ByteBuf_to_UInt16(SrcData, ios) / 100.0f;
-                    ios += 2;
-
-                    HumWarnHigh = (double)CommArithmetic.ByteBuf_to_UInt16(SrcData, ios) / 100.0f;
-                    ios += 2;
-
-                    HumWarnLow = (double)CommArithmetic.ByteBuf_to_UInt16(SrcData, ios) / 100.0f;
-                    ios += 2;
-
-                    TempAlertHigh = (double)(Int16)CommArithmetic.ByteBuf_to_UInt16(SrcData, ios) / 100.0f;
-                    ios += 2;
-
-                    TempAlertLow = (double)(Int16)CommArithmetic.ByteBuf_to_UInt16(SrcData, ios) / 100.0f;
-                    ios += 2;
-
-                    HumAlertHigh = (double)CommArithmetic.ByteBuf_to_UInt16(SrcData, ios) / 100.0f;
-                    ios += 2;
-
-                    HumAlertLow = (double)CommArithmetic.ByteBuf_to_UInt16(SrcData, ios) / 100.0f;
-                    ios += 2;
-
-                    TempCompensation = (double)(Int16)CommArithmetic.ByteBuf_to_UInt16(SrcData, ios) / 100.0f;
-                    ios += 2;
-
-                    HumCompensation = (double)(Int16)CommArithmetic.ByteBuf_to_UInt16(SrcData, ios) / 100.0f;
-                    ios += 2;
-
-                    ICTemperature = (double)CommArithmetic.ByteBuf_to_Int8(SrcData, ios);
-                    ios += 1;
-
-                    minVoltF = Math.Round(Convert.ToDouble(CommArithmetic.ByteBuf_to_UInt16(SrcData, ios)) / 1000, 2);
-                    ios += 2;
-
-                    voltF = Math.Round(Convert.ToDouble(CommArithmetic.ByteBuf_to_UInt16(SrcData, ios)) / 1000, 2);
-                    ios += 2;
-
-                    FlashID = CommArithmetic.DecodeClientID(SrcData, ios);
-                    ios += 2;
-
-                    MaxLength = SrcData[ios];
-                    ios += 1;
-
-                    FlashFront = CommArithmetic.ByteBuf_to_UInt32(SrcData, ios);
-                    ios += 4;
-
-                    FlashRear = CommArithmetic.ByteBuf_to_UInt32(SrcData, ios);
-                    ios += 4;
-
-                    FlashQueueLength = CommArithmetic.ByteBuf_to_UInt32(SrcData, ios);
-                    ios += 4;
-
-                    temp = (Int16)CommArithmetic.ByteBuf_to_UInt16(SrcData, ios);
-                    tempF = (double)(temp / 100.0f);
-                    ios += 2;
-
-                    hum = CommArithmetic.ByteBuf_to_UInt16(SrcData, ios);
-                    humF = (double)(hum / 100.0f);
-                    ios += 2;
-
-                    NormalInterval = (UInt16)CommArithmetic.ByteBuf_to_UInt16(SrcData, ios);
-                    ios += 2;
-
-                    WarnInterval = (UInt16)CommArithmetic.ByteBuf_to_UInt16(SrcData, ios);
-                    ios += 2;
-
-                    AlertInterval = (UInt16)CommArithmetic.ByteBuf_to_UInt16(SrcData, ios);
-                    ios += 2;
-
-                    // BVN
-                    ios += 1;
-
-                    RstSrc = SrcData[ios];
-                    ios += 1;
-
-                    catchVal = CommArithmetic.ByteBuf_to_UInt32(SrcData, ios);
-                    ios += 4;
-
-                    trapVal = CommArithmetic.ByteBuf_to_UInt32(SrcData, ios);
-                    ios += 4;
-
-                    adhocIntervalSuc = CommArithmetic.ByteBuf_to_UInt16(SrcData, ios);
-                    ios += 2;
-
-                    adhocIntervalFai = CommArithmetic.ByteBuf_to_UInt16(SrcData, ios);
-                    ios += 2;
-
-                    adhocRssiThr = CommArithmetic.ByteBuf_to_Int8(SrcData, ios);
-                    ios += 1;
-
-                    transRssiThr = CommArithmetic.ByteBuf_to_Int8(SrcData, ios);
-                    ios += 1;
-
-                    expHop = SrcData[ios];
-                    ios += 1;
-
-                    logMode = SrcData[ios];
-                    ios += 1;
-
-                    tempCurveCoe = (double)CommArithmetic.ByteBuf_to_UInt16(SrcData, ios) / 10000.0f;
-                    ios += 2;
-
-                    humCurveCoe = (double)CommArithmetic.ByteBuf_to_UInt16(SrcData, ios) / 10000.0f;
-                    ios += 2;
-
-                    // 协议保留位
-                    ios += 4;
-
-                    RSSI = (double)CommArithmetic.ByteBuf_to_Int8(SrcData, ios);
-                    ios += 1;
                 }
             }
             else if (pktType == Device.DataPktType.ExportFromM1Beetech)
@@ -1366,104 +1032,6 @@ namespace YyWsnDeviceLibrary
             return 0;
         }
 
-        static public Int16 isSensorDataV4(byte[] SrcData, UInt16 IndexOfStart, bool ExistRssi)
-        {
-            UInt16 AppendLen = 0;
-            if (ExistRssi == true)
-            {
-                AppendLen = 1;
-            }
-
-            // 数据包的总长度
-            UInt16 SrcLen = (UInt16)(SrcData.Length - IndexOfStart);
-            if (SrcLen < 30 + AppendLen)
-            {
-                return -1;
-            }
-
-            // 起始位
-            if (SrcData[IndexOfStart + 0] != 0xEA)
-            {
-                return -2;
-            }
-
-            // 长度位
-            byte pktLen = SrcData[IndexOfStart + 1];
-            if (pktLen + 5 + AppendLen > SrcLen)
-            {
-                return -3;
-            }
-
-            if (SrcData[IndexOfStart + 2 + pktLen + 2] != 0xAE)
-            {
-                return -4;
-            }
-
-            // CRC16
-            UInt16 crc = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, SrcData, (UInt16)(IndexOfStart + 2), pktLen);
-            UInt16 crc_chk = (UInt16)(SrcData[IndexOfStart + 2 + pktLen + 0] * 256 + SrcData[IndexOfStart + 2 + pktLen + 1]);
-            if (crc_chk != crc && crc_chk != 0)
-            {
-                return -5;
-            }
-
-            // Cmd
-            byte Cmd = SrcData[IndexOfStart + 2];
-            if (Cmd != 1 && Cmd != 2 && Cmd != 3 && Cmd != 4 && Cmd != 5)
-            {
-                return -6;
-            }
-
-            // DeviceType
-            byte DeviceType = SrcData[IndexOfStart + 3];
-            if (isDeviceType(DeviceType) == false)
-            {
-                return -7;
-            }
-
-            // 协议版本
-            byte protocol = SrcData[IndexOfStart + 4];
-            if (protocol != 2 && protocol != 4)
-            {
-                return -8;
-            }
-
-            // 节点数量
-            byte nodeNum = SrcData[IndexOfStart + 15];
-            if (nodeNum == 0)
-            {
-                return -9;
-            }
-
-            // 负载长度
-            byte payLen = SrcData[IndexOfStart + 27];
-            if ((nodeNum * (payLen + 12)) != (pktLen - 14 - 5))
-            {
-                return -10;
-            }
-
-            // 数据类型
-            for (int iX = 0; iX < nodeNum; iX++)
-            {
-                if (SrcData[IndexOfStart + 27 + iX * (12 + payLen)] != payLen)
-                {
-                    return -11;
-                }
-
-                if (SrcData[IndexOfStart + 28 + iX * (12 + payLen)] != 0x65)
-                {
-                    return -12;
-                }
-
-                if (SrcData[IndexOfStart + 31 + iX * (12 + payLen)] != 0x66)
-                {
-                    return -13;
-                }
-            }
-
-            return 0;
-        }
-
         /// <summary>
         /// 判断是不是监测工具监测到的Sensor发出的授时申请数据包
         /// </summary>
@@ -1812,112 +1380,6 @@ namespace YyWsnDeviceLibrary
 
             // Last/History
             LastHistory = CommArithmetic.DecodeLastHistory(SrcData, (UInt16)(IndexOfStart + 11));
-
-            //状态state
-            State = SrcData[IndexOfStart + 12];
-
-            //报警项
-            AlarmItem = SrcData[IndexOfStart + 13];
-
-            // Serial
-            SensorSN = SrcData[IndexOfStart + 14] * 256 + SrcData[IndexOfStart + 15];
-
-            // Sample Calendar
-            SensorCollectTime = CommArithmetic.DecodeDateTime(SrcData, (UInt16)(IndexOfStart + 16));
-
-            // IC temp
-            monTemp = SrcData[IndexOfStart + 22];
-            ICTemperature = monTemp;
-            if (ICTemperature >= 128)
-            {
-                ICTemperature -= 256;
-            }
-
-            // voltage
-            UInt16 VoltValue = (UInt16)(SrcData[IndexOfStart + 23] * 256 + SrcData[IndexOfStart + 24]);
-
-            if (0 == (VoltValue & 0x8000))
-            {
-                LinkCharge = false;
-            }
-            else
-            {
-                LinkCharge = true;
-                VoltValue = (UInt16)(VoltValue & 0x7FFF);
-            }
-
-            volt = (UInt16)(VoltValue);
-            voltF = (double)(volt / 1000.0f);
-
-            // AltSerial
-            AltSerial = SrcData[IndexOfStart + 25];
-
-            // 温湿度传感数据
-            temp = (Int16)(SrcData[IndexOfStart + 28] * 256 + SrcData[IndexOfStart + 29]);
-            tempF = (double)(temp / 100.0f);
-
-            hum = (UInt16)(SrcData[IndexOfStart + 31] * 256 + SrcData[IndexOfStart + 32]);
-            humF = (double)(hum / 100.0f);
-
-            // 湿度数据按照温度解析
-            humTemp = (Int16)hum;
-            humTempF = (double)(humTemp / 100.0f);
-
-            // To Send Ram
-            ToSendRam = SrcData[IndexOfStart + 33];
-
-            // To Send Flash
-            ToSendFlash = (UInt16)(SrcData[IndexOfStart + 34] * 256 + SrcData[IndexOfStart + 35]);
-
-            // RSSI
-            if (ExistRssi == true)
-            {
-                byte rssi = SrcData[IndexOfStart + 39];
-                if (rssi >= 0x80)
-                {
-                    RSSI = (double)(rssi - 0x100);
-                }
-                else
-                {
-                    RSSI = (double)rssi;
-                }
-            }
-
-            // 传输时间                
-            SensorTransforTime = System.DateTime.Now;
-
-            this.SourceData = CommArithmetic.ToHexString(SrcData, IndexOfStart, 40);
-
-            return 0;
-        }
-
-        public Int16 ReadSensorDataV4(byte[] SrcData, UInt16 IndexOfStart, bool ExistRssi)
-        {
-            // 数据包类型
-            dataPktType = DataPktType.SensorFromSsToGw;
-
-            // 起始位
-            STP = SrcData[IndexOfStart + 0];
-
-            // Cmd
-            Pattern = SrcData[IndexOfStart + 2];
-
-            // Device Type
-            SetDeviceName(SrcData[IndexOfStart + 3]);
-
-            // protocol
-            ProtocolVersion = SrcData[IndexOfStart + 4];
-
-            // CustomerV
-            SetDeviceCustomer(SrcData, (UInt16)(IndexOfStart + 5));
-
-            // Sensor ID
-            SetDeviceMac(SrcData, (UInt16)(IndexOfStart + 7));
-
-            // SS当前时间
-            CurrentT = MyCustomFxn.UTC_to_DateTime(CommArithmetic.ByteBuf_to_UInt32(SrcData, IndexOfStart + 11));
-
-            // 节点数量
 
             //状态state
             State = SrcData[IndexOfStart + 12];

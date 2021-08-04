@@ -35,10 +35,6 @@ namespace CRC_Tool
         /// <param name="e"></param>
         private void btn_Calc_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: 2020-12-02 调试用
-            cbbAlgorithm.SelectedIndex = 6;
-            tbx_Buf.Text = "01 02 03 04 FF FF FF FF";
-
             // 清除上一次的显示结果
             tbx_Len.Text = "";
             tbx_Crc.Text = "";
@@ -67,7 +63,7 @@ namespace CRC_Tool
             }
             else
             {
-                Seed = (UInt32)((SeedBuf[0] << 16) | (SeedBuf[1] << 8) | (SeedBuf[2] << 0));
+                Seed = (UInt32)((SeedBuf[0] << 24) | (SeedBuf[1] << 16) | (SeedBuf[2] << 8) | (SeedBuf[3] << 0));
             }
 
             // 获取生成多项式
@@ -79,55 +75,61 @@ namespace CRC_Tool
             }
             else if (PolynomialBuf.Length == 1)
             {
-                Polynomial = (UInt16)PolynomialBuf[0];
+                Polynomial = (UInt32)PolynomialBuf[0];
             }
             else if (PolynomialBuf.Length == 2)
             {
-                Polynomial = (UInt16)((PolynomialBuf[0] << 8) | (PolynomialBuf[1] << 0));
+                Polynomial = (UInt32)((PolynomialBuf[0] << 8) | (PolynomialBuf[1] << 0));
             }
-            else
+            else if (PolynomialBuf.Length == 4)
             {
-                Polynomial = (UInt32)((SeedBuf[0] << 16) | (SeedBuf[1] << 8) | (SeedBuf[2] << 0));
+                Polynomial = (UInt32)((PolynomialBuf[0] << 24) | (PolynomialBuf[1] << 16) | (PolynomialBuf[2] << 8) | (PolynomialBuf[3] << 0));
             }
 
             // 计算CRC
             UInt32 CRC = 0;
             switch (cbbAlgorithm.SelectedIndex)
             {
-                case 0:
+                case 0:     // YYWSN_CRC16
                     {
                         CRC = MyCustomFxn.CRC16((UInt16)(Polynomial & 0xFFFF), (UInt16)(Seed & 0xFFFF), CrcBuf, 0, (UInt16)CrcBuf.Length);
+                        tbx_Crc.Text = CRC.ToString("X4");
                         break;
                     }
-                case 1:
+                case 1:     // CHISCDC
                     {
                         CRC = MyCustomFxn.CRC16_By_CHISCDC(CrcBuf, 0, (UInt16)CrcBuf.Length);
+                        tbx_Crc.Text = CRC.ToString("X4");
                         break;
                     }
-                case 2:
+                case 2:     // Zigin
                     {
                         CRC = MyCustomFxn.CRC16_By_Zigin(CrcBuf, 0, (UInt16)CrcBuf.Length);
+                        tbx_Crc.Text = CRC.ToString("X4");
                         break;
                     }
-                case 3:
+                case 3:     // YYWSN_CRC8
                     {
                         CRC = MyCustomFxn.CRC8((byte)Polynomial, (byte)Seed, CrcBuf, 0, (UInt16)CrcBuf.Length);
+                        tbx_Crc.Text = CRC.ToString("X2");
                         break;
                     }
-                case 4:
+                case 4:     // Modbus_CRC16
                     {
                         CRC = MyCustomFxn.CRC16_Modbus((UInt16)(Polynomial & 0xFFFF), (UInt16)(Seed & 0xFFFF), CrcBuf, 0, (UInt16)CrcBuf.Length);
+                        tbx_Crc.Text = CRC.ToString("X4");
                         break;
                     }
-                case 5:
+                case 5:     // CheckSum 8bit
                     {
                         CRC = MyCustomFxn.CheckSum8((byte)Seed, CrcBuf, 0, (UInt16)CrcBuf.Length);
+                        tbx_Crc.Text = CRC.ToString("X2");
                         break;
                     }
-                case 6:
+                case 6:     // CRC32
                     {
-                        // 0x04C11DB7
-                        CRC = MyCustomFxn.CRC32(0x04C11DB7, 0xFFFFFFFF, CrcBuf, 0, (UInt32)CrcBuf.Length);  // TODO: 2020-12-02 未完成
+                        CRC = MyCustomFxn.CRC32(Polynomial, Seed, 0xFFFFFFFF, CrcBuf, 0, (UInt32)CrcBuf.Length, true, true);
+                        tbx_Crc.Text = CRC.ToString("X8");
                         break;
                     }
                 default:
@@ -138,27 +140,13 @@ namespace CRC_Tool
 
             // 显示字节数组的长度
             tbx_Len.Text = CrcBuf.Length.ToString();
-
-            // 显示计算得出的CRC值
-            if (cbbAlgorithm.SelectedIndex == 3 || cbbAlgorithm.SelectedIndex == 5)
-            {   // CRC8
-                tbx_Crc.Text = CRC.ToString("X2");
-            }
-            else if (cbbAlgorithm.SelectedIndex == 6)
-            {   // CRC24
-                tbx_Crc.Text = CRC.ToString("X6");
-            }
-            else
-            {
-                tbx_Crc.Text = CRC.ToString("X4");
-            }
         }
 
         private void cbbAlgorithm_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             switch (cbbAlgorithm.SelectedIndex)
             {
-                case 0:
+                case 0:     // YYWSN_CRC16
                     {
                         tbx_Seed.Text = "0000";
                         tbx_Polynomial.Text = "1021";
@@ -170,7 +158,7 @@ namespace CRC_Tool
                         tbx_Polynomial.MaxLength = 4;
                         break;
                     }
-                case 1:
+                case 1:     // CHISCDC
                     {
                         tbx_Seed.Text = "";
                         tbx_Polynomial.Text = "";
@@ -179,7 +167,7 @@ namespace CRC_Tool
                         tbx_Polynomial.IsEnabled = false;
                         break;
                     }
-                case 2:
+                case 2:     // Zigin
                     {
                         tbx_Seed.Text = "";
                         tbx_Polynomial.Text = "";
@@ -188,7 +176,7 @@ namespace CRC_Tool
                         tbx_Polynomial.IsEnabled = false;
                         break;
                     }
-                case 3:
+                case 3:     // YYWSN_CRC8
                     {
                         tbx_Seed.Text = "00";
                         tbx_Polynomial.Text = "31";
@@ -200,7 +188,7 @@ namespace CRC_Tool
                         tbx_Polynomial.MaxLength = 2;
                         break;
                     }
-                case 4:
+                case 4:     // Modbus_CRC16
                     {
                         tbx_Seed.Text = "FFFF";
                         tbx_Polynomial.Text = "A001";
@@ -212,7 +200,7 @@ namespace CRC_Tool
                         tbx_Polynomial.MaxLength = 4;
                         break;
                     }
-                case 5:
+                case 5:     // CheckSum 8bit
                     {
                         tbx_Seed.Text = "00";
                         tbx_Polynomial.Text = "";
@@ -222,6 +210,18 @@ namespace CRC_Tool
 
                         tbx_Seed.MaxLength = 2;
                         tbx_Polynomial.MaxLength = 2;
+                        break;
+                    }
+                case 6:     // CRC32
+                    {
+                        tbx_Seed.Text = "FFFFFFFF";
+                        tbx_Polynomial.Text = "04C11DB7";
+
+                        tbx_Seed.IsEnabled = true;
+                        tbx_Polynomial.IsEnabled = true;
+
+                        tbx_Seed.MaxLength = 8;
+                        tbx_Polynomial.MaxLength = 8;
                         break;
                     }
                 default:

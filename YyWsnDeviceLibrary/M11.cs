@@ -67,9 +67,9 @@ namespace YyWsnDeviceLibrary
 
                 //Falsh
                 FlashID = CommArithmetic.DecodeClientID(SrcData, 61);
-                FlashFront = SrcData[64] * 256 * 256 + SrcData[65] * 256 + SrcData[66];
-                FlashRear = SrcData[67] * 256 * 256 + SrcData[68] * 256 + SrcData[69];
-                FlashQueueLength = SrcData[70] * 256 * 256 + SrcData[71] * 256 + SrcData[72];
+                FlashFront = (UInt32)(SrcData[64] * 256 * 256 + SrcData[65] * 256 + SrcData[66]);
+                FlashRear = (UInt32)(SrcData[67] * 256 * 256 + SrcData[68] * 256 + SrcData[69]);
+                FlashQueueLength = (UInt32)(SrcData[70] * 256 * 256 + SrcData[71] * 256 + SrcData[72]);
             }
 
             // 处理监测工具监听到的M1发出的温湿度数据包

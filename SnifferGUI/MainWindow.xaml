@@ -286,7 +286,9 @@
                             <Label Content="日志行数:" Margin="0 0 10 0"/>
                             <TextBox x:Name="txtLogLineLimit" Width="50" Text="20" VerticalContentAlignment="Center" Margin="0 0 10 0" />
                             <Button x:Name="btnLogClear" Content="清空" VerticalContentAlignment="Center" Width="50"   Margin="0 0 10 0" RenderTransformOrigin="3.189,0.543" Click="btnLogClear_Click"/>
-                            <CheckBox x:Name="chkLockLog" Content="锁定" VerticalContentAlignment="Center" Margin="0 0 10 0" ></CheckBox>
+                            <CheckBox x:Name="chkLockLog" Content="锁定" VerticalContentAlignment="Center" Margin="0 0 10 0" />
+                            <Label Content="命令内容:" Margin="160 0 0 0"/>
+                            <TextBox x:Name="tbxCommand" Width="600" Text="" VerticalContentAlignment="Center" Margin="0 0 10 0" IsReadOnly="True" />
                         </WrapPanel>
 
                         <TextBox   x:Name="tbxConsole" Grid.ColumnSpan="2"  VerticalScrollBarVisibility="Visible"  HorizontalScrollBarVisibility="Auto"  Margin="0,30,0,-0.5" Grid.RowSpan="2" AcceptsReturn="True" FontFamily="Courier New" FontSize="14"/>
@@ -524,7 +526,7 @@
                     </Grid>
                 </TabItem>
 
-                <TabItem x:Name="TableAdhoc" Header=" 自组网 ">
+                <TabItem x:Name="TableAdhoc" Header=" 自组网过程 ">
                     <Grid Margin="0,0,0,0">
                         <DataGrid Margin="0,0,0,0" x:Name="TableOfAdhoc" AutoGenerateColumns="False"  AlternatingRowBackground="#F4F4F4">
                             <DataGrid.Columns>
@@ -550,6 +552,80 @@
                             </DataGrid.Columns>
                         </DataGrid>
                     </Grid>
+                </TabItem>
+
+                <TabItem x:Name="TableAdhocData" Header=" 自组网数据 ">
+                    <Grid Margin="0,0,0,0">
+                        <DataGrid Margin="0,0,0,0" x:Name="TableOfAdhocData" AutoGenerateColumns="False"  AlternatingRowBackground="#F4F4F4">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="序号" Binding="{Binding DisplayID}" />
+                                <DataGridTextColumn Header="方向" Binding="{Binding transDirectS}" />
+                                <DataGridTextColumn Header="功能" Binding="{Binding cmdS}" />
+                                <DataGridTextColumn Header="协议版本" Binding="{Binding ProtocolVersion}" />
+                                <DataGridTextColumn Header="客户码" Binding="{Binding CustomerS}" />
+                                <DataGridTextColumn Header="DST ID" Binding="{Binding DstIdS}" />
+                                <DataGridTextColumn Header="SRC ID" Binding="{Binding SrcIdS}" />
+                                <DataGridTextColumn Header="HOP" Binding="{Binding hop}" />                  
+                                <DataGridTextColumn Header="节点类型" Binding="{Binding nodeTypeS}" />
+                                <DataGridTextColumn Header="序列号" Binding="{Binding aSerial}" />
+
+                                <DataGridTextColumn Header="透传起点" />
+                                <DataGridTextColumn Header="数据包类型" Binding="{Binding pktTypeS}" />
+                                <DataGridTextColumn Header="协议版本" Binding="{Binding inProtocol}" />
+                                <DataGridTextColumn Header="第一RT/GW ID" Binding="{Binding FirstRtGwIdS}" />
+                                <DataGridTextColumn Header="第一RT/GW 接收时间" Binding="{Binding FirstRtGwRdTime, StringFormat='{}{0:yy-MM-dd HH:mm:ss}'}" />
+                                <DataGridTextColumn Header="第一RT/GW RSSI" Binding="{Binding FirstRtGwRssi}" />
+                                <DataGridTextColumn Header="节点类型" Binding="{Binding inNodeTypeS}" />
+                                <DataGridTextColumn Header="WP/RT ID" Binding="{Binding WpRtIdS}" />
+                                <DataGridTextColumn Header="设备类型" Binding="{Binding DeviceTypeS}" />
+                                <DataGridTextColumn Header="设备名称" Binding="{Binding Name}" />
+                                <DataGridTextColumn Header="采集时间" Binding="{Binding SensorCollectTime, StringFormat='{}{0:yy-MM-dd HH:mm:ss}'}" />
+                                <DataGridTextColumn Header="采集序号" Binding="{Binding Serial}" />
+                                <DataGridTextColumn Header="负载内容" Binding="{Binding PayloadTxt}" />
+                                <DataGridTextColumn Header="透传终点" />
+                                
+                                <DataGridTextColumn Header="附加RSSI" Binding="{Binding RSSI}" />
+                                <DataGridTextColumn Header="附加时间" Binding="{Binding SensorTransforTime, StringFormat='{}{0:yy-MM-dd HH:mm:ss}'}" />
+                                <DataGridTextColumn Header="源数据" Binding="{Binding SourceData}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </TabItem>
+
+                <TabItem x:Name="TableBulkM1" Header=" 批量M1 ">
+                    <Grid Margin="0,0,0,0">
+                        <DataGrid Margin="0,0,0,0" x:Name="TableOfBulkM1" AutoGenerateColumns="False"  AlternatingRowBackground="#F4F4F4">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="序号" Binding="{Binding DisplayID}" />
+                                <DataGridTextColumn Header="工作模式" Binding="{Binding Pattern}" />
+                                <DataGridTextColumn Header="设备类型" Binding="{Binding DeviceTypeS}" />
+                                <DataGridTextColumn Header="设备名称" Binding="{Binding Name}" />
+                                <DataGridTextColumn Header="协议版本" Binding="{Binding ProtocolVersion}" />
+                                <DataGridTextColumn Header="客户码" Binding="{Binding CustomerS}" />
+                                <DataGridTextColumn Header="MAC" Binding="{Binding DeviceMacS}" />
+                                <DataGridTextColumn Header="传输时间" Binding="{Binding LastHistory, StringFormat='{}{0:MM-dd HH:mm:ss.fff}'}" />
+                                <DataGridTextColumn Header="接收时间" Binding="{Binding SensorTransforTime, StringFormat='{}{0:MM-dd HH:mm:ss.fff}'}" />
+                                <DataGridTextColumn Header="RAM" Binding="{Binding ToSendRam}" />
+                                <DataGridTextColumn Header="FLASH" Binding="{Binding ToSendFlash}" />
+                                <DataGridTextColumn Header="RSSI" Binding="{Binding RSSI}" />
+                                
+                                <DataGridTextColumn Header="节点数量" Binding="{Binding State,StringFormat='{}{0:X2}'}" />
+                                
+                                <DataGridTextColumn Header="状态1" Binding="{Binding State1, StringFormat='{}{0:X2}'}" />
+                                <DataGridTextColumn Header="详情1" Binding="{Binding AlarmItem1, StringFormat='{}{0:X2}'}" />
+                                <DataGridTextColumn Header="采集序列号1" Binding="{Binding SensorSN1}" />
+                                <DataGridTextColumn Header="采集时间1" Binding="{Binding SensorCollectTime1, StringFormat='{}{0:MM-dd HH:mm:ss}'}" />
+                                <DataGridTextColumn Header="IC温度1" Binding="{Binding ICTemperature1, StringFormat='{}{0:F0}'}" />
+                                <DataGridTextColumn Header="电压1" Binding="{Binding voltF1, StringFormat='{}{0:F3}'}" />
+                                <DataGridTextColumn Header="接电1" Binding="{Binding LinkCharge1}" />
+                                <DataGridTextColumn Header="温度1" Binding="{Binding tempF1, StringFormat='{}{0:F2}'}" />
+                                <DataGridTextColumn Header="湿度1" Binding="{Binding humF1, StringFormat='{}{0:F2}'}" />
+
+                                <DataGridTextColumn Header="源数据" Binding="{Binding SourceData}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+
                 </TabItem>
 
             </TabControl>

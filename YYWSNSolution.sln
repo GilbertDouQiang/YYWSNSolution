@@ -79,6 +79,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PictureTransfer", "PictureT
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReceiveFile", "ReceiveFile\ReceiveFile.csproj", "{8121E6C6-9064-4BA0-B71E-BE5B5DE8F1C8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransferFile", "TransferFile\TransferFile.csproj", "{A08D5BA6-2F6D-48E4-A77D-9762B7885927}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -189,6 +191,10 @@ Global
 		{8121E6C6-9064-4BA0-B71E-BE5B5DE8F1C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8121E6C6-9064-4BA0-B71E-BE5B5DE8F1C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8121E6C6-9064-4BA0-B71E-BE5B5DE8F1C8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A08D5BA6-2F6D-48E4-A77D-9762B7885927}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A08D5BA6-2F6D-48E4-A77D-9762B7885927}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A08D5BA6-2F6D-48E4-A77D-9762B7885927}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A08D5BA6-2F6D-48E4-A77D-9762B7885927}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

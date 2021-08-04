@@ -68,6 +68,16 @@ namespace YyWsnDeviceLibrary
         }
 
         /// <summary>
+        /// 获取生成多项式CRC8_ITU_POLYNOMIAL
+        /// </summary>
+        /// <param name=""></param>
+        /// <returns></returns>
+        static public byte GetItuPolynomialOfCrc8()
+        {
+            return 0x31;
+        }
+
+        /// <summary>
         /// 计算校验和
         /// </summary>
         /// <param name="seed"></param>
@@ -181,34 +191,71 @@ namespace YyWsnDeviceLibrary
             return crc;
         }
 
-        // TODO: 2020-12-02 未完成
-        static public UInt32 CRC32(UInt32 polynomial, UInt32 seed, byte[] input, UInt32 IndexOfStart, UInt32 nbrOfBytes)
+        /// <summary>
+        ///  标准CRC-32
+        ///     多项式           polynomial    ： 0x04C11DB7
+        ///     宽度             width        : 32 bits
+        ///     初始值           seed          ： 0xFFFFFFFF
+        ///     结果异或值        XORout      ： 0xFFFFFFFF
+        ///     输入数据反转      REFin       : true
+        ///     输出数据反转      REFout      : true
+        /// </summary>
+        /// <param name="polynomial"></param>
+        /// <param name="seed"></param>
+        /// <param name="XORout"></param>
+        /// <param name="input"></param>
+        /// <param name="IndexOfStart"></param>
+        /// <param name="nbrOfBytes"></param>
+        /// <param name="REFin"></param>
+        /// <param name="REFout"></param>
+        /// <returns></returns>
+        static public UInt32 CRC32(UInt32 polynomial, UInt32 seed, UInt32 XORout, byte[] input, UInt32 IndexOfStart, UInt32 nbrOfBytes, bool REFin, bool REFout)
         {
-            UInt32 crc = seed, bit = 0;
+            UInt32 crc_value = seed;
 
-            UInt32 byteCtr = 0;
+            byte xbit;
+            byte bits;
+            byte inputValue;
+            UInt16 i;
 
-            for (byteCtr = 0; byteCtr < nbrOfBytes; byteCtr++)
+            for (i = 0; i < nbrOfBytes; i++)
             {
-                crc ^= (UInt32)(input[IndexOfStart + byteCtr] << 24);
+                xbit = 0x80;
 
-                for (bit = 8; bit > 0; bit--)
+                inputValue = input[i];
+
+                if (REFin) // 输入值是否需要反转
                 {
-                    if ((crc & 0x80000000) == 0)
-                    {
-                        crc = (UInt32)((crc << 1) ^ polynomial);
-                       
-                    }
-                    else
-                    {
-                        crc <<= 1;
-                    }
+                    inputValue = BitReverse_8(inputValue);
                 }
 
-                crc ^= 0xFFFFFFFF;
+                for (bits = 0; bits < 8; bits++)
+                {
+                    if (0 == (crc_value & 0x80000000))
+                    {
+                        crc_value <<= 1;
+                    }
+                    else
+                    {                  
+                        crc_value <<= 1;
+                        crc_value ^= polynomial;
+                    }
+
+                    if (0 != (inputValue & xbit))
+                    {
+                        crc_value ^= polynomial;
+                    }
+
+                    xbit >>= 1;
+                }
             }
 
-            return crc;
+            if (REFout) // 异或前是否需要反转
+            {
+                crc_value = BitReverse_32(crc_value);
+            }
+
+            return crc_value ^ XORout; // 结果异或
         }
 
         /// <summary>
@@ -607,5 +654,75 @@ namespace YyWsnDeviceLibrary
 
             return hexString;
         }
+
+        /// <summary>
+        /// 8 bit 按位反转
+        /// eg: input   1100 1010
+        ///     output  0101 0011
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        static public byte BitReverse_8(byte value)
+        {
+            return (byte)(((value & 0x80) >> 7) | ((value & 0x40) >> 5) | ((value & 0x20) >> 3)
+                    | ((value & 0x10) >> 1) | ((value & 0x08) << 1)
+                    | ((value & 0x04) << 3) | ((value & 0x02) << 5)
+                    | ((value & 0x01) << 7));
+        }
+
+        /// <summary>
+        /// 16 bit 按位反转
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        static public UInt16 BitReverse_16(UInt16 value)
+        {
+            byte value_H8;
+            byte value_L8;
+
+            value_H8 = BitReverse_8((byte)((value >> 8) & 0x00ff));
+            value_L8 = BitReverse_8((byte)((value >> 0) & 0x00ff));
+
+            return (UInt16)(((UInt16)value_L8 << 8) | (UInt16)value_H8);
+        }
+
+        /// <summary>
+        /// 32 bit 按位反转
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        static public UInt32 BitReverse_32(UInt32 value)
+        {
+            UInt16 value_H16;
+            UInt16 value_L16;
+
+            value_H16 = BitReverse_16((UInt16)((value >> 16) & 0x0000ffff));
+            value_L16 = BitReverse_16((UInt16)((value >> 0) & 0x0000ffff));
+
+            return ((UInt32)value_L16 << 16) | (UInt32)value_H16;
+        }
+
+        static public UInt32 DateTime_to_UTC(System.DateTime time)
+        {
+            double intResult = 0;
+
+            System.DateTime startTime = TimeZone.CurrentTimeZone.ToLocalTime(new System.DateTime(1970, 1, 1));
+
+            intResult = (time - startTime).TotalSeconds;
+
+            return (UInt32)intResult;
+        }
+
+        static public DateTime UTC_to_DateTime(UInt32 utc)
+        {
+            System.DateTime startTime = TimeZone.CurrentTimeZone.ToLocalTime(new System.DateTime(1970, 1, 1));
+
+            startTime = startTime.AddSeconds((double)utc);       
+
+            return startTime;
+        }
+
+
+
     }
 }
