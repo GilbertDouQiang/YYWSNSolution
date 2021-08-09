@@ -222,7 +222,7 @@ namespace YyWsnDeviceLibrary
         /// <returns></returns>
         static public bool isDeviceType(byte iDeviceType)
         {
-            if (iDeviceType == GetDeviceType())
+            if (iDeviceType == (byte)GetDeviceType())
             {
                 return true;
             }
@@ -247,93 +247,90 @@ namespace YyWsnDeviceLibrary
         /// 构造函数
         /// </summary>
         /// <param name="SrcData"></param>
-        public WP(byte[] SrcData, UInt16 IndexOfStart, DataPktType dataPktType)
+        public WP(byte[] SrcData, UInt16 IndexOfStart, DataPktType dataPktType, Device.DeviceType deviceType)
         {
             if (dataPktType == DataPktType.SelfTestFromUsbToPc)
             {
-                if ((byte)Device.IsPowerOnSelfTestPktFromUsbToPc(SrcData, IndexOfStart) == GetDeviceType())
+                byte protocol = SrcData[IndexOfStart + 5];
+                if (protocol != 1)
                 {
-                    byte protocol = SrcData[IndexOfStart + 5];
-                    if (protocol != 1)
-                    {
-                        return;
-                    }
+                    return;
+                }
 
-                    SetDeviceName(SrcData[IndexOfStart + 4]);
-                    ProtocolVersion = protocol;
-                    SetDevicePrimaryMac(SrcData, (UInt16)(IndexOfStart + 6));
-                    SetDeviceMac(SrcData, (UInt16)(IndexOfStart + 10));
-                    SetHardwareRevision(SrcData, (UInt16)(IndexOfStart + 14));
-                    SetSoftwareRevision(SrcData, (UInt16)(IndexOfStart + 18));
-                    SetDeviceCustomer(SrcData, (UInt16)(IndexOfStart + 20));
-                    SetDeviceDebug(SrcData, (UInt16)(IndexOfStart + 22));
+                SetDeviceName(SrcData[IndexOfStart + 4]);
+                ProtocolVersion = protocol;
+                SetDevicePrimaryMac(SrcData, (UInt16)(IndexOfStart + 6));
+                SetDeviceMac(SrcData, (UInt16)(IndexOfStart + 10));
+                SetHardwareRevision(SrcData, (UInt16)(IndexOfStart + 14));
+                SetSoftwareRevision(SrcData, (UInt16)(IndexOfStart + 18));
+                SetDeviceCustomer(SrcData, (UInt16)(IndexOfStart + 20));
+                SetDeviceDebug(SrcData, (UInt16)(IndexOfStart + 22));
 
-                    Category = SrcData[IndexOfStart + 24];
-                    Calendar = CommArithmetic.DecodeDateTime(SrcData, (UInt16)(IndexOfStart + 25));
+                Category = SrcData[IndexOfStart + 24];
+                Calendar = CommArithmetic.DecodeDateTime(SrcData, (UInt16)(IndexOfStart + 25));
 
-                    Pattern = SrcData[IndexOfStart + 31];
-                    Bps = SrcData[IndexOfStart + 32];
-                    SetTxPower(SrcData[IndexOfStart + 33]);
-                    Channel = SrcData[IndexOfStart + 34];
+                Pattern = SrcData[IndexOfStart + 31];
+                Bps = SrcData[IndexOfStart + 32];
+                SetTxPower(SrcData[IndexOfStart + 33]);
+                Channel = SrcData[IndexOfStart + 34];
 
-                    Interval = (UInt16)(SrcData[IndexOfStart + 35] * 256 + SrcData[IndexOfStart + 36]);
+                Interval = (UInt16)(SrcData[IndexOfStart + 35] * 256 + SrcData[IndexOfStart + 36]);
 
-                    UploadInterval = (UInt16)(SrcData[IndexOfStart + 37] * 256 + SrcData[IndexOfStart + 38]);
+                UploadInterval = (UInt16)(SrcData[IndexOfStart + 37] * 256 + SrcData[IndexOfStart + 38]);
 
-                    AdhocIntervalSuc = (UInt16)(SrcData[IndexOfStart + 39] * 256 + SrcData[IndexOfStart + 40]);
+                AdhocIntervalSuc = (UInt16)(SrcData[IndexOfStart + 39] * 256 + SrcData[IndexOfStart + 40]);
 
-                    AdhocIntervalFai = (UInt16)(SrcData[IndexOfStart + 41] * 256 + SrcData[IndexOfStart + 42]);
+                AdhocIntervalFai = (UInt16)(SrcData[IndexOfStart + 41] * 256 + SrcData[IndexOfStart + 42]);
 
-                    LogMode = SrcData[IndexOfStart + 43];
+                LogMode = SrcData[IndexOfStart + 43];
 
-                    byte rssi = SrcData[IndexOfStart + 44];
-                    if (rssi >= 0x80)
-                    {
-                        AdhocRssiThr = (Int16)(rssi - 0x100);
-                    }
-                    else
-                    {
-                        AdhocRssiThr = (Int16)rssi;
-                    }
+                byte rssi = SrcData[IndexOfStart + 44];
+                if (rssi >= 0x80)
+                {
+                    AdhocRssiThr = (Int16)(rssi - 0x100);
+                }
+                else
+                {
+                    AdhocRssiThr = (Int16)rssi;
+                }
 
-                    rssi = SrcData[IndexOfStart + 45];
-                    if (rssi >= 0x80)
-                    {
-                        TransRssiThr = (Int16)(rssi - 0x100);
-                    }
-                    else
-                    {
-                        TransRssiThr = (Int16)rssi;
-                    }
+                rssi = SrcData[IndexOfStart + 45];
+                if (rssi >= 0x80)
+                {
+                    TransRssiThr = (Int16)(rssi - 0x100);
+                }
+                else
+                {
+                    TransRssiThr = (Int16)rssi;
+                }
 
-                    BaudRate = SrcData[IndexOfStart + 46];
+                BaudRate = SrcData[IndexOfStart + 46];
 
-                    Hop = SrcData[IndexOfStart + 47];
+                Hop = SrcData[IndexOfStart + 47];
 
-                    ICTemperature = SrcData[IndexOfStart + 54];
-                    voltF = Math.Round(Convert.ToDouble((SrcData[IndexOfStart + 55] * 256 + SrcData[IndexOfStart + 56])) / 1000, 2);
+                ICTemperature = SrcData[IndexOfStart + 54];
+                voltF = Math.Round(Convert.ToDouble((SrcData[IndexOfStart + 55] * 256 + SrcData[IndexOfStart + 56])) / 1000, 2);
 
-                    SaveError = (Int16)SrcData[IndexOfStart + 57];
-                    if (SaveError >= 0x80)
-                    {
-                        SaveError = (Int16)(SaveError - 0x100);
-                    }
+                SaveError = (Int16)SrcData[IndexOfStart + 57];
+                if (SaveError >= 0x80)
+                {
+                    SaveError = (Int16)(SaveError - 0x100);
+                }
 
-                    FileNum = (UInt16)(SrcData[IndexOfStart + 58] * 256 + SrcData[IndexOfStart + 59]);
+                FileNum = (UInt16)(SrcData[IndexOfStart + 58] * 256 + SrcData[IndexOfStart + 59]);
 
-                    StatusPktNum = (UInt32)(SrcData[IndexOfStart + 60] * 256 * 256 + SrcData[IndexOfStart + 61] * 256 + SrcData[IndexOfStart + 62]);
+                StatusPktNum = (UInt32)(SrcData[IndexOfStart + 60] * 256 * 256 + SrcData[IndexOfStart + 61] * 256 + SrcData[IndexOfStart + 62]);
 
-                    RstSrc = SrcData[IndexOfStart + 63];
+                RstSrc = SrcData[IndexOfStart + 63];
 
-                    rssi = SrcData[IndexOfStart + 65];
-                    if (rssi >= 0x80)
-                    {
-                        RSSI = (double)(rssi - 0x100);
-                    }
-                    else
-                    {
-                        RSSI = (double)rssi;
-                    }
+                rssi = SrcData[IndexOfStart + 65];
+                if (rssi >= 0x80)
+                {
+                    RSSI = (double)(rssi - 0x100);
+                }
+                else
+                {
+                    RSSI = (double)rssi;
                 }
             }
 

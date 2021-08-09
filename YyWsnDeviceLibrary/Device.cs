@@ -98,7 +98,8 @@ namespace YyWsnDeviceLibrary
             SG9 = 0xA6,                 // SG9 野保网关
             SG6Lite = 0xA7,             // SG6Lite
             Beetech_M20 = 0xA8,         // Beetech M20
-            M1000 = 0xA9                // M1000
+            M1000 = 0xA9,               // M1000
+            WPB = 0xAA                  // WPB
         }
 
         /// <summary>
@@ -733,6 +734,11 @@ namespace YyWsnDeviceLibrary
                 case 0xA9:
                     {
                         Name = "M1000";
+                        break;
+                    }
+                case 0xAA:
+                    {
+                        Name = "WPB";
                         break;
                     }
                 default:

@@ -136,68 +136,65 @@ namespace YyWsnDeviceLibrary
         {
             if (dataPktType == DataPktType.SelfTestFromUsbToPc)
             {
-                if ((byte)Device.IsPowerOnSelfTestPktFromUsbToPc(SrcData, IndexOfStart) == GetDeviceType())
+                byte protocol = SrcData[IndexOfStart + 5];
+                if (protocol != 1)
                 {
-                    byte protocol = SrcData[IndexOfStart + 5];
-                    if (protocol != 1)
-                    {
-                        return;
-                    }
+                    return;
+                }
 
-                    SetDeviceName(SrcData[IndexOfStart + 4]);
-                    ProtocolVersion = protocol;
-                    SetDevicePrimaryMac(SrcData, (UInt16)(IndexOfStart + 6));
-                    SetDeviceMac(SrcData, (UInt16)(IndexOfStart + 10));
-                    SetHardwareRevision(SrcData, (UInt16)(IndexOfStart + 14));
-                    SetSoftwareRevision(SrcData, (UInt16)(IndexOfStart + 18));
-                    SetDeviceCustomer(SrcData, (UInt16)(IndexOfStart + 20));
-                    SetDeviceDebug(SrcData, (UInt16)(IndexOfStart + 22));
+                SetDeviceName(SrcData[IndexOfStart + 4]);
+                ProtocolVersion = protocol;
+                SetDevicePrimaryMac(SrcData, (UInt16)(IndexOfStart + 6));
+                SetDeviceMac(SrcData, (UInt16)(IndexOfStart + 10));
+                SetHardwareRevision(SrcData, (UInt16)(IndexOfStart + 14));
+                SetSoftwareRevision(SrcData, (UInt16)(IndexOfStart + 18));
+                SetDeviceCustomer(SrcData, (UInt16)(IndexOfStart + 20));
+                SetDeviceDebug(SrcData, (UInt16)(IndexOfStart + 22));
 
-                    Category = SrcData[IndexOfStart + 24];
+                Category = SrcData[IndexOfStart + 24];
 
-                    // 正常采集间隔
-                    Interval = (UInt16)(SrcData[IndexOfStart + 25] * 256 + SrcData[IndexOfStart + 26]);
+                // 正常采集间隔
+                Interval = (UInt16)(SrcData[IndexOfStart + 25] * 256 + SrcData[IndexOfStart + 26]);
 
-                    // 报警采集间隔
-                    AlertInterval = (UInt16)(SrcData[IndexOfStart + 27] * 256 + SrcData[IndexOfStart + 28]);
+                // 报警采集间隔
+                AlertInterval = (UInt16)(SrcData[IndexOfStart + 27] * 256 + SrcData[IndexOfStart + 28]);
 
-                    Calendar = CommArithmetic.DecodeDateTime(SrcData, (UInt16)(IndexOfStart + 29));
+                Calendar = CommArithmetic.DecodeDateTime(SrcData, (UInt16)(IndexOfStart + 29));
 
-                    Pattern = SrcData[IndexOfStart + 35];
-                    Bps = SrcData[IndexOfStart + 36];
-                    SetTxPower(SrcData[IndexOfStart + 37]);
-                    SampleSend = SrcData[IndexOfStart + 38];
-                    Channel = SrcData[IndexOfStart + 39];
+                Pattern = SrcData[IndexOfStart + 35];
+                Bps = SrcData[IndexOfStart + 36];
+                SetTxPower(SrcData[IndexOfStart + 37]);
+                SampleSend = SrcData[IndexOfStart + 38];
+                Channel = SrcData[IndexOfStart + 39];
 
-                    AlertCfg = SrcData[40];
+                AlertCfg = SrcData[40];
 
-                    // 关报警超时时间
-                    ClosedTimeoutS = (UInt16)(SrcData[IndexOfStart + 41] * 256 + SrcData[IndexOfStart + 42]);
+                // 关报警超时时间
+                ClosedTimeoutS = (UInt16)(SrcData[IndexOfStart + 41] * 256 + SrcData[IndexOfStart + 42]);
 
-                    // 开报警超时时间
-                    OpenedTimeoutS = (UInt16)(SrcData[IndexOfStart + 43] * 256 + SrcData[IndexOfStart + 44]);
+                // 开报警超时时间
+                OpenedTimeoutS = (UInt16)(SrcData[IndexOfStart + 43] * 256 + SrcData[IndexOfStart + 44]);
 
-                    ICTemperature = SrcData[IndexOfStart + 45];
-                    voltF = Math.Round(Convert.ToDouble((SrcData[IndexOfStart + 46] * 256 + SrcData[IndexOfStart + 47])) / 1000, 2);
+                ICTemperature = SrcData[IndexOfStart + 45];
+                voltF = Math.Round(Convert.ToDouble((SrcData[IndexOfStart + 46] * 256 + SrcData[IndexOfStart + 47])) / 1000, 2);
 
-                    FlashID = CommArithmetic.DecodeClientID(SrcData, IndexOfStart + 48);
-                    MaxLength = SrcData[IndexOfStart + 50];
+                FlashID = CommArithmetic.DecodeClientID(SrcData, IndexOfStart + 48);
+                MaxLength = SrcData[IndexOfStart + 50];
 
-                    FlashFront = (UInt32)(SrcData[IndexOfStart + 51] * 256 * 256 + SrcData[IndexOfStart + 52] * 256 + SrcData[IndexOfStart + 53]);
-                    FlashRear = (UInt32)(SrcData[IndexOfStart + 54] * 256 * 256 + SrcData[IndexOfStart + 55] * 256 + SrcData[IndexOfStart + 56]);
-                    FlashQueueLength = (UInt32)(SrcData[IndexOfStart + 57] * 256 * 256 + SrcData[IndexOfStart + 58] * 256 + SrcData[IndexOfStart + 59]);
+                FlashFront = (UInt32)(SrcData[IndexOfStart + 51] * 256 * 256 + SrcData[IndexOfStart + 52] * 256 + SrcData[IndexOfStart + 53]);
+                FlashRear = (UInt32)(SrcData[IndexOfStart + 54] * 256 * 256 + SrcData[IndexOfStart + 55] * 256 + SrcData[IndexOfStart + 56]);
+                FlashQueueLength = (UInt32)(SrcData[IndexOfStart + 57] * 256 * 256 + SrcData[IndexOfStart + 58] * 256 + SrcData[IndexOfStart + 59]);
 
-                    OpenState_Set(SrcData[IndexOfStart + 60]);
+                OpenState_Set(SrcData[IndexOfStart + 60]);
 
-                    byte rssi = SrcData[IndexOfStart + 64];
-                    if (rssi >= 0x80)
-                    {
-                        RSSI = (double)(rssi - 0x100);
-                    }
-                    else
-                    {
-                        RSSI = (double)rssi;
-                    }
+                byte rssi = SrcData[IndexOfStart + 64];
+                if (rssi >= 0x80)
+                {
+                    RSSI = (double)(rssi - 0x100);
+                }
+                else
+                {
+                    RSSI = (double)rssi;
                 }
             }
             else if (dataPktType == DataPktType.SensorFromSsToGw)

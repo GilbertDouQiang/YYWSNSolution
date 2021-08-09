@@ -3154,6 +3154,117 @@
                     </Grid>
                 </TabItem>
 
+                <TabItem x:Name="TableOfLive" Header=" Live（现场） " Height="21" Margin="-2.5,-2,-2.5,0" VerticalAlignment="Bottom" FontFamily="Courier New">
+                    <StackPanel x:Name="StackOfLive">
+
+                        <Grid Margin="0 20 0 10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="2*"/>
+
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="传输速率:" Margin="0,0,10,0" HorizontalAlignment="Right" />
+                            <TextBox Grid.Column="1" x:Name="tbxBpsOfLive"  Text="0"  Padding="2" Margin="0 0 10 0"/>
+
+                            <TextBlock Grid.Column="2" Text="传输频段:" Margin="0,0,10,0" HorizontalAlignment="Right" />
+                            <TextBox Grid.Column="3" x:Name="tbxChannelOfLive"  Text="3"  Padding="2" Margin="0 0 10 0" MaxLength="3" MaxLines="1"/>
+
+                            <TextBlock Grid.Column="4" Text="传输功率:"  Margin="0,0,10,0" HorizontalAlignment="Right"/>
+                            <TextBox Grid.Column="5" x:Name="tbxTxPowerOfLive" Text="13"  Padding="2" Margin="0,0,10,0" MaxLines="1" MaxLength="3"/>
+
+                            <Button  Grid.Column="8" x:Name="btnSetCfgOfLive" Content="设置参数" Click="btnSetCfgOfLive_Click"  Margin="0,0,10,0"/>
+                        </Grid>
+
+                        <Grid Margin="0 0 0 10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="2*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0" Text="类别:" Margin="0,0,10,0" HorizontalAlignment="Right" />
+                            <TextBox Grid.Column="1" x:Name="tbxPatternOfLive" Text="2"  Margin="0 0 10 0" MaxLines="1" MaxLength="3" />
+
+                            <TextBlock Grid.Column="2" Text="目标设备:" Margin="0,0,10,0" HorizontalAlignment="Right" FontWeight="Bold"/>
+                            <TextBox Grid.Column="3" x:Name="tbxDstIdOfLive"  Text="21 07 05 00"  Padding="2" Margin="0 0 10 0" FontWeight="Bold" MaxLength="11" MaxLines="1" Height="21" VerticalAlignment="Top" />
+
+                            <Button  Grid.Column="8" x:Name="btnCallOfLive" Content="点名闪灯" Click="btnCallOfLive_Click"  Margin="0,0,10,0"/>
+                        </Grid>
+
+                        <Grid Margin="0 20 0 10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="2*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0" Text="操作:" Margin="0,0,10,0" HorizontalAlignment="Right" />
+                            <TextBox Grid.Column="1" x:Name="tbxDemandOpOfLive" Text="2"  Margin="0 0 10 0" MaxLines="1" MaxLength="3" />
+
+                            <TextBlock Grid.Column="2" Text="起始地址:" Margin="0,0,10,0" HorizontalAlignment="Right" />
+                            <TextBox Grid.Column="3" x:Name="tbxDemandStartAddrOfLive"  Text="126976"  Padding="2" Margin="0 0 10 0" MaxLength="10" MaxLines="1" Height="21" VerticalAlignment="Top" />
+
+                            <TextBlock Grid.Column="4" Text="结束地址:"  Margin="0,0,10,0" HorizontalAlignment="Right"/>
+                            <TextBox Grid.Column="5" x:Name="tbxDemandEndAddrOfLive" Text="507000"  Padding="2" Margin="0,0,10,0" MaxLines="1" MaxLength="10"/>
+                            
+                            <Button  Grid.Column="8" x:Name="btnDemandCreateOfLive" Content="创建点播任务" Click="btnDemandCreateOfLive_Click"  Margin="0,0,10,0"/>
+                        </Grid>
+
+                        <Grid Margin="0 0 0 10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="2*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0" Text="文件名:" Margin="0,0,10,0" HorizontalAlignment="Right" />
+                            <TextBox Grid.Column="1" Grid.ColumnSpan="5"  x:Name="tbxDemandFileOfLive" Text="abc.jpg"  Margin="0 0 10 0" MaxLines="1" MaxLength="128" />
+
+                            <Button  Grid.Column="8" x:Name="btnDemandReadOfLive" Content="读取点播历史" Click="btnDemandReadOfLive_Click"  Margin="0,0,10,0"/>
+                        </Grid>
+
+                        <Grid Margin="0 40 0 10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="2*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0" Text="状态:" Margin="0,0,10,0" HorizontalAlignment="Right" />
+                            <TextBox Grid.Column="1" Grid.ColumnSpan="5"  x:Name="tbxStatusOfLive" Text=""  Margin="0 0 10 0" AcceptsReturn="True" AcceptsTab="True" TextWrapping="Wrap" MaxLines="20" VerticalScrollBarVisibility="Visible"  />
+
+                            <Button  Grid.Column="8" x:Name="btnClearStatusOfLive" Content="清除显示" Click="btnClearStatusOfLive_Click"  Margin="0,0,10,0"/>
+                        </Grid>
+
+                    </StackPanel>
+                </TabItem>
+
             </TabControl>
         </Border>
 

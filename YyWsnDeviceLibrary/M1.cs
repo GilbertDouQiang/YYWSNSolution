@@ -547,11 +547,6 @@ namespace YyWsnDeviceLibrary
         /// <param name="SrcData"></param>
         public M1(byte[] SrcData, UInt16 IndexOfStart, Device.DataPktType pktType, Device.DeviceType deviceType)
         {
-            if (isDeviceType((byte)deviceType) == false)
-            {
-                return;
-            }
-
             if (pktType == Device.DataPktType.SensorDataFromGmToPc)
             {
                 UInt16 iCnt = (UInt16)(IndexOfStart + 9);

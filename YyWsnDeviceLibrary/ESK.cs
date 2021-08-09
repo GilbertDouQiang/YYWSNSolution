@@ -102,59 +102,56 @@ namespace YyWsnDeviceLibrary
         {
             if (dataPktType == DataPktType.SelfTestFromUsbToPc)
             {
-                if ((byte)Device.IsPowerOnSelfTestPktFromUsbToPc(SrcData, IndexOfStart) == GetDeviceType())
+                byte protocol = SrcData[IndexOfStart + 5];
+
+                if (protocol == 2)
                 {
-                    byte protocol = SrcData[IndexOfStart + 5];
+                    SetDeviceName(SrcData[IndexOfStart + 4]);
+                    ProtocolVersion = protocol;
+                    SetDevicePrimaryMac(SrcData, (UInt16)(IndexOfStart + 6));
+                    SetDeviceMac(SrcData, (UInt16)(IndexOfStart + 10));
+                    SetHardwareRevision(SrcData, (UInt16)(IndexOfStart + 14));
+                    SetSoftwareRevision(SrcData, (UInt16)(IndexOfStart + 18));
+                    SetDeviceCustomer(SrcData, (UInt16)(IndexOfStart + 20));
+                    SetDeviceDebug(SrcData, (UInt16)(IndexOfStart + 22));
 
-                    if (protocol == 2)
+                    Category = SrcData[IndexOfStart + 24];
+                    Calendar = CommArithmetic.DecodeDateTime(SrcData, (UInt16)(IndexOfStart + 25));
+
+                    Pattern = SrcData[IndexOfStart + 31];
+                    Bps = SrcData[IndexOfStart + 32];
+                    SetTxPower(SrcData[IndexOfStart + 33]);
+                    SampleSend = SrcData[IndexOfStart + 34];
+                    Channel = SrcData[IndexOfStart + 35];
+
+                    BlockCurrentThr = (UInt16)(SrcData[IndexOfStart + 36] * 256 + SrcData[IndexOfStart + 37]);
+                    BlockDurationThr = (UInt16)(SrcData[IndexOfStart + 38] * 256 + SrcData[IndexOfStart + 39]);
+
+                    CfgReserved = (UInt32)(SrcData[IndexOfStart + 40] * 256 * 256 * 256 + SrcData[IndexOfStart + 41] * 256 * 256 + SrcData[IndexOfStart + 42] * 256 + SrcData[IndexOfStart + 43]);
+
+                    ICTemperature = SrcData[IndexOfStart + 44];
+                    voltF = Math.Round(Convert.ToDouble((SrcData[IndexOfStart + 45] * 256 + SrcData[IndexOfStart + 46])) / 1000, 2);
+
+                    IdleCurrent = (UInt16)(SrcData[IndexOfStart + 47] * 256 + SrcData[IndexOfStart + 48]);
+                    StartCurrent = (UInt16)(SrcData[IndexOfStart + 49] * 256 + SrcData[IndexOfStart + 50]);
+                    RaceCurrent = (UInt16)(SrcData[IndexOfStart + 51] * 256 + SrcData[IndexOfStart + 52]);
+                    supplyVolt = (UInt16)(SrcData[IndexOfStart + 53] * 256 + SrcData[IndexOfStart + 54]);
+
+                    FlashID = CommArithmetic.DecodeClientID(SrcData, IndexOfStart + 55);
+                    MaxLength = SrcData[IndexOfStart + 57];
+
+                    FlashFront = (UInt32)(SrcData[IndexOfStart + 58] * 256 * 256 + SrcData[IndexOfStart + 59] * 256 + SrcData[IndexOfStart + 60]);
+                    FlashRear = (UInt32)(SrcData[IndexOfStart + 61] * 256 * 256 + SrcData[IndexOfStart + 62] * 256 + SrcData[IndexOfStart + 63]);
+                    FlashQueueLength = (UInt32)(SrcData[IndexOfStart + 64] * 256 * 256 + SrcData[IndexOfStart + 65] * 256 + SrcData[IndexOfStart + 66]);
+
+                    byte rssi = SrcData[IndexOfStart + 68];
+                    if (rssi >= 0x80)
                     {
-                        SetDeviceName(SrcData[IndexOfStart + 4]);
-                        ProtocolVersion = protocol;
-                        SetDevicePrimaryMac(SrcData, (UInt16)(IndexOfStart + 6));
-                        SetDeviceMac(SrcData, (UInt16)(IndexOfStart + 10));
-                        SetHardwareRevision(SrcData, (UInt16)(IndexOfStart + 14));
-                        SetSoftwareRevision(SrcData, (UInt16)(IndexOfStart + 18));
-                        SetDeviceCustomer(SrcData, (UInt16)(IndexOfStart + 20));
-                        SetDeviceDebug(SrcData, (UInt16)(IndexOfStart + 22));
-
-                        Category = SrcData[IndexOfStart + 24];
-                        Calendar = CommArithmetic.DecodeDateTime(SrcData, (UInt16)(IndexOfStart + 25));
-
-                        Pattern = SrcData[IndexOfStart + 31];
-                        Bps = SrcData[IndexOfStart + 32];
-                        SetTxPower(SrcData[IndexOfStart + 33]);
-                        SampleSend = SrcData[IndexOfStart + 34];
-                        Channel = SrcData[IndexOfStart + 35];                        
-
-                        BlockCurrentThr = (UInt16)(SrcData[IndexOfStart + 36] * 256 + SrcData[IndexOfStart + 37]);
-                        BlockDurationThr = (UInt16)(SrcData[IndexOfStart + 38] * 256 + SrcData[IndexOfStart + 39]);
-
-                        CfgReserved = (UInt32)(SrcData[IndexOfStart + 40] * 256 * 256 * 256 + SrcData[IndexOfStart + 41] * 256 * 256 + SrcData[IndexOfStart + 42] * 256 + SrcData[IndexOfStart + 43]);
-
-                        ICTemperature = SrcData[IndexOfStart + 44];
-                        voltF = Math.Round(Convert.ToDouble((SrcData[IndexOfStart + 45] * 256 + SrcData[IndexOfStart + 46])) / 1000, 2);
-
-                        IdleCurrent = (UInt16)(SrcData[IndexOfStart + 47] * 256 + SrcData[IndexOfStart + 48]);
-                        StartCurrent = (UInt16)(SrcData[IndexOfStart + 49] * 256 + SrcData[IndexOfStart + 50]);
-                        RaceCurrent = (UInt16)(SrcData[IndexOfStart + 51] * 256 + SrcData[IndexOfStart + 52]);
-                        supplyVolt = (UInt16)(SrcData[IndexOfStart + 53] * 256 + SrcData[IndexOfStart + 54]);
-
-                        FlashID = CommArithmetic.DecodeClientID(SrcData, IndexOfStart + 55);
-                        MaxLength = SrcData[IndexOfStart + 57];
-
-                        FlashFront = (UInt32)(SrcData[IndexOfStart + 58] * 256 * 256 + SrcData[IndexOfStart + 59] * 256 + SrcData[IndexOfStart + 60]);
-                        FlashRear = (UInt32)(SrcData[IndexOfStart + 61] * 256 * 256 + SrcData[IndexOfStart + 62] * 256 + SrcData[IndexOfStart + 63]);
-                        FlashQueueLength = (UInt32)(SrcData[IndexOfStart + 64] * 256 * 256 + SrcData[IndexOfStart + 65] * 256 + SrcData[IndexOfStart + 66]);
-
-                        byte rssi = SrcData[IndexOfStart + 68];
-                        if (rssi >= 0x80)
-                        {
-                            RSSI = (double)(rssi - 0x100);
-                        }
-                        else
-                        {
-                            RSSI = (double)rssi;
-                        }
+                        RSSI = (double)(rssi - 0x100);
+                    }
+                    else
+                    {
+                        RSSI = (double)rssi;
                     }
                 }
             }

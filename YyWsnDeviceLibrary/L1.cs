@@ -108,68 +108,65 @@ namespace YyWsnDeviceLibrary
         /// <param name="SrcData"></param>
         public L1(byte[] SrcData, UInt16 IndexOfStart, DataPktType dataPktType)
         {
-            if (dataPktType == DataPktType.SelfTestFromUsbToPc)
+            if ((byte)Device.IsPowerOnSelfTestPktFromUsbToPc(SrcData, IndexOfStart) == GetDeviceType())
             {
-                if ((byte)Device.IsPowerOnSelfTestPktFromUsbToPc(SrcData, IndexOfStart) == GetDeviceType())
+                byte protocol = SrcData[IndexOfStart + 5];
+                if (protocol != 3)
                 {
-                    byte protocol = SrcData[IndexOfStart + 5];
-                    if (protocol != 3)
-                    {
-                        return;
-                    }
+                    return;
+                }
 
-                    SetDeviceName(SrcData[IndexOfStart + 4]);
-                    ProtocolVersion = protocol;
-                    SetDevicePrimaryMac(SrcData, (UInt16)(IndexOfStart + 6));
-                    SetDeviceMac(SrcData, (UInt16)(IndexOfStart + 10));
-                    SetHardwareRevision(SrcData, (UInt16)(IndexOfStart + 14));
-                    SetSoftwareRevision(SrcData, (UInt16)(IndexOfStart + 18));
-                    SetDeviceCustomer(SrcData, (UInt16)(IndexOfStart + 20));
-                    SetDeviceDebug(SrcData, (UInt16)(IndexOfStart + 22));
+                SetDeviceName(SrcData[IndexOfStart + 4]);
+                ProtocolVersion = protocol;
+                SetDevicePrimaryMac(SrcData, (UInt16)(IndexOfStart + 6));
+                SetDeviceMac(SrcData, (UInt16)(IndexOfStart + 10));
+                SetHardwareRevision(SrcData, (UInt16)(IndexOfStart + 14));
+                SetSoftwareRevision(SrcData, (UInt16)(IndexOfStart + 18));
+                SetDeviceCustomer(SrcData, (UInt16)(IndexOfStart + 20));
+                SetDeviceDebug(SrcData, (UInt16)(IndexOfStart + 22));
 
-                    Category = SrcData[IndexOfStart + 24];
-                    Interval = (UInt16)(SrcData[IndexOfStart + 25] * 256 + SrcData[IndexOfStart + 26]);
-                    Calendar = CommArithmetic.DecodeDateTime(SrcData, (UInt16)(IndexOfStart + 27));
+                Category = SrcData[IndexOfStart + 24];
+                Interval = (UInt16)(SrcData[IndexOfStart + 25] * 256 + SrcData[IndexOfStart + 26]);
+                Calendar = CommArithmetic.DecodeDateTime(SrcData, (UInt16)(IndexOfStart + 27));
 
-                    Pattern = SrcData[IndexOfStart + 33];
-                    Bps = SrcData[IndexOfStart + 34];
-                    SetTxPower(SrcData[IndexOfStart + 35]);
-                    SampleSend = SrcData[IndexOfStart + 36];
-                    Channel = SrcData[IndexOfStart + 37];
+                Pattern = SrcData[IndexOfStart + 33];
+                Bps = SrcData[IndexOfStart + 34];
+                SetTxPower(SrcData[IndexOfStart + 35]);
+                SampleSend = SrcData[IndexOfStart + 36];
+                Channel = SrcData[IndexOfStart + 37];
 
-                    LuxWarnHigh = (Int16)(SrcData[IndexOfStart + 38] * 256 + SrcData[IndexOfStart + 39]);
-                    LuxWarnLow = (Int16)(SrcData[IndexOfStart + 40] * 256 + SrcData[IndexOfStart + 41]);
+                LuxWarnHigh = (Int16)(SrcData[IndexOfStart + 38] * 256 + SrcData[IndexOfStart + 39]);
+                LuxWarnLow = (Int16)(SrcData[IndexOfStart + 40] * 256 + SrcData[IndexOfStart + 41]);
 
-                    LuxAlertHigh = (Int16)(SrcData[IndexOfStart + 42] * 256 + SrcData[IndexOfStart + 43]);
-                    LuxAlertLow = (Int16)(SrcData[IndexOfStart + 44] * 256 + SrcData[IndexOfStart + 45]);
+                LuxAlertHigh = (Int16)(SrcData[IndexOfStart + 42] * 256 + SrcData[IndexOfStart + 43]);
+                LuxAlertLow = (Int16)(SrcData[IndexOfStart + 44] * 256 + SrcData[IndexOfStart + 45]);
 
-                    LuxCompensation = (Int16)(SrcData[IndexOfStart + 46] * 256 + SrcData[IndexOfStart + 47]);
+                LuxCompensation = (Int16)(SrcData[IndexOfStart + 46] * 256 + SrcData[IndexOfStart + 47]);
 
-                    ICTemperature = SrcData[IndexOfStart + 48];
-                    voltF = Math.Round(Convert.ToDouble((SrcData[IndexOfStart + 49] * 256 + SrcData[IndexOfStart + 50])) / 1000, 2);
+                ICTemperature = SrcData[IndexOfStart + 48];
+                voltF = Math.Round(Convert.ToDouble((SrcData[IndexOfStart + 49] * 256 + SrcData[IndexOfStart + 50])) / 1000, 2);
 
-                    FlashID = CommArithmetic.DecodeClientID(SrcData, IndexOfStart + 51);
-                    MaxLength = SrcData[IndexOfStart + 53];
+                FlashID = CommArithmetic.DecodeClientID(SrcData, IndexOfStart + 51);
+                MaxLength = SrcData[IndexOfStart + 53];
 
-                    FlashFront = (UInt32)(SrcData[IndexOfStart + 54] * 256 * 256 + SrcData[IndexOfStart + 55] * 256 + SrcData[IndexOfStart + 56]);
-                    FlashRear = (UInt32)(SrcData[IndexOfStart + 57] * 256 * 256 + SrcData[IndexOfStart + 58] * 256 + SrcData[IndexOfStart + 59]);
-                    FlashQueueLength = (UInt32)(SrcData[IndexOfStart + 60] * 256 * 256 + SrcData[IndexOfStart + 61] * 256 + SrcData[IndexOfStart + 62]);
+                FlashFront = (UInt32)(SrcData[IndexOfStart + 54] * 256 * 256 + SrcData[IndexOfStart + 55] * 256 + SrcData[IndexOfStart + 56]);
+                FlashRear = (UInt32)(SrcData[IndexOfStart + 57] * 256 * 256 + SrcData[IndexOfStart + 58] * 256 + SrcData[IndexOfStart + 59]);
+                FlashQueueLength = (UInt32)(SrcData[IndexOfStart + 60] * 256 * 256 + SrcData[IndexOfStart + 61] * 256 + SrcData[IndexOfStart + 62]);
 
-                    Lux = (Int16)(SrcData[IndexOfStart + 63] * 256 + SrcData[IndexOfStart + 64]);
+                Lux = (Int16)(SrcData[IndexOfStart + 63] * 256 + SrcData[IndexOfStart + 64]);
 
-                    NormalInterval = (UInt16)(SrcData[IndexOfStart + 65] * 256 + SrcData[IndexOfStart + 66]);
-                    WarnInterval = (UInt16)(SrcData[IndexOfStart + 67] * 256 + SrcData[IndexOfStart + 68]);
-                    AlertInterval = (UInt16)(SrcData[IndexOfStart + 69] * 256 + SrcData[IndexOfStart + 70]);
+                NormalInterval = (UInt16)(SrcData[IndexOfStart + 65] * 256 + SrcData[IndexOfStart + 66]);
+                WarnInterval = (UInt16)(SrcData[IndexOfStart + 67] * 256 + SrcData[IndexOfStart + 68]);
+                AlertInterval = (UInt16)(SrcData[IndexOfStart + 69] * 256 + SrcData[IndexOfStart + 70]);
 
-                    byte rssi = SrcData[IndexOfStart + 74];
-                    if (rssi >= 0x80)
-                    {
-                        RSSI = (double)(rssi - 0x100);
-                    }
-                    else
-                    {
-                        RSSI = (double)rssi;
-                    }
+                byte rssi = SrcData[IndexOfStart + 74];
+                if (rssi >= 0x80)
+                {
+                    RSSI = (double)(rssi - 0x100);
+                }
+                else
+                {
+                    RSSI = (double)rssi;
                 }
             }
 

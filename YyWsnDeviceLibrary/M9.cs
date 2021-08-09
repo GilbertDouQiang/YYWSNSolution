@@ -160,62 +160,59 @@ namespace YyWsnDeviceLibrary
         {
             if (dataPktType == DataPktType.SelfTestFromUsbToPc)
             {
-                if ((byte)Device.IsPowerOnSelfTestPktFromUsbToPc(SrcData, IndexOfStart) == GetDeviceType())
+                byte protocol = SrcData[IndexOfStart + 5];
+                if (protocol != 3)
                 {
-                    byte protocol = SrcData[IndexOfStart + 5];
-                    if (protocol != 3)
-                    {
-                        return;
-                    }
+                    return;
+                }
 
-                    SetDeviceName(SrcData[IndexOfStart + 4]);
-                    ProtocolVersion = protocol;
-                    SetDevicePrimaryMac(SrcData, (UInt16)(IndexOfStart + 6));
-                    SetDeviceMac(SrcData, (UInt16)(IndexOfStart + 10));
-                    SetHardwareRevision(SrcData, (UInt16)(IndexOfStart + 14));
-                    SetSoftwareRevision(SrcData, (UInt16)(IndexOfStart + 18));
-                    SetDeviceCustomer(SrcData, (UInt16)(IndexOfStart + 20));
-                    SetDeviceDebug(SrcData, (UInt16)(IndexOfStart + 22));
+                SetDeviceName(SrcData[IndexOfStart + 4]);
+                ProtocolVersion = protocol;
+                SetDevicePrimaryMac(SrcData, (UInt16)(IndexOfStart + 6));
+                SetDeviceMac(SrcData, (UInt16)(IndexOfStart + 10));
+                SetHardwareRevision(SrcData, (UInt16)(IndexOfStart + 14));
+                SetSoftwareRevision(SrcData, (UInt16)(IndexOfStart + 18));
+                SetDeviceCustomer(SrcData, (UInt16)(IndexOfStart + 20));
+                SetDeviceDebug(SrcData, (UInt16)(IndexOfStart + 22));
 
-                    Category = SrcData[IndexOfStart + 24];
-                    Interval = (UInt16)(SrcData[IndexOfStart + 25] * 256 + SrcData[IndexOfStart + 26]);
-                    Calendar = CommArithmetic.DecodeDateTime(SrcData, (UInt16)(IndexOfStart + 27));
+                Category = SrcData[IndexOfStart + 24];
+                Interval = (UInt16)(SrcData[IndexOfStart + 25] * 256 + SrcData[IndexOfStart + 26]);
+                Calendar = CommArithmetic.DecodeDateTime(SrcData, (UInt16)(IndexOfStart + 27));
 
-                    Pattern = SrcData[IndexOfStart + 33];
-                    Bps = SrcData[IndexOfStart + 34];
-                    SetTxPower(SrcData[IndexOfStart + 35]);
-                    SampleSend = SrcData[IndexOfStart + 36];
-                    Channel = SrcData[IndexOfStart + 37];
+                Pattern = SrcData[IndexOfStart + 33];
+                Bps = SrcData[IndexOfStart + 34];
+                SetTxPower(SrcData[IndexOfStart + 35]);
+                SampleSend = SrcData[IndexOfStart + 36];
+                Channel = SrcData[IndexOfStart + 37];
 
-                    MoveDetectThr = (UInt16)(SrcData[IndexOfStart + 38] * 256 + SrcData[IndexOfStart + 39]);
-                    MoveDetectTime = (UInt16)(SrcData[IndexOfStart + 40] * 256 + SrcData[IndexOfStart + 41]);
+                MoveDetectThr = (UInt16)(SrcData[IndexOfStart + 38] * 256 + SrcData[IndexOfStart + 39]);
+                MoveDetectTime = (UInt16)(SrcData[IndexOfStart + 40] * 256 + SrcData[IndexOfStart + 41]);
 
-                    StaticDetectThr = (UInt16)(SrcData[IndexOfStart + 42] * 256 + SrcData[IndexOfStart + 43]);
-                    StaticDetectTime = (UInt16)(SrcData[IndexOfStart + 44] * 256 + SrcData[IndexOfStart + 45]);
+                StaticDetectThr = (UInt16)(SrcData[IndexOfStart + 42] * 256 + SrcData[IndexOfStart + 43]);
+                StaticDetectTime = (UInt16)(SrcData[IndexOfStart + 44] * 256 + SrcData[IndexOfStart + 45]);
 
-                    AlertCfg = SrcData[46];
+                AlertCfg = SrcData[46];
 
-                    ICTemperature = SrcData[IndexOfStart + 47];
-                    voltF = Math.Round(Convert.ToDouble((SrcData[IndexOfStart + 48] * 256 + SrcData[IndexOfStart + 49])) / 1000, 2);
+                ICTemperature = SrcData[IndexOfStart + 47];
+                voltF = Math.Round(Convert.ToDouble((SrcData[IndexOfStart + 48] * 256 + SrcData[IndexOfStart + 49])) / 1000, 2);
 
-                    FlashID = CommArithmetic.DecodeClientID(SrcData, IndexOfStart + 50);
-                    MaxLength = SrcData[IndexOfStart + 52];
+                FlashID = CommArithmetic.DecodeClientID(SrcData, IndexOfStart + 50);
+                MaxLength = SrcData[IndexOfStart + 52];
 
-                    FlashFront = (UInt32)(SrcData[IndexOfStart + 53] * 256 * 256 + SrcData[IndexOfStart + 54] * 256 + SrcData[IndexOfStart + 55]);
-                    FlashRear = (UInt32)(SrcData[IndexOfStart + 56] * 256 * 256 + SrcData[IndexOfStart + 57] * 256 + SrcData[IndexOfStart + 58]);
-                    FlashQueueLength = (UInt32)(SrcData[IndexOfStart + 59] * 256 * 256 + SrcData[IndexOfStart + 60] * 256 + SrcData[IndexOfStart + 61]);
+                FlashFront = (UInt32)(SrcData[IndexOfStart + 53] * 256 * 256 + SrcData[IndexOfStart + 54] * 256 + SrcData[IndexOfStart + 55]);
+                FlashRear = (UInt32)(SrcData[IndexOfStart + 56] * 256 * 256 + SrcData[IndexOfStart + 57] * 256 + SrcData[IndexOfStart + 58]);
+                FlashQueueLength = (UInt32)(SrcData[IndexOfStart + 59] * 256 * 256 + SrcData[IndexOfStart + 60] * 256 + SrcData[IndexOfStart + 61]);
 
-                    MoveState_Set(SrcData[IndexOfStart + 62]);
+                MoveState_Set(SrcData[IndexOfStart + 62]);
 
-                    byte rssi = SrcData[IndexOfStart + 66];
-                    if (rssi >= 0x80)
-                    {
-                        RSSI = (double)(rssi - 0x100);
-                    }
-                    else
-                    {
-                        RSSI = (double)rssi;
-                    }
+                byte rssi = SrcData[IndexOfStart + 66];
+                if (rssi >= 0x80)
+                {
+                    RSSI = (double)(rssi - 0x100);
+                }
+                else
+                {
+                    RSSI = (double)rssi;
                 }
             }
 

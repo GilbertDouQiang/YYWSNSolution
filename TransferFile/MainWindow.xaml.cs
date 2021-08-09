@@ -224,9 +224,14 @@ namespace TransferFile
             tbxStatus.Text += "已传文件的数量=" + u32.ToString() + "；";
             ios += 4;
 
-            // 待传文件的总大小
+            // 待传文件的总数量
             u32 = CommArithmetic.ByteBuf_to_UInt32(RxBuf, ios);
             tbxStatus.Text += "待传文件的数量=" + u32.ToString() + "；";
+            ios += 4;
+
+            // 待传文件的总大小
+            u32 = CommArithmetic.ByteBuf_to_UInt32(RxBuf, ios);
+            tbxStatus.Text += "待传文件的总大小=" + u32.ToString() + "；";
             ios += 4;
 
             // 任务数量
@@ -237,6 +242,149 @@ namespace TransferFile
             u32 = CommArithmetic.ByteBuf_to_UInt32(RxBuf, ios);
             tbxStatus.Text += "当前状态=" + u32.ToString("X8") + "；";
             ios += 4;
+
+            return 0;
+        }
+
+        public int RxBuf_ClaimTask(byte[] RxBuf)
+        {
+            tbxStatus.Text = "";
+
+            if (RxBuf.Length < 7)
+            {
+                tbxStatus.Text += "反馈数据包不完整；";
+                return -1;
+            }
+
+            int ios = 5;
+
+            byte protocol = RxBuf[ios];
+            if (protocol != 1)
+            {
+                tbxStatus.Text += "协议版本错误；";
+                return -2;
+            }
+            ios += 1;
+
+            Int16 result = CommArithmetic.ByteBuf_to_Int8(RxBuf, ios);
+            if (result < 0)
+            {
+                tbxStatus.Text += "反馈结果=失败=" + result.ToString() + "；";
+                return -3;
+            }
+            ios += 1;
+
+            if (RxBuf.Length < 12)
+            {
+                tbxStatus.Text += "反馈数据包不完整；";
+                return -4;
+            }
+
+            // OP
+            byte op = RxBuf[ios];
+            if (op == 0)
+            {
+                tbxStatus.Text += "无操作；";
+            }
+            else if (op == 1)
+            {
+                tbxStatus.Text += "点播缩略图；";
+            }
+            else if (op == 2)
+            {
+                tbxStatus.Text += "点播原图；";
+            }
+            else
+            {
+                tbxStatus.Text += "未知操作；";
+            }
+            ios += 1;
+
+            // 起始地址
+            UInt32 u32 = CommArithmetic.ByteBuf_to_UInt32(RxBuf, ios);
+            UInt32 sAddrInFile = u32;
+            tbxStatus.Text += "起始地址=" + u32.ToString("X8") + "；";
+            ios += 4;
+
+            // 结束地址
+            u32 = CommArithmetic.ByteBuf_to_UInt32(RxBuf, ios);
+            UInt32 eAddrInFile = u32;
+            tbxStatus.Text += "结束地址=" + u32.ToString("X8") + "；";
+            ios += 4;
+
+            tbxStatus.Text += "Size=" + (eAddrInFile - sAddrInFile).ToString() + "；";
+
+            // 负载长度
+            byte payLen = RxBuf[ios];
+            ios += 1;
+            if (payLen == 0)
+            {
+                tbxStatus.Text += "无负载；";
+            }
+            else
+            {
+                if(payLen > RxBuf.Length - ios)
+                {
+                    tbxStatus.Text += "负载数据不完整；";
+                    return -5;
+                }
+
+                int PayBufEnd = ios + payLen;
+
+                UInt16 dataType = 0;
+                byte dataLen = 0;
+
+                while (ios < PayBufEnd)
+                {
+                    if(PayBufEnd - ios < 3)
+                    {
+                        tbxStatus.Text += "负载数据有缺失；";
+                        return -6;
+                    }
+
+                    dataType = CommArithmetic.ByteBuf_to_UInt16(RxBuf, ios);
+                    dataLen = RxBuf[ios + 2];
+
+                    ios += 3;
+
+                    switch (dataType)
+                    {
+                        case 0x100D:
+                            {
+                                if(dataLen > 64)
+                                {
+                                    tbxStatus.Text += "数据长度错误；";
+                                    return -6;
+                                }
+
+                                if (dataLen > PayBufEnd - ios)
+                                {
+                                    tbxStatus.Text += "文件名不完整；";
+                                    return -7;
+                                }
+
+                                tbxStatus.Text += "文件名=" + Encoding.Default.GetString(RxBuf, ios, dataLen);
+
+                                ios += dataLen;
+                                break;
+                            }
+                        default:
+                            {
+                                if (dataLen > PayBufEnd - ios)
+                                {
+                                    tbxStatus.Text += "文件名不完整；";
+                                    return -8;
+                                }
+
+                                tbxStatus.Text += "未知的数据类型；";
+
+                                ios += dataLen;
+                                break;
+                            }
+                    }                    
+                }                
+            }
+
 
             return 0;
         }
@@ -476,6 +624,11 @@ namespace TransferFile
                         error = RxBuf_SyncStatus(RxBuf);
                         break;
                     }
+                case 0x06:          // 领取任务
+                    {
+                        error = RxBuf_ClaimTask(RxBuf);
+                        break;
+                    }
                 case 0x0A:          // 申请传输
                     {
                         error = RxBuf_Apply(RxBuf);
@@ -689,9 +842,58 @@ namespace TransferFile
             Serial_Close();
         }
 
+        public int ClaimTask()
+        {
+            byte[] TxBuf = new byte[8];
+            UInt16 TxLen = 0;
+
+            // 长度
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+
+            // 方向
+            TxBuf[TxLen++] = 0xFD;
+
+            // 校验和
+            TxBuf[TxLen++] = 0x00;
+
+            // 命令
+            TxBuf[TxLen++] = 0x06;
+
+            // 协议版本
+            TxBuf[TxLen++] = 0x01;
+
+            // 计算校验和
+            TxBuf[3] = MyCustomFxn.CheckSum8(0, TxBuf, 4, (UInt16)(TxLen - 5 + 1));
+
+            // 重写长度位
+            UInt16 u16 = (UInt16)(TxLen - 5);
+            TxBuf[0] = (byte)((u16 & 0xFF00) >> 8);
+            TxBuf[1] = (byte)((u16 & 0x00FF) >> 0);
+
+            byte[] RxBuf = SerialPort.SendReceive(TxBuf, 0, TxLen, 400);
+
+            if (RxBuf == null || RxBuf.Length == 0)
+            {
+                return -1;
+            }
+
+            int error = RxBuf_IsRight(RxBuf, TxBuf);
+            if (error < 0)
+            {
+                return -2;
+            }
+
+            return 0;
+        }
+
         private void btnClaimTask_Click(object sender, RoutedEventArgs e)
         {
+            Serial_Init();
 
+            ClaimTask();
+
+            Serial_Close();
         }
 
         public int SendApply()
@@ -812,6 +1014,13 @@ namespace TransferFile
             // 文件类型
             TxBuf[TxLen++] = 0x01;
 
+            // 文件总大小
+            u32 = (UInt32)bFile.FileSize;
+            TxBuf[TxLen++] = (byte)((u32 & 0xFF000000) >> 24);
+            TxBuf[TxLen++] = (byte)((u32 & 0x00FF0000) >> 16);
+            TxBuf[TxLen++] = (byte)((u32 & 0x0000FF00) >> 8);
+            TxBuf[TxLen++] = (byte)((u32 & 0x000000FF) >> 0);
+
             // 起始地址
             u32 = 0;
             TxBuf[TxLen++] = (byte)((u32 & 0xFF000000) >> 24);
@@ -819,7 +1028,7 @@ namespace TransferFile
             TxBuf[TxLen++] = (byte)((u32 & 0x0000FF00) >> 8);
             TxBuf[TxLen++] = (byte)((u32 & 0x000000FF) >> 0);
 
-            // 结束地址
+            // 文件大小
             u32 = (UInt32)bFile.FileSize;
             TxBuf[TxLen++] = (byte)((u32 & 0xFF000000) >> 24);
             TxBuf[TxLen++] = (byte)((u32 & 0x00FF0000) >> 16);

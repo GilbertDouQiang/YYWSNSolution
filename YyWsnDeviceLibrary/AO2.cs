@@ -216,11 +216,6 @@ namespace YyWsnDeviceLibrary
         /// <param name="SrcData"></param>
         public AO2(byte[] SrcData, UInt16 IndexOfStart, Device.DataPktType pktType, Device.DeviceType deviceType)
         {
-            if (isDeviceType((byte)deviceType) == false)
-            {
-                return;
-            }
-
             UInt16 iCnt = 0;
 
             if (pktType == Device.DataPktType.SensorFromSsToGw)

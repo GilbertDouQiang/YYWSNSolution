@@ -208,6 +208,23 @@ namespace YyWsnCommunicatonLibrary
             }
         }
 
+        private void AddLog(string tip, string Buf)
+        {
+            if (IsLogger == false)
+            {
+                return;
+            }
+
+            if (Buf == null || Buf.Length == 0)
+            {
+                Logger.AddLogAutoTime(tip + "\t");
+            }
+            else
+            {
+                Logger.AddLogAutoTime(tip + "\t" + Buf);
+            }
+        }
+
         private void AddLog(string tip, byte[] Buf)
         {
             if (Buf == null)
@@ -248,6 +265,29 @@ namespace YyWsnCommunicatonLibrary
             return 0;
         }
 
+        private int Write(string txStr)
+        {
+            if (txStr == null || txStr.Length == 0)
+            {
+                return -1;
+            }
+
+            if (Port1 == null)
+            {
+                return -2;
+            }
+
+            if (Port1.IsOpen == false)
+            {
+                return -3;
+            }
+
+            Port1.Write(txStr);
+            AddLog("TX", txStr);
+
+            return 0;
+        }
+
         public int Send(byte[] TxBuf, int IndexOfStart, int TxLen)
         {
             return Write(TxBuf, IndexOfStart, TxLen);
@@ -263,6 +303,11 @@ namespace YyWsnCommunicatonLibrary
             byte[] TxBuf = CommArithmetic.HexStringToByteArray(Str);
 
             return Write(TxBuf, 0, TxBuf.Length);
+        }
+
+        public int SendString(string Str)
+        {         
+            return Write(Str);
         }
 
         /// <summary>
@@ -504,7 +549,7 @@ namespace YyWsnCommunicatonLibrary
 
         public static String[] GetSerialPorts()
         {
-            return MulGetHardwareInfo(HardwareEnum.Win32_SerialPort, "Name");    //调用方式通过WMI获取COM端口 
+            return MulGetHardwareInfo(HardwareEnum.Win32_PnPEntity, "Name");    //调用方式通过WMI获取COM端口 
         }
 
     }

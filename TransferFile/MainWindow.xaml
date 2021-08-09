@@ -74,7 +74,7 @@
                     </Grid.ColumnDefinitions>
 
                     <TextBlock Text="波特率：" Grid.Column="1" Margin="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" />
-                    <TextBox x:Name="tbxBaudRate" Grid.Column="2" Margin="0,0,0,0" Text="115200" />
+                    <TextBox x:Name="tbxBaudRate" Grid.Column="2" Margin="0,0,0,0" Text="460800" />
                     <TextBlock Text="数据包最大长度：" Grid.Column="4" Margin="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" />
                     <TextBox x:Name="tbxPktMaxLen" Grid.Column="5" Margin="0,0,0,0" Text="2048" />
                     <Button x:Name="btnWake" Grid.Column="7" Margin="0,0,0,0" Content="唤醒" Click="btnWake_Click" VerticalAlignment="Center"/>
@@ -133,9 +133,8 @@
                     <TextBlock Text="传输信息："    Grid.Column="1" Margin="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" />
                     <TextBox x:Name="tbxTransInfo" Grid.Column="2" Margin="0,0,0,0" />
                     <Button x:Name="btnSyncStatus" Grid.Column="4" Margin="0,0,0,0" Content="同步状态" Click="btnSyncStatus_Click" VerticalAlignment="Center"/>
-                    <!-- 
                     <Button x:Name="btnClaimTask" Grid.Column="6" Margin="0,0,0,0" Content="领取任务" Click="btnClaimTask_Click" VerticalAlignment="Center"/>
-                    -->
+
                 </Grid>
 
             </StackPanel>

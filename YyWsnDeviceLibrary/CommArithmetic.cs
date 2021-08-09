@@ -52,15 +52,20 @@ namespace YyWsnDeviceLibrary
             
         }
 
-        public static byte[] HexStringToByteArray(string s,int start)
+        public static byte[] HexStringToByteArray(string s, int start)
         {
             try
             {
                 s = s.Substring(start);
                 s = s.Replace(" ", "");
+
                 byte[] buffer = new byte[s.Length / 2];
+
                 for (int i = 0; i < s.Length; i += 2)
+                {
                     buffer[i / 2] = (byte)Convert.ToByte(s.Substring(i, 2), 16);
+                }
+
                 return buffer;
             }
             catch (Exception)

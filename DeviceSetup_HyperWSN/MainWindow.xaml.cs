@@ -29,6 +29,16 @@ namespace DeviceSetup_HyperWSN
         Timer TimeoutTimer;
         bool TimeoutElapsed = true;                // 是否已经超时
 
+        // 数据包类型与设备类型的对应关系
+        byte[] M1PktType = null;
+        byte[] AO2PktType = null;
+        byte[] M9PktType = null;
+        byte[] M40PktType = null;
+        byte[] SkPktType = null;
+        byte[] EskPktType = null;
+        byte[] L1PktType = null;
+        byte[] WpPktType = null;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -50,6 +60,35 @@ namespace DeviceSetup_HyperWSN
             TimeoutTimer.Elapsed += Timeout_Elapsed;
             TimeoutTimer.Interval = 3050;
             TimeoutTimer.Enabled = false;
+
+            M1PktType = CommArithmetic.HexStringToByteArray(ConfigurationManager.AppSettings["M1_PKT_TYPE"]);
+            AO2PktType = CommArithmetic.HexStringToByteArray(ConfigurationManager.AppSettings["AO2_PKT_TYPE"]);
+            M9PktType = CommArithmetic.HexStringToByteArray(ConfigurationManager.AppSettings["M9_PKT_TYPE"]);
+            M40PktType = CommArithmetic.HexStringToByteArray(ConfigurationManager.AppSettings["M40_PKT_TYPE"]);
+            SkPktType = CommArithmetic.HexStringToByteArray(ConfigurationManager.AppSettings["SK_PKT_TYPE"]);
+            EskPktType = CommArithmetic.HexStringToByteArray(ConfigurationManager.AppSettings["ESK_PKT_TYPE"]);
+            L1PktType = CommArithmetic.HexStringToByteArray(ConfigurationManager.AppSettings["L1_PKT_TYPE"]);
+            WpPktType = CommArithmetic.HexStringToByteArray(ConfigurationManager.AppSettings["WP_PKT_TYPE"]);
+        }
+
+        private bool WhichPktType(byte[] PktType, Device.DeviceType deviceType)
+        {
+            if (PktType == null || PktType.Length == 0)
+            {
+                return false;       // 不符合
+            }
+
+            byte bDeviceType = (byte)deviceType;
+
+            for (int iX = 0; iX < PktType.Length; iX++)
+            {
+                if (bDeviceType == PktType[iX])
+                {
+                    return true;    // 符合
+                }
+            }
+
+            return false;           // 不符合
         }
 
         private void FindComport()
@@ -161,6 +200,23 @@ namespace DeviceSetup_HyperWSN
                     return;
                 }
 
+                if (TableOfLive.IsSelected == true)
+                {
+                    try
+                    {                   
+                        tbxStatusOfLive.Text += Encoding.Default.GetString(e.ReceivedBytes, 0, e.ReceivedBytes.Length);
+                        tbxStatusOfLive.Focus();                                // 获取焦点
+                        tbxStatusOfLive.Select(tbxStatusOfLive.Text.Length, 0); // 光标定位到文本最后
+                        tbxStatusOfLive.ScrollToEnd();                          // 滚动到光标处
+                    }
+                    catch
+                    {
+
+                    }                    
+
+                    return;
+                }
+
                 //
                 if (e.ReceivedBytes.Length == 8)
                 {
@@ -193,6 +249,188 @@ namespace DeviceSetup_HyperWSN
 
                     // 根据不同的设备类型来实例
                     Device.DeviceType deviceType = (Device.DeviceType)Error;
+
+
+                    if (WhichPktType(M1PktType, deviceType) == true)
+                    {
+                        M1 aM1 = new M1(e.ReceivedBytes, iX, Device.DataPktType.SelfTestFromUsbToPc, deviceType);
+                        if (aM1 != null)
+                        {
+                            TableOfM1.IsSelected = true;
+                            StackOfM1.DataContext = aM1;
+                        }
+                    }
+                    else if (WhichPktType(AO2PktType, deviceType) == true)
+                    {
+                        AO2 aAO2 = new AO2(e.ReceivedBytes, iX, Device.DataPktType.SelfTestFromUsbToPc, Device.DeviceType.AO2);
+                        if (aAO2 != null)
+                        {
+                            TableOfAO2.IsSelected = true;
+                            StackOfAO2.DataContext = aAO2;
+                            ReceivedOk = true;
+                        }
+                    }
+                    else if (WhichPktType(M9PktType, deviceType) == true)
+                    {
+                        M9 aM9 = new M9(e.ReceivedBytes, iX, Device.DataPktType.SelfTestFromUsbToPc);
+                        if (aM9 != null)
+                        {
+                            TableOfM9.IsSelected = true;
+                            StackOfM9.DataContext = aM9;
+
+                            // 显示灵敏度
+                            DisplaySensitivityOfM9(aM9.MoveDetectThr, aM9.StaticDetectThr);
+
+                            if (cbxAlertCfgLockOfM9.IsChecked == false)
+                            {
+                                if (0 != (aM9.AlertCfg & 0x01))
+                                {   // 静止报警
+                                    cbxAlertCfgStaticOfM9.IsChecked = true;
+                                }
+                                else
+                                {
+                                    cbxAlertCfgStaticOfM9.IsChecked = false;
+                                }
+
+                                if (0 != (aM9.AlertCfg & 0x02))
+                                {   // 运动报警
+                                    cbxAlertCfgMoveOfM9.IsChecked = true;
+                                }
+                                else
+                                {
+                                    cbxAlertCfgMoveOfM9.IsChecked = false;
+                                }
+
+                                if (0 != (aM9.AlertCfg & 0x04))
+                                {   // 动->静报警
+                                    cbxAlertCfgMoveStaticOfM9.IsChecked = true;
+                                }
+                                else
+                                {
+                                    cbxAlertCfgMoveStaticOfM9.IsChecked = false;
+                                }
+
+                                if (0 != (aM9.AlertCfg & 0x08))
+                                {   // 静->动报警
+                                    cbxAlertCfgStaticMoveOfM9.IsChecked = true;
+                                }
+                                else
+                                {
+                                    cbxAlertCfgStaticMoveOfM9.IsChecked = false;
+                                }
+
+                                if (0 != (aM9.AlertCfg & 0x10))
+                                {   // 异常报警
+                                    cbxAlertCfgExceptionOfM9.IsChecked = true;
+                                }
+                                else
+                                {
+                                    cbxAlertCfgExceptionOfM9.IsChecked = false;
+                                }
+                            }
+                        }
+                    }
+                    else if (WhichPktType(M40PktType, deviceType) == true)
+                    {
+                        M40 aM40 = new M40(e.ReceivedBytes, iX, Device.DataPktType.SelfTestFromUsbToPc);
+                        if (aM40 != null)
+                        {
+                            TableOfM40.IsSelected = true;
+                            StackOfM40.DataContext = aM40;
+
+                            if (cbxAlertCfgLockOfM40.IsChecked == false)
+                            {
+                                if (0 != (aM40.AlertCfg & 0x01))
+                                {   // 关门报警
+                                    cbxAlertCfgClosedOfM40.IsChecked = true;
+                                }
+                                else
+                                {
+                                    cbxAlertCfgClosedOfM40.IsChecked = false;
+                                }
+
+                                if (0 != (aM40.AlertCfg & 0x02))
+                                {   // 开门报警
+                                    cbxAlertCfgOpenedOfM40.IsChecked = true;
+                                }
+                                else
+                                {
+                                    cbxAlertCfgOpenedOfM40.IsChecked = false;
+                                }
+
+                                if (0 != (aM40.AlertCfg & 0x04))
+                                {   // 开->关报警
+                                    cbxAlertCfgOpenedClosedOfM40.IsChecked = true;
+                                }
+                                else
+                                {
+                                    cbxAlertCfgOpenedClosedOfM40.IsChecked = false;
+                                }
+
+                                if (0 != (aM40.AlertCfg & 0x08))
+                                {   // 关->开报警
+                                    cbxAlertCfgClosedOpenedOfM40.IsChecked = true;
+                                }
+                                else
+                                {
+                                    cbxAlertCfgClosedOpenedOfM40.IsChecked = false;
+                                }
+
+                                if (0 != (aM40.AlertCfg & 0x10))
+                                {   // 异常报警
+                                    cbxAlertCfgExceptionOfM40.IsChecked = true;
+                                }
+                                else
+                                {
+                                    cbxAlertCfgExceptionOfM40.IsChecked = false;
+                                }
+                            }
+                        }
+                    }
+                    else if (WhichPktType(SkPktType, deviceType) == true)
+                    {
+                        SK aSK = new SK(e.ReceivedBytes, iX, Device.DataPktType.SelfTestFromUsbToPc);
+                        if (aSK != null)
+                        {
+                            TableOfM4.IsSelected = true;
+                            StackOfSK.DataContext = aSK;
+                            ReceivedOk = true;
+                        }
+                    }
+                    else if (WhichPktType(EskPktType, deviceType) == true)
+                    {
+                        ESK aESK = new ESK(e.ReceivedBytes, iX, Device.DataPktType.SelfTestFromUsbToPc);
+                        if (aESK != null)
+                        {
+                            TableOfEsk.IsSelected = true;
+                            StackOfEsk.DataContext = aESK;
+                            ReceivedOk = true;
+                        }
+                    }
+                    else if (WhichPktType(L1PktType, deviceType) == true)
+                    {
+                        L1 aL1 = new L1(e.ReceivedBytes, iX, Device.DataPktType.SelfTestFromUsbToPc);
+                        if (aL1 != null)
+                        {
+                            TableOfL1.IsSelected = true;
+                            StackOfL1.DataContext = aL1;
+                        }
+                    }
+                    else if (WhichPktType(WpPktType, deviceType) == true)
+                    {
+                        WP aWP = new WP(e.ReceivedBytes, iX, Device.DataPktType.SelfTestFromUsbToPc, deviceType);
+                        if (aWP != null)
+                        {
+                            TableOfWP.IsSelected = true;
+                            StackOfWP.DataContext = aWP;
+                        }
+                    }
+                    else
+                    {
+                        // 无操作
+                    }
+
+                    /*
                     switch (deviceType)
                     {
                         case Device.DeviceType.M1:
@@ -392,7 +630,8 @@ namespace DeviceSetup_HyperWSN
                             {
                                 break;
                             }
-                    }
+                    }*/
+                    
                 }
 
                 if (ReceivedOk == false)
@@ -5527,6 +5766,77 @@ namespace DeviceSetup_HyperWSN
                 tbxNewDeviceMacOfM1.Text = tbxNewDeviceMacOfM1.Text.Replace("\n", "");
                 tbxNewDeviceMacOfM1.Text = tbxNewDeviceMacOfM1.Text.Replace("\r", "");
             }
+        }
+
+        private void btnSetCfgOfLive_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                string cmd = "[ASK: Set=" + tbxBpsOfLive.Text + "," + tbxChannelOfLive.Text + "," + tbxTxPowerOfLive.Text + "," + tbxPatternOfLive.Text + "]";
+
+                SerialPort.SendString(cmd);
+
+                System.Threading.Thread.Sleep(100);
+
+                cmd = "[ASK:DstId=" + tbxDstIdOfLive.Text.Replace(" ", "") + "]"; 
+
+                SerialPort.SendString(cmd);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("参数错误" + ex.Message);
+            }
+        }
+
+        private void btnCallOfLive_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {                
+                string cmd = "[ASK: Relay=0,100,0,1]HyperWSN::Call";
+
+                SerialPort.SendString(cmd);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("参数错误" + ex.Message);
+            }
+        }
+
+        private void btnDemandCreateOfLive_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                tbxStatusOfLive.Text += "\n";
+
+                string cmd = "[ASK: Relay=0,1000,0,1]HyperWSN::Demand=" + tbxDemandOpOfLive.Text + "," + tbxDemandStartAddrOfLive.Text + "," + tbxDemandEndAddrOfLive.Text + "," + tbxDemandFileOfLive.Text;
+
+                SerialPort.SendString(cmd);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("参数错误" + ex.Message);
+            }
+        }
+
+        private void btnDemandReadOfLive_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                tbxStatusOfLive.Text += "\n";
+
+                string cmd = "[ASK: Relay=0,1000,0,1]HyperWSN::Demand";
+                
+                SerialPort.SendString(cmd);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("参数错误" + ex.Message);
+            }
+        }
+
+        private void btnClearStatusOfLive_Click(object sender, RoutedEventArgs e)
+        {
+            tbxStatusOfLive.Text = "";
         }
     }
 }
