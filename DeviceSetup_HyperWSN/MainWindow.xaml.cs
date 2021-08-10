@@ -796,7 +796,7 @@ namespace DeviceSetup_HyperWSN
             {
                 return -1;
             }
-            Device.DeviceType deviceType = (Device.DeviceType)ByteBufTmp[0];
+            byte deviceType = ByteBufTmp[0];
 
             // Protocol
             ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxProtocolOfM1.Text);
@@ -826,7 +826,7 @@ namespace DeviceSetup_HyperWSN
             }
 
             // 设备类型
-            TxBuf[TxLen++] = (byte)deviceType;
+            TxBuf[TxLen++] = deviceType;
 
             // Protocol
             if (Protocol < 4)
@@ -857,7 +857,6 @@ namespace DeviceSetup_HyperWSN
                     TxBuf[TxLen++] = ByteBufTmp[3];
                 }
             }
-
 
             // Sensor Mac
             ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfM1.Text);
@@ -951,7 +950,7 @@ namespace DeviceSetup_HyperWSN
             {
                 return -1;
             }
-            Device.DeviceType deviceType = (Device.DeviceType)ByteBufTmp[0];
+            byte deviceType = ByteBufTmp[0];
 
             // Protocol
             ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxProtocolOfM1.Text);
@@ -981,7 +980,7 @@ namespace DeviceSetup_HyperWSN
             }
 
             // 设备类型
-            TxBuf[TxLen++] = (byte)deviceType;
+            TxBuf[TxLen++] = deviceType;
 
             // Protocol
             TxBuf[TxLen++] = Protocol;
@@ -1051,7 +1050,7 @@ namespace DeviceSetup_HyperWSN
                     TxBuf[TxLen++] = (byte)((tempComp & 0xFF00) >> 8);
                     TxBuf[TxLen++] = (byte)((tempComp & 0x00FF) >> 0);
 
-                    if (deviceType == Device.DeviceType.M2)
+                    if (deviceType == (byte)Device.DeviceType.M2)
                     {   // M2数据包里没有湿度补偿
 
                     }
@@ -1278,7 +1277,7 @@ namespace DeviceSetup_HyperWSN
             {
                 return -1;
             }
-            Device.DeviceType deviceType = (Device.DeviceType)ByteBufTmp[0];
+            byte deviceType = ByteBufTmp[0];
 
             // Protocol
             ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxProtocolOfM1.Text);
@@ -1355,7 +1354,7 @@ namespace DeviceSetup_HyperWSN
                 // 采发倍数
                 TxBuf[TxLen++] = Convert.ToByte(tbxNewSampleSendOfM1.Text);
 
-                if (deviceType == Device.DeviceType.M2)
+                if (deviceType == (byte)Device.DeviceType.M2)
                 {
                     // 温度预警上限
                     double tempF = Convert.ToDouble(tbxNewTemperatureWarnHighOfM1.Text);        // 单位：℃
@@ -1747,6 +1746,8 @@ namespace DeviceSetup_HyperWSN
             byte[] TxBuf = new byte[25];
             UInt16 TxLen = 0;
 
+            byte[] ByteBufTmp = null;
+
             // Start
             TxBuf[TxLen++] = 0xCE;
 
@@ -1760,13 +1761,21 @@ namespace DeviceSetup_HyperWSN
             TxBuf[TxLen++] = 0x01;
 
             // 设备类型
-            TxBuf[TxLen++] = 0x58;
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceTypeOfM4.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 1)
+            {
+                TxBuf[TxLen++] = 0x00;
+            }
+            else
+            {
+                TxBuf[TxLen++] = ByteBufTmp[0];
+            }
 
             // Protocol
             TxBuf[TxLen++] = 0x02;
 
             // Sensor Mac
-            byte[] ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfM4.Text);
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfM4.Text);
             if (ByteBufTmp == null || ByteBufTmp.Length < 4)
             {
                 return -1;
@@ -1855,7 +1864,15 @@ namespace DeviceSetup_HyperWSN
             TxBuf[TxLen++] = 0x01;          // 由于老版USB修改工具的问题，此USB Porotocol必须是1，否则修改失败；
 
             // 设备类型
-            TxBuf[TxLen++] = 0x58;
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceTypeOfM4.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 1)
+            {
+                TxBuf[TxLen++] = 0x00;
+            }
+            else
+            {
+                TxBuf[TxLen++] = ByteBufTmp[0];
+            }
 
             // Protocol
             byte Protocol = Convert.ToByte(tbxProtocolOfM4.Text);
@@ -2013,7 +2030,15 @@ namespace DeviceSetup_HyperWSN
             TxBuf[TxLen++] = 0x01;      // 由于老版USB修改工具的问题，此USB Porotocol必须是1，否则修改失败；
 
             // 设备类型
-            TxBuf[TxLen++] = 0x58;
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceTypeOfM4.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 1)
+            {
+                TxBuf[TxLen++] = 0x00;
+            }
+            else
+            {
+                TxBuf[TxLen++] = ByteBufTmp[0];
+            }
 
             // Protocol
             byte Protocol = Convert.ToByte(tbxProtocolOfM4.Text);
@@ -2273,7 +2298,15 @@ namespace DeviceSetup_HyperWSN
             TxBuf[TxLen++] = 0x01;
 
             // 设备类型
-            TxBuf[TxLen++] = 0x58;
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceTypeOfM4.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 1)
+            {
+                TxBuf[TxLen++] = 0x00;
+            }
+            else
+            {
+                TxBuf[TxLen++] = ByteBufTmp[0];
+            }
 
             // Protocol
             TxBuf[TxLen++] = 0x02;
@@ -2351,6 +2384,8 @@ namespace DeviceSetup_HyperWSN
             byte[] TxBuf = new byte[25];
             UInt16 TxLen = 0;
 
+            byte[] ByteBufTmp = null;
+
             // Start
             TxBuf[TxLen++] = 0xCE;
 
@@ -2364,13 +2399,21 @@ namespace DeviceSetup_HyperWSN
             TxBuf[TxLen++] = 0x01;
 
             // 设备类型
-            TxBuf[TxLen++] = 0x7A;
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceTypeOfAO2.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 1)
+            {
+                TxBuf[TxLen++] = 0x00;
+            }
+            else
+            {
+                TxBuf[TxLen++] = ByteBufTmp[0];
+            }
 
             // Protocol
             TxBuf[TxLen++] = 0x02;
 
             // Sensor Mac
-            byte[] ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfAO2.Text);
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfAO2.Text);
             if (ByteBufTmp == null || ByteBufTmp.Length < 4)
             {
                 return -1;
@@ -2459,7 +2502,15 @@ namespace DeviceSetup_HyperWSN
             TxBuf[TxLen++] = 0x02;
 
             // 设备类型
-            TxBuf[TxLen++] = 0x7A;
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceTypeOfAO2.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 1)
+            {
+                TxBuf[TxLen++] = 0x00;
+            }
+            else
+            {
+                TxBuf[TxLen++] = ByteBufTmp[0];
+            }
 
             // Protocol
             TxBuf[TxLen++] = 0x03;
@@ -2613,7 +2664,15 @@ namespace DeviceSetup_HyperWSN
             TxBuf[TxLen++] = 0x02;
 
             // 设备类型
-            TxBuf[TxLen++] = 0x7A;
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceTypeOfAO2.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 1)
+            {
+                TxBuf[TxLen++] = 0x00;
+            }
+            else
+            {
+                TxBuf[TxLen++] = ByteBufTmp[0];
+            }
 
             // Protocol
             TxBuf[TxLen++] = 0x03;
@@ -2807,7 +2866,15 @@ namespace DeviceSetup_HyperWSN
             TxBuf[TxLen++] = 0x02;
 
             // 设备类型
-            TxBuf[TxLen++] = 0x7A;
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceTypeOfAO2.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 1)
+            {
+                TxBuf[TxLen++] = 0x00;
+            }
+            else
+            {
+                TxBuf[TxLen++] = ByteBufTmp[0];
+            }
 
             // Protocol
             TxBuf[TxLen++] = 0x03;
@@ -3549,9 +3616,12 @@ namespace DeviceSetup_HyperWSN
             ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceTypeOfM9.Text);
             if (ByteBufTmp == null || ByteBufTmp.Length < 1)
             {
-                return -1;
+                TxBuf[TxLen++] = 0x00;
             }
-            TxBuf[TxLen++] = ByteBufTmp[0];
+            else
+            {
+                TxBuf[TxLen++] = ByteBufTmp[0];
+            }
 
             // Protocol
             TxBuf[TxLen++] = 0x02;
@@ -3649,9 +3719,12 @@ namespace DeviceSetup_HyperWSN
             ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceTypeOfM9.Text);
             if (ByteBufTmp == null || ByteBufTmp.Length < 1)
             {
-                return -1;
+                TxBuf[TxLen++] = 0x00;
             }
-            TxBuf[TxLen++] = ByteBufTmp[0];
+            else
+            {
+                TxBuf[TxLen++] = ByteBufTmp[0];
+            }
 
             // Protocol
             TxBuf[TxLen++] = 0x03;
@@ -3789,9 +3862,12 @@ namespace DeviceSetup_HyperWSN
             ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceTypeOfM9.Text);
             if (ByteBufTmp == null || ByteBufTmp.Length < 1)
             {
-                return -1;
+                TxBuf[TxLen++] = 0x00;
             }
-            TxBuf[TxLen++] = ByteBufTmp[0];
+            else
+            {
+                TxBuf[TxLen++] = ByteBufTmp[0];
+            }            
 
             // Protocol
             TxBuf[TxLen++] = 0x03;
@@ -3888,13 +3964,17 @@ namespace DeviceSetup_HyperWSN
             TxBuf[TxLen++] = 0x02;
 
             // 设备类型
+            byte deviceType = 0x00;
             ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceTypeOfM9.Text);
             if (ByteBufTmp == null || ByteBufTmp.Length < 1)
             {
                 return -1;
             }
-            TxBuf[TxLen++] = ByteBufTmp[0];
-            byte deviceType = ByteBufTmp[0];
+            else
+            {
+                TxBuf[TxLen++] = ByteBufTmp[0];
+                deviceType = ByteBufTmp[0];
+            }            
 
             // Protocol
             TxBuf[TxLen++] = 0x03;
@@ -4087,7 +4167,15 @@ namespace DeviceSetup_HyperWSN
             TxBuf[TxLen++] = 0x02;
 
             // 设备类型
-            TxBuf[TxLen++] = 0x58;
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceTypeOfM4.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 1)
+            {
+                TxBuf[TxLen++] = 0x00;
+            }
+            else
+            {
+                TxBuf[TxLen++] = ByteBufTmp[0];
+            }
 
             // Protocol
             TxBuf[TxLen++] = 0x02;
@@ -4194,6 +4282,8 @@ namespace DeviceSetup_HyperWSN
             byte[] TxBuf = new byte[25];
             UInt16 TxLen = 0;
 
+            byte[] ByteBufTmp = null;
+
             // Start
             TxBuf[TxLen++] = 0xCE;
 
@@ -4207,13 +4297,21 @@ namespace DeviceSetup_HyperWSN
             TxBuf[TxLen++] = 0x01;
 
             // 设备类型
-            TxBuf[TxLen++] = 0x85;
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceTypeOfL1.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 1)
+            {
+                TxBuf[TxLen++] = 0x00;
+            }
+            else
+            {
+                TxBuf[TxLen++] = ByteBufTmp[0];
+            }
 
             // Protocol
             TxBuf[TxLen++] = 0x02;
 
             // Sensor Mac
-            byte[] ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfL1.Text);
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfL1.Text);
             if (ByteBufTmp == null || ByteBufTmp.Length < 4)
             {
                 return -1;
@@ -4297,7 +4395,15 @@ namespace DeviceSetup_HyperWSN
             TxBuf[TxLen++] = 0x02;
 
             // 设备类型
-            TxBuf[TxLen++] = 0x85;
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceTypeOfL1.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 1)
+            {
+                TxBuf[TxLen++] = 0x00;
+            }
+            else
+            {
+                TxBuf[TxLen++] = ByteBufTmp[0];
+            }
 
             // Protocol
             byte Protocol = Convert.ToByte(tbxProtocolOfL1.Text);
@@ -4424,7 +4530,15 @@ namespace DeviceSetup_HyperWSN
             TxBuf[TxLen++] = 0x02;
 
             // 设备类型
-            TxBuf[TxLen++] = (byte)Device.DeviceType.L1;
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceTypeOfL1.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 1)
+            {
+                TxBuf[TxLen++] = 0x00;
+            }
+            else
+            {
+                TxBuf[TxLen++] = ByteBufTmp[0];
+            }
 
             // Protocol
             byte Protocol = Convert.ToByte(tbxProtocolOfL1.Text);
@@ -4558,7 +4672,15 @@ namespace DeviceSetup_HyperWSN
             TxBuf[TxLen++] = 0x01;
 
             // 设备类型
-            TxBuf[TxLen++] = 0x58;
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceTypeOfL1.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 1)
+            {
+                TxBuf[TxLen++] = 0x00;
+            }
+            else
+            {
+                TxBuf[TxLen++] = ByteBufTmp[0];
+            }
 
             // Protocol
             TxBuf[TxLen++] = 0x02;
@@ -4650,6 +4772,8 @@ namespace DeviceSetup_HyperWSN
             byte[] TxBuf = new byte[25];
             UInt16 TxLen = 0;
 
+            byte[] ByteBufTmp = null;
+
             // Start
             TxBuf[TxLen++] = 0xCE;
 
@@ -4663,13 +4787,21 @@ namespace DeviceSetup_HyperWSN
             TxBuf[TxLen++] = 0x01;
 
             // 设备类型
-            TxBuf[TxLen++] = (byte)Device.DeviceType.ESK;
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceTypeOfEsk.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 1)
+            {
+                TxBuf[TxLen++] = 0x00;
+            }
+            else
+            {
+                TxBuf[TxLen++] = ByteBufTmp[0];
+            }
 
             // Protocol
             TxBuf[TxLen++] = 0x02;
 
             // Sensor Mac
-            byte[] ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfEsk.Text);
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfEsk.Text);
             if (ByteBufTmp == null || ByteBufTmp.Length < 4)
             {
                 return -1;
@@ -4753,7 +4885,15 @@ namespace DeviceSetup_HyperWSN
             TxBuf[TxLen++] = 0x01;          // 由于老版USB修改工具的问题，此USB Porotocol必须是1，否则修改失败；
 
             // 设备类型
-            TxBuf[TxLen++] = (byte)Device.DeviceType.ESK;
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceTypeOfEsk.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 1)
+            {
+                TxBuf[TxLen++] = 0x00;
+            }
+            else
+            {
+                TxBuf[TxLen++] = ByteBufTmp[0];
+            }
 
             // Protocol
             TxBuf[TxLen++] = 0x02;
@@ -4858,7 +4998,15 @@ namespace DeviceSetup_HyperWSN
             TxBuf[TxLen++] = 0x01;      // 由于老版USB修改工具的问题，此USB Porotocol必须是1，否则修改失败；
 
             // 设备类型
-            TxBuf[TxLen++] = (byte)Device.DeviceType.ESK;
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceTypeOfEsk.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 1)
+            {
+                TxBuf[TxLen++] = 0x00;
+            }
+            else
+            {
+                TxBuf[TxLen++] = ByteBufTmp[0];
+            }
 
             // Protocol
             TxBuf[TxLen++] = 0x02;
@@ -4971,7 +5119,15 @@ namespace DeviceSetup_HyperWSN
             TxBuf[TxLen++] = 0x01;
 
             // 设备类型
-            TxBuf[TxLen++] = (byte)Device.DeviceType.ESK;
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceTypeOfEsk.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 1)
+            {
+                TxBuf[TxLen++] = 0x00;
+            }
+            else
+            {
+                TxBuf[TxLen++] = ByteBufTmp[0];
+            }
 
             // Protocol
             TxBuf[TxLen++] = 0x02;
@@ -5037,6 +5193,7 @@ namespace DeviceSetup_HyperWSN
 
         private void btnUpdateFactoryOfM40_Click(object sender, RoutedEventArgs e)
         {
+            byte deviceType = 0;
             byte Protocol = 1;
             UInt32 DstId = 0;
 
@@ -5045,6 +5202,17 @@ namespace DeviceSetup_HyperWSN
             try
             {
                 byte[] ByteBuf = null;
+
+                // 设备类型
+                ByteBuf = MyCustomFxn.HexStringToByteArray(tbxDeviceTypeOfM40.Text);
+                if (ByteBuf == null || ByteBuf.Length < 1)
+                {
+                    deviceType = 0x00;
+                }
+                else
+                {
+                    deviceType = ByteBuf[0];
+                }
 
                 ByteBuf = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfM40.Text);
                 if (ByteBuf == null || ByteBuf.Length < 4)
@@ -5076,13 +5244,14 @@ namespace DeviceSetup_HyperWSN
                 return;
             }
 
-            byte[] TxBuf = aM40.WriteFactoryCfg(Protocol, DstId);
+            byte[] TxBuf = aM40.WriteFactoryCfg(deviceType, Protocol, DstId);
 
             SerialPort_Send(TxBuf, 0, (UInt16)TxBuf.Length);
         }
 
         private void btnUpdateUserOfM40_Click(object sender, RoutedEventArgs e)
         {
+            byte deviceType = 0;
             byte Protocol = 1;
             UInt32 DstId = 0;
 
@@ -5091,6 +5260,17 @@ namespace DeviceSetup_HyperWSN
             try
             {
                 byte[] ByteBuf = null;
+
+                // 设备类型
+                ByteBuf = MyCustomFxn.HexStringToByteArray(tbxDeviceTypeOfM40.Text);
+                if (ByteBuf == null || ByteBuf.Length < 1)
+                {
+                    deviceType = 0x00;
+                }
+                else
+                {
+                    deviceType = ByteBuf[0];
+                }
 
                 if (cbxIsAllOfM40.IsChecked == false)
                 {
@@ -5140,13 +5320,14 @@ namespace DeviceSetup_HyperWSN
                 return;
             }
 
-            byte[] TxBuf = aM40.WriteUserCfg(Protocol, DstId);
+            byte[] TxBuf = aM40.WriteUserCfg(deviceType, Protocol, DstId);
 
             SerialPort_Send(TxBuf, 0, (UInt16)TxBuf.Length);
         }
 
         private void btnUpdateApplicationOfM40_Click(object sender, RoutedEventArgs e)
         {
+            byte deviceType = 0;
             byte Protocol = 1;
             UInt32 DstId = 0;
 
@@ -5155,6 +5336,17 @@ namespace DeviceSetup_HyperWSN
             try
             {
                 byte[] ByteBuf = null;
+
+                // 设备类型
+                ByteBuf = MyCustomFxn.HexStringToByteArray(tbxDeviceTypeOfM40.Text);
+                if (ByteBuf == null || ByteBuf.Length < 1)
+                {
+                    deviceType = 0x00;
+                }
+                else
+                {
+                    deviceType = ByteBuf[0];
+                }
 
                 if (cbxIsAllOfM40.IsChecked == false)
                 {
@@ -5211,13 +5403,14 @@ namespace DeviceSetup_HyperWSN
                 return;
             }
 
-            byte[] TxBuf = aM40.WriteAppCfg(Protocol, DstId);
+            byte[] TxBuf = aM40.WriteAppCfg(deviceType, Protocol, DstId);
 
             SerialPort_Send(TxBuf, 0, (UInt16)TxBuf.Length);
         }
 
         private void btnDeleteDataOfM40_Click(object sender, RoutedEventArgs e)
         {
+            byte deviceType = 0;
             byte Protocol = 1;
             UInt32 DstId = 0;
 
@@ -5226,6 +5419,17 @@ namespace DeviceSetup_HyperWSN
             try
             {
                 byte[] ByteBuf = null;
+
+                // 设备类型
+                ByteBuf = MyCustomFxn.HexStringToByteArray(tbxDeviceTypeOfM40.Text);
+                if (ByteBuf == null || ByteBuf.Length < 1)
+                {
+                    deviceType = 0x00;
+                }
+                else
+                {
+                    deviceType = ByteBuf[0];
+                }
 
                 if (cbxIsAllOfM40.IsChecked == false)
                 {
@@ -5244,7 +5448,7 @@ namespace DeviceSetup_HyperWSN
                 return;
             }
 
-            byte[] TxBuf = aM40.DeleteHistory(Protocol, DstId);
+            byte[] TxBuf = aM40.DeleteHistory(deviceType, Protocol, DstId);
 
             SerialPort_Send(TxBuf, 0, (UInt16)TxBuf.Length);
         }
@@ -5279,6 +5483,8 @@ namespace DeviceSetup_HyperWSN
             byte[] TxBuf = new byte[25];
             UInt16 TxLen = 0;
 
+            byte[] ByteBufTmp = null;
+
             // Start
             TxBuf[TxLen++] = 0xCE;
 
@@ -5292,13 +5498,21 @@ namespace DeviceSetup_HyperWSN
             TxBuf[TxLen++] = 0x02;
 
             // 设备类型
-            TxBuf[TxLen++] = (byte)Device.DeviceType.WP;
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceTypeOfWP.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 1)
+            {
+                TxBuf[TxLen++] = 0x00;
+            }
+            else
+            {
+                TxBuf[TxLen++] = ByteBufTmp[0];
+            }
 
             // Protocol
             TxBuf[TxLen++] = 0x01;
 
             // Sensor Mac
-            byte[] ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfWP.Text);
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceMacOfWP.Text);
             if (ByteBufTmp == null || ByteBufTmp.Length < 4)
             {
                 return -1;
@@ -5382,7 +5596,15 @@ namespace DeviceSetup_HyperWSN
             TxBuf[TxLen++] = 0x02;
 
             // 设备类型
-            TxBuf[TxLen++] = (byte)Device.DeviceType.WP;
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceTypeOfWP.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 1)
+            {
+                TxBuf[TxLen++] = 0x00;
+            }
+            else
+            {
+                TxBuf[TxLen++] = ByteBufTmp[0];
+            }
 
             // Protocol
             TxBuf[TxLen++] = 0x01;
@@ -5505,7 +5727,15 @@ namespace DeviceSetup_HyperWSN
             TxBuf[TxLen++] = 0x02;
 
             // 设备类型
-            TxBuf[TxLen++] = (byte)Device.DeviceType.WP;
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceTypeOfWP.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 1)
+            {
+                TxBuf[TxLen++] = 0x00;
+            }
+            else
+            {
+                TxBuf[TxLen++] = ByteBufTmp[0];
+            }
 
             // Protocol
             TxBuf[TxLen++] = 0x01;
@@ -5634,7 +5864,15 @@ namespace DeviceSetup_HyperWSN
             TxBuf[TxLen++] = 0x02;
 
             // 设备类型
-            TxBuf[TxLen++] = (byte)Device.DeviceType.WP;
+            ByteBufTmp = MyCustomFxn.HexStringToByteArray(tbxDeviceTypeOfWP.Text);
+            if (ByteBufTmp == null || ByteBufTmp.Length < 1)
+            {
+                TxBuf[TxLen++] = 0x00;
+            }
+            else
+            {
+                TxBuf[TxLen++] = ByteBufTmp[0];
+            }
 
             // Protocol
             TxBuf[TxLen++] = 0x01;
@@ -5694,7 +5932,6 @@ namespace DeviceSetup_HyperWSN
                 MessageBox.Show("参数错误" + ex.Message);
             }
         }
-
 
         private void tbxNewDeviceMacOfM1_inTextChanged(object sender, TextChangedEventArgs e)
         {

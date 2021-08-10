@@ -383,7 +383,7 @@ namespace YyWsnDeviceLibrary
             return 0;
         }
 
-        public byte[] WriteFactoryCfg(byte Protocol, UInt32 DstId)
+        public byte[] WriteFactoryCfg(byte deviceType, byte Protocol, UInt32 DstId)
         {
             byte[] TxBuf = new byte[23];
             UInt16 TxLen = 0;
@@ -401,7 +401,7 @@ namespace YyWsnDeviceLibrary
             TxBuf[TxLen++] = 0x02;
 
             // 设备类型
-            TxBuf[TxLen++] = (byte)GetDeviceType();
+            TxBuf[TxLen++] = deviceType;
 
             // Protocol
             TxBuf[TxLen++] = Protocol;
@@ -442,7 +442,7 @@ namespace YyWsnDeviceLibrary
             return TxBuf;
         }
 
-        public byte[] WriteUserCfg(byte Protocol, UInt32 DstId)
+        public byte[] WriteUserCfg(byte deviceType, byte Protocol, UInt32 DstId)
         {
             byte[] TxBuf = new byte[31];
             UInt16 TxLen = 0;
@@ -460,7 +460,7 @@ namespace YyWsnDeviceLibrary
             TxBuf[TxLen++] = 0x02;
 
             // 设备类型
-            TxBuf[TxLen++] = (byte)GetDeviceType();
+            TxBuf[TxLen++] = deviceType;
 
             // Protocol
             TxBuf[TxLen++] = Protocol;
@@ -524,7 +524,7 @@ namespace YyWsnDeviceLibrary
             return TxBuf;
         }
 
-        public byte[] WriteAppCfg(byte Protocol, UInt32 DstId)
+        public byte[] WriteAppCfg(byte deviceType, byte Protocol, UInt32 DstId)
         {
             byte[] TxBuf = new byte[31];
             UInt16 TxLen = 0;
@@ -542,7 +542,7 @@ namespace YyWsnDeviceLibrary
             TxBuf[TxLen++] = 0x02;
 
             // 设备类型
-            TxBuf[TxLen++] = (byte)GetDeviceType();
+            TxBuf[TxLen++] = deviceType;
 
             // Protocol
             TxBuf[TxLen++] = Protocol;
@@ -602,7 +602,7 @@ namespace YyWsnDeviceLibrary
             return TxBuf;
         }
 
-        public byte[] DeleteHistory(byte Protocol, UInt32 DstId)
+        public byte[] DeleteHistory(byte deviceType, byte Protocol, UInt32 DstId)
         {
             byte[] TxBuf = new byte[21];
             UInt16 TxLen = 0;
@@ -620,7 +620,7 @@ namespace YyWsnDeviceLibrary
             TxBuf[TxLen++] = 0x02;
 
             // 设备类型
-            TxBuf[TxLen++] = (byte)GetDeviceType();
+            TxBuf[TxLen++] = deviceType;
 
             // Protocol
             TxBuf[TxLen++] = Protocol;

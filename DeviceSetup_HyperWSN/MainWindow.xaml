@@ -1998,7 +1998,7 @@
 
                         </Grid>
 
-                        <Grid Margin="0 0 0 30">
+                        <Grid Margin="0 0 0 16">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition/>
                                 <ColumnDefinition/>
@@ -2050,7 +2050,7 @@
                             <TextBox x:Name="tbxRssiOfM4" Text="{Binding RSSI}" Grid.Column="9" Padding="2" Margin="0 0 10 0"/>
                         </Grid>
 
-                        <Grid Margin="0 0 0 10">
+                        <Grid Margin="0 0 0 16">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition/>
                                 <ColumnDefinition/>
@@ -2077,7 +2077,7 @@
                             <Button x:Name="btnDeleteDataOfM4" Content="Delete Data" Grid.Column="10" Grid.ColumnSpan="2" Click="btnDeleteDataOfM4_Click" Margin="0,0,10,0"/>
                         </Grid>
 
-                        <Grid Margin="0 20 0 10">
+                        <Grid Margin="0 0 0 10">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition/>
                                 <ColumnDefinition/>
