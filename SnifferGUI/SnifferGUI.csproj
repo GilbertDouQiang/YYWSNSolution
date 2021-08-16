@@ -114,6 +114,11 @@
   <ItemGroup>
     <Resource Include="favicon48.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Sound\1.Normal.WAV" />
+    <Content Include="Sound\2.Error.WAV" />
+    <Content Include="Sound\Windows Ding.wav" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

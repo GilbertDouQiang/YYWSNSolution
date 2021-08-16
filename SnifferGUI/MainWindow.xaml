@@ -93,9 +93,10 @@
                         <ListBoxItem Content="AO2" />
                         <ListBoxItem Content="M20" />
                         <ListBoxItem Content="L1" />
+                        <ListBoxItem Content="IR40" />
                         <ListBoxItem Content="M40（门磁）" />
                         <ListBoxItem Content="M70" />
-                        <ListBoxItem Content="Beetech M20" />
+                        <ListBoxItem Content="Beetech M20" />                        
                     </ComboBox>
                     <TextBlock Grid.Column="6" Margin="0,4,4,0" Text="MAC" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto" Width="28" HorizontalAlignment="Right"/>
                     <TextBox Grid.Column="7" Margin="0,0,0,0" x:Name="txtDestMac" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" AcceptsReturn="True" AcceptsTab="True" MaxLines="128" MaxLength="1000" Text="" />
@@ -472,6 +473,36 @@
                                 <DataGridTextColumn Header="电压V" Binding="{Binding voltF,StringFormat='{}{0:F3}'}" />
                                 <DataGridTextColumn Header="小采" Binding="{Binding AltSerial}"/>
                                 <DataGridTextColumn Header="光照强度lux" Binding="{Binding Lux}" />
+                                <DataGridTextColumn Header="RAM" Binding="{Binding ToSendRam}" />
+                                <DataGridTextColumn Header="FLASH" Binding="{Binding ToSendFlash}" />
+                                <DataGridTextColumn Header="RSSI" Binding="{Binding RSSI}" />
+                                <DataGridTextColumn Header="传输时间" Binding="{Binding SensorTransforTime,StringFormat='{}{0:MM-dd HH:mm:ss.fff}'}" />
+                                <DataGridTextColumn Header="源数据" Binding="{Binding SourceData}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </TabItem>
+
+                <TabItem x:Name="TableIR40" Header=" IR40(红外监测仪) ">
+                    <Grid Margin="0,0,0,0">
+                        <DataGrid Margin="0,0,0,0" x:Name="TableOfIR40" AutoGenerateColumns="False"  AlternatingRowBackground="#F4F4F4">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="序号" Binding="{Binding DisplayID}" />
+                                <DataGridTextColumn Header="工作模式" Binding="{Binding Pattern}" />
+                                <DataGridTextColumn Header="设备类型" Binding="{Binding DeviceTypeS}" />
+                                <DataGridTextColumn Header="协议版本" Binding="{Binding ProtocolVersion}" />
+                                <DataGridTextColumn Header="客户码" Binding="{Binding CustomerS}" />
+                                <DataGridTextColumn Header="MAC" Binding="{Binding DeviceMacS}" />
+                                <DataGridTextColumn Header="L/H" Binding="{Binding LastHistory, StringFormat='{}{0:X2}'}" />
+                                <DataGridTextColumn Header="状态" Binding="{Binding State,StringFormat='{}{0:X2}'}" />
+                                <DataGridTextColumn Header="报警项" Binding="{Binding AlarmItem,StringFormat='{}{0:X2}'}" />
+                                <DataGridTextColumn Header="采集序列号" Binding="{Binding SensorSN}" />
+                                <DataGridTextColumn Header="采集时间" Binding="{Binding SensorCollectTime,StringFormat='{}{0:MM-dd HH:mm:ss}'}" />
+                                <DataGridTextColumn Header="IC温度" Binding="{Binding ICTemperature,StringFormat='{}{0:F0}'}" />
+                                <DataGridTextColumn Header="电压V" Binding="{Binding voltF,StringFormat='{}{0:F3}'}" />
+                                <DataGridTextColumn Header="小采" Binding="{Binding AltSerial}"/>
+                                <DataGridTextColumn Header="OP" Binding="{Binding opStr}" />
+                                <DataGridTextColumn Header="累计变化次数" Binding="{Binding total}" />
                                 <DataGridTextColumn Header="RAM" Binding="{Binding ToSendRam}" />
                                 <DataGridTextColumn Header="FLASH" Binding="{Binding ToSendFlash}" />
                                 <DataGridTextColumn Header="RSSI" Binding="{Binding RSSI}" />

@@ -42,6 +42,7 @@
     <Compile Include="AO2.cs" />
     <Compile Include="IR20.cs" />
     <Compile Include="BulkM1.cs" />
+    <Compile Include="IR40.cs" />
     <Compile Include="WP.cs" />
     <Compile Include="M20.cs" />
     <Compile Include="M30O2.cs" />

@@ -99,7 +99,8 @@ namespace YyWsnDeviceLibrary
             SG6Lite = 0xA7,             // SG6Lite
             Beetech_M20 = 0xA8,         // Beetech M20
             M1000 = 0xA9,               // M1000
-            WPB = 0xAA                  // WPB
+            WPB = 0xAA,                 // WPB
+            IR40 = 0xAB                 // IR40
         }
 
         /// <summary>
@@ -739,6 +740,11 @@ namespace YyWsnDeviceLibrary
                 case 0xAA:
                     {
                         Name = "WPB";
+                        break;
+                    }
+                case 0xAB:
+                    {
+                        Name = "IR40";
                         break;
                     }
                 default:

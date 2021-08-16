@@ -10,6 +10,8 @@ using ExcelExport;
 using System.ComponentModel;
 using System.Configuration;
 using System.Data;
+using System.Media;
+using System.IO;
 
 namespace SnifferGUI
 {
@@ -29,6 +31,7 @@ namespace SnifferGUI
         ObservableCollection<SK> SensorDataOfSK = new ObservableCollection<SK>();           // SK的传感数据
         ObservableCollection<AO2> SensorDataOfAO2 = new ObservableCollection<AO2>();        // AO2的传感数据
         ObservableCollection<L1> SensorDataOfL1 = new ObservableCollection<L1>();           // L1的传感数据
+        ObservableCollection<IR40> SensorDataOfIR40 = new ObservableCollection<IR40>();     // IR40的传感数据
         ObservableCollection<M1> SensorDataOfNtp = new ObservableCollection<M1>();          // 授时申请
         ObservableCollection<M1> SensorDataOfNtpRes = new ObservableCollection<M1>();       // 授时反馈
         ObservableCollection<WP> SensorDataOfAdhoc = new ObservableCollection<WP>();        // 自组网
@@ -53,6 +56,7 @@ namespace SnifferGUI
         int TableLineOfSK = 1;                  // SK表格的行编号
         int TableLineOfAO2 = 1;                 // AO2表格的行编号
         int TableLineOfL1 = 1;                  // L1表格的行编号
+        int TableLineOfIR40 = 1;                // IR40表格的行编号
         int TableLineOfNtp = 1;                 // 授时申请表格的行编号
         int TableLineOfNtpRes = 1;              // 授时反馈表格的行编号
         int TableLineOfAdhoc = 1;               // 自组网表格的行编号
@@ -60,6 +64,10 @@ namespace SnifferGUI
         int TableLineOfBulk = 1;                // 批量传输温湿度的行编号
 
         UInt16 ExCustomer = 0x0000;             // 期望的客户码
+
+        SoundPlayer okPlayer;
+        SoundPlayer ngPlayer;
+        bool mute = false;                      // 是否静音
 
         /// <summary>
         /// Main Windows 初始化
@@ -84,6 +92,7 @@ namespace SnifferGUI
             TableOfSK.ItemsSource = SensorDataOfSK;
             TableOfAO2.ItemsSource = SensorDataOfAO2;
             TableOfL1.ItemsSource = SensorDataOfL1;
+            TableOfIR40.ItemsSource = SensorDataOfIR40;
             TableOfNtp.ItemsSource = SensorDataOfNtp;
             TableOfNtpRes.ItemsSource = SensorDataOfNtpRes;
             TableOfAdhoc.ItemsSource = SensorDataOfAdhoc;
@@ -167,6 +176,13 @@ namespace SnifferGUI
             v.SortDescriptions.Add(new SortDescription("DisplayID", d));
             v.Refresh();
 
+            //IR40 排序用
+            v = CollectionViewSource.GetDefaultView(TableOfIR40.ItemsSource);
+            v.SortDescriptions.Clear();
+            d = ListSortDirection.Descending;
+            v.SortDescriptions.Add(new SortDescription("DisplayID", d));
+            v.Refresh();
+
             //NTP 排序用
             v = CollectionViewSource.GetDefaultView(TableOfNtp.ItemsSource);
             v.SortDescriptions.Clear();
@@ -195,13 +211,37 @@ namespace SnifferGUI
             v.SortDescriptions.Add(new SortDescription("DisplayID", d));
             v.Refresh();
 
-
             // Bulk 排序用
             v = CollectionViewSource.GetDefaultView(TableOfBulkM1.ItemsSource);
             v.SortDescriptions.Clear();
             d = ListSortDirection.Descending;
             v.SortDescriptions.Add(new SortDescription("DisplayID", d));
             v.Refresh();
+
+            // 加载音频文件
+            string SoundPath = Directory.GetCurrentDirectory() + "\\Sound";
+
+            try
+            {
+                okPlayer = new SoundPlayer();
+                okPlayer.SoundLocation = SoundPath + "\\1.Normal.WAV";
+                okPlayer.Load();
+            }
+            catch
+            {
+                okPlayer = null;
+            }
+
+            try
+            {
+                ngPlayer = new SoundPlayer();
+                ngPlayer.SoundLocation = SoundPath + "\\2.Error.WAV";
+                ngPlayer.Load();
+            }
+            catch
+            {
+                ngPlayer = null;
+            }
         }
 
         /// <summary>
@@ -273,10 +313,15 @@ namespace SnifferGUI
             }
             else if (cbSensorType.SelectedIndex == 11)
             {
+                // IR40
+                ExDeviceType = IR40.GetDeviceType();
+            }
+            else if (cbSensorType.SelectedIndex == 12)
+            {
                 // M40
                 ExDeviceType = M40.GetDeviceType();
             }
-            else if (cbSensorType.SelectedIndex == 12)
+            else if (cbSensorType.SelectedIndex == 13)
             {
                 // M70
                 if (rxDeviceType != (byte)Device.DeviceType.M70 && rxDeviceType != (byte)Device.DeviceType.M70_SHT30 && rxDeviceType != (byte)Device.DeviceType.M70_MAX31855)
@@ -286,7 +331,7 @@ namespace SnifferGUI
 
                 ExDeviceType = rxDeviceType;
             }
-            else if (cbSensorType.SelectedIndex == 13)
+            else if (cbSensorType.SelectedIndex == 14)
             {
                 // Beetech M20
                 ExDeviceType = (byte)Device.DeviceType.Beetech_M20;
@@ -416,6 +461,12 @@ namespace SnifferGUI
                 SensorDataOfL1.Clear();
             }
 
+            if (TableIR40.IsSelected == true)
+            {
+                TableLineOfIR40 = 1;
+                SensorDataOfIR40.Clear();
+            }
+
             if (TableNtp.IsSelected == true)
             {
                 TableLineOfNtp = 1;
@@ -486,6 +537,9 @@ namespace SnifferGUI
 
             TableLineOfL1 = 1;
             SensorDataOfL1.Clear();
+
+            TableLineOfIR40 = 1;
+            SensorDataOfIR40.Clear();
 
             TableLineOfNtp = 1;
             SensorDataOfNtp.Clear();
@@ -914,6 +968,25 @@ namespace SnifferGUI
                         }
 
                         SensorDataOfL1.Add((L1)device);
+                    }
+                    else if (IR40.isDeviceType(device.DeviceTypeV) == true)
+                    {
+                        IR40 aIR40 = (IR40)device;
+                        device.DisplayID = TableLineOfIR40;
+                        if (++TableLineOfIR40 == 0)
+                        {
+                            TableLineOfIR40++;
+                        }
+
+                        SensorDataOfIR40.Add(aIR40);
+
+                        if (TableIR40.IsSelected == true && aIR40.op == 2 && ngPlayer != null)
+                        {   // 状态发生了变化
+                            if(mute == false)
+                            {
+                                ngPlayer.Play();
+                            }                           
+                        }
                     }
                 }
                 else if (STP1 == 0xAE)

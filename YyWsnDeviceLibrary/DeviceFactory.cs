@@ -326,6 +326,15 @@ namespace YyWsnDeviceLibrary
                             continue;
                         }
                     }
+                    else if (IR40.isSensorDataV3(SrcData, iCnt, true) >= 0)
+                    {
+                        IR40 aIR40 = new IR40(SrcData, iCnt);
+                        if (aIR40 != null)
+                        {
+                            devices.Add(aIR40);
+                            continue;
+                        }
+                    }
                 }
                 catch (Exception)
                 {
