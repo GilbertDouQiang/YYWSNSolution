@@ -29,10 +29,10 @@ namespace TransferFile
 
         UInt16 PktMaxLen = 255;         // 数据包的最大长度
         UInt16 PassCode = 0;            // 传输码
-        byte TransSerial = 0;           // 传输序列号
+        UInt32 TransSerial = 0;         // 传输序列号
         bool TransSuc = false;          // 传输成功？
 
-        UInt16 TransFailTotal = 0;      // 传输失败的总次数
+        UInt32 PartMaxLen = 124 * 1024; // 文件分片的标准，单位：B
 
         public MainWindow()
         {
@@ -130,7 +130,8 @@ namespace TransferFile
                 bFile.SafeFileName = ofd.SafeFileName;
 
                 bFile.Open(ofd.FileName);
-                tbxFileInfo.Text = "文件大小=" + bFile.FileSize.ToString() + "；";
+                double fileSize = (double)bFile.FileSize / 1024.0f;
+                tbxFileInfo.Text = "文件大小=" + bFile.FileSize.ToString() + "B=" + fileSize.ToString("F2") + "KB；";
             }
         }
 
@@ -495,7 +496,8 @@ namespace TransferFile
             ios += 1;
 
             // 传输序列号
-            if (RxBuf[ios] != TransSerial)
+            byte expTransSerial = (byte)(TransSerial & 0x000000FF);
+            if (RxBuf[ios] != expTransSerial)
             {
                 tbxStatus.Text += "反馈结果：传输序列号错误；";
                 return -4;
@@ -687,7 +689,7 @@ namespace TransferFile
             }
             else if (RxBuf[0] == 0x00)
             {
-                tbxStatus.Text += "已唤醒；";
+                tbxStatus.Text += "已被唤醒；";
             }
             else
             {
@@ -900,7 +902,7 @@ namespace TransferFile
             MoveToEnd();
         }
 
-        public int SendApply()
+        public int SendApply(UInt32 partSize, byte partTotal, byte partNo, UInt32 shotTime, UInt32 fileCode, UInt32 partAddrInFile)
         {
             if (bFile.SafeFileName == string.Empty)
             {
@@ -916,6 +918,11 @@ namespace TransferFile
             if (NameBuf.Length > 64)
             {
                 return -3;
+            }
+
+            if (partTotal == 0 || partNo >= partTotal)
+            {
+                return -4;
             }
 
             byte[] TxBuf = new byte[132];
@@ -938,17 +945,17 @@ namespace TransferFile
             TxBuf[TxLen++] = 0x01;
 
             // 文件大小
-            UInt32 u32 = (UInt32)bFile.FileSize;
+            UInt32 u32 = partSize;
             TxBuf[TxLen++] = (byte)((u32 & 0xFF000000) >> 24);
             TxBuf[TxLen++] = (byte)((u32 & 0x00FF0000) >> 16);
             TxBuf[TxLen++] = (byte)((u32 & 0x0000FF00) >> 8);
             TxBuf[TxLen++] = (byte)((u32 & 0x000000FF) >> 0);
 
             // 分片总数
-            TxBuf[TxLen++] = 0x01;
+            TxBuf[TxLen++] = partTotal;
 
             // 分片编号
-            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = partNo;
 
             // 协议版本
             TxBuf[TxLen++] = 0x01;
@@ -987,7 +994,15 @@ namespace TransferFile
             TxBuf[TxLen++] = (byte)'T';
 
             // 拍摄时间
-            u32 = MyCustomFxn.DateTime_to_UTC(System.DateTime.Now);
+            if(shotTime == 0)
+            {
+                u32 = MyCustomFxn.DateTime_to_UTC(System.DateTime.Now);
+            }
+            else
+            {
+                u32 = shotTime;
+            }
+            
             TxBuf[TxLen++] = (byte)((u32 & 0xFF000000) >> 24);
             TxBuf[TxLen++] = (byte)((u32 & 0x00FF0000) >> 16);
             TxBuf[TxLen++] = (byte)((u32 & 0x0000FF00) >> 8);
@@ -1022,7 +1037,14 @@ namespace TransferFile
             TxBuf[TxLen++] = (byte)((u16 & 0x00FF) >> 0);
 
             // 文件标志码
-            u32 = MyCustomFxn.DateTime_to_UTC(System.DateTime.Now);
+            if (fileCode == 0)
+            {
+                u32 = MyCustomFxn.DateTime_to_UTC(System.DateTime.Now);
+            }
+            else
+            {
+                u32 = fileCode;
+            }
             TxBuf[TxLen++] = (byte)((u32 & 0xFF000000) >> 24);
             TxBuf[TxLen++] = (byte)((u32 & 0x00FF0000) >> 16);
             TxBuf[TxLen++] = (byte)((u32 & 0x0000FF00) >> 8);
@@ -1036,7 +1058,7 @@ namespace TransferFile
             TxBuf[TxLen++] = (byte)((u32 & 0x000000FF) >> 0);
 
             // 起始地址
-            u32 = 0;
+            u32 = partAddrInFile;
             TxBuf[TxLen++] = (byte)((u32 & 0xFF000000) >> 24);
             TxBuf[TxLen++] = (byte)((u32 & 0x00FF0000) >> 16);
             TxBuf[TxLen++] = (byte)((u32 & 0x0000FF00) >> 8);
@@ -1084,13 +1106,21 @@ namespace TransferFile
         {
             if (bFile == null)
             {
-                tbxStatus.Text += "未选择文件";
+                tbxStatus.Text += "未选择文件；";
+                return;
+            }
+
+            UpdatePartMaxLen();
+
+            if(bFile.FileSize > PartMaxLen)
+            {
+                tbxStatus.Text += "文件太大，需要分片传输；";
                 return;
             }
 
             Serial_Init();
 
-            SendApply();
+            SendApply((UInt32)bFile.FileSize, 1, 0, 0, 0, 0);
 
             Serial_Close();
             MoveToEnd();
@@ -1123,7 +1153,7 @@ namespace TransferFile
             TxBuf[TxLen++] = (byte)((u16 & 0x00FF) >> 0);
 
             // 序列号
-            TxBuf[TxLen++] = TransSerial;
+            TxBuf[TxLen++] = (byte)(TransSerial & 0x000000FF);
 
             // 文件内容
             for (int iX = 0; iX < Len; iX++)
@@ -1166,29 +1196,29 @@ namespace TransferFile
             return 0;
         }
 
-        public int TransferFile(byte[] Buf, int startOfIndex)
+        public int TransferFile(byte[] Buf, int partAddrInFile, int partSize)
         {
-            if (startOfIndex > Buf.Length)
+            if (partAddrInFile > Buf.Length)
             {
                 return -1;
             }
 
-            if (startOfIndex == Buf.Length)
+            if(partAddrInFile + partSize > Buf.Length)
             {
-                return 1;
+                return -2;
             }
 
-            int totalLength = Buf.Length - startOfIndex;            // 文件的总大小
-            int offset = 0;                                         // 已发送成功的大小
+            if (partAddrInFile == Buf.Length)
+            {
+                return 1;
+            }           
 
-            int frames = 0;                                         // 帧           
+            int totalLength = partSize;                             // 文件的总大小
+            int offset = 0;                                         // 已发送成功的大小        
 
-            TransFailTotal = 0;
             TransSerial = 0;
 
             tbxTransInfo.Text = "";
-
-            int iX = 0;
 
             int error = 0;
 
@@ -1210,42 +1240,41 @@ namespace TransferFile
 
                 // 开始传输
 
-                iX++;
-
-                error = SendFrameOfFile(Buf, startOfIndex + offset, TxLen);
+                error = SendFrameOfFile(Buf, partAddrInFile + offset, TxLen);
                 if (error < 0)
                 {
-                    tbxTransInfo.Text += "  " + iX.ToString("G");
-
-                    if (++TransFailTotal >= 10)
+                    error = SendFrameOfFile(Buf, partAddrInFile + offset, TxLen);
+                    if (error < 0)
                     {
-                        break;
+                        System.Threading.Thread.Sleep(100);
+                        error = SendFrameOfFile(Buf, partAddrInFile + offset, TxLen);
+                        if (error < 0)
+                        {
+                            break;
+                        }
                     }
-
-                    continue;                   
                 }               
 
                 offset += TxLen;
-                frames++;
             }          
 
             if (offset < totalLength)
             {
-                tbxStatus.Text += "文件传输：失败；" + iX.ToString() + "；" + TransFailTotal.ToString() + "；";
+                tbxStatus.Text += "文件传输：失败；" + TransSerial.ToString() + "；";
                 return -2;
             }
 
-            return frames;
+            return 0;
         }
 
-        public int SendTransfer()
+        public int SendTransfer(UInt32 partAddrInFile, UInt32 partSize)
         {
             tbxStatus.Text += "文件传输：开始；";
 
             DateTime startDatetime = DateTime.Now;
             DateTime endDatetime;
 
-            int error = TransferFile(bFile.Content, 0);
+            int error = TransferFile(bFile.Content, (int)partAddrInFile, (int)partSize);
 
             endDatetime = DateTime.Now;
             TimeSpan ts1 = new TimeSpan(startDatetime.Ticks);
@@ -1260,16 +1289,24 @@ namespace TransferFile
         private void btnTransfer_Click(object sender, RoutedEventArgs e)
         {
             try
-            {              
+            {
                 if (bFile == null)
                 {
-                    tbxStatus.Text += "未选择文件";
+                    tbxStatus.Text += "未选择文件；";
+                    return;
+                }
+
+                UpdatePartMaxLen();
+
+                if (bFile.FileSize > PartMaxLen)
+                {
+                    tbxStatus.Text += "文件太大，需要分片传输；";
                     return;
                 }
 
                 Serial_Init();
 
-                SendTransfer();
+                SendTransfer(0, (UInt32)bFile.FileSize);
 
                 Serial_Close();
                 MoveToEnd();
@@ -1281,7 +1318,7 @@ namespace TransferFile
             }
         }
 
-        public int SendCheck()
+        public int SendCheck(UInt32 partAddrInFile, UInt32 partSize)
         {
             byte[] TxBuf = new byte[10];
             UInt16 TxLen = 0;
@@ -1308,7 +1345,7 @@ namespace TransferFile
             TxBuf[TxLen++] = (byte)((u16 & 0x00FF) >> 0);
 
             // CRC16
-            u16 = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, bFile.Content, 0, (UInt32)bFile.Content.Length);
+            u16 = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, bFile.Content, partAddrInFile, (UInt32)partSize);
             TxBuf[TxLen++] = (byte)((u16 & 0xFF00) >> 8);
             TxBuf[TxLen++] = (byte)((u16 & 0x00FF) >> 0);
 
@@ -1320,7 +1357,7 @@ namespace TransferFile
             TxBuf[0] = (byte)((u16 & 0xFF00) >> 8);
             TxBuf[1] = (byte)((u16 & 0x00FF) >> 0);
 
-            byte[] RxBuf = SerialPort.SendReceive(TxBuf, 0, TxLen, 2200);
+            byte[] RxBuf = SerialPort.SendReceive(TxBuf, 0, TxLen, 5000);
             if (RxBuf == null || RxBuf.Length == 0)
             {
                 return -2;
@@ -1339,13 +1376,13 @@ namespace TransferFile
         {
             if (bFile == null)
             {
-                tbxStatus.Text += "未选择文件";
+                tbxStatus.Text += "未选择文件；";
                 return;
             }
 
             Serial_Init();
 
-            SendCheck();
+            SendCheck(0, (UInt32)bFile.FileSize);
 
             Serial_Close();
             MoveToEnd();
@@ -1409,58 +1446,135 @@ namespace TransferFile
         {
             if (bFile == null)
             {
-                tbxStatus.Text += "未选择文件";
+                tbxStatus.Text += "未选择文件；";
                 return;
             }
 
             int error = 0;
             int Suc = 0;
 
+            DateTime fileStartTransferTime = DateTime.Now;
+
             Serial_Init();
 
-            do
+            UInt32 shotTime = MyCustomFxn.DateTime_to_UTC(System.DateTime.Now);
+            UInt32 fileCode = MyCustomFxn.DateTime_to_UTC(System.DateTime.Now);
+
+            UpdatePartMaxLen();
+
+            UInt32 FileSize = (UInt32)bFile.FileSize;
+            UInt32 partSize = 0;
+
+            UInt32 SentTotal = 0;
+
+            byte partTotal = 0;
+            byte partNo = 0;
+
+            UInt16 reTry = 0;
+
+            if (FileSize > PartMaxLen)
             {
-                error = SendWake();
-                if (error < 0)
+                if ((FileSize % PartMaxLen) == 0)
                 {
-                    Suc = -1;
-                    break;
+                    partTotal = (byte)(FileSize / PartMaxLen);
+                }
+                else
+                {
+                    partTotal = (byte)((FileSize / PartMaxLen) + 1);
+                }
+            }
+            else
+            {
+                partTotal = 1;
+            }
+
+            for(; SentTotal < FileSize; )
+            {
+                if(FileSize - SentTotal > PartMaxLen)
+                {
+                    partSize = PartMaxLen;
+                }
+                else
+                {
+                    partSize = FileSize - SentTotal;
                 }
 
-                error = SendCancel();
-                if (error < 0)
+                if (partTotal > 1)
                 {
-                    Suc = -2;
-                    break;
+                    tbxStatus.Text += "\n文件分片传输" + (partNo + 1).ToString("D3") + "；";
                 }
 
-                error = SendApply();
-                if (error < 0)
+                 error = 0;
+                 Suc = 0;
+
+                do
                 {
-                    Suc = -3;
-                    break;
+                    error = SendWake();
+                    if (error < 0)
+                    {
+                        Suc = -1;
+                        break;
+                    }
+
+                    error = SendCancel();
+                    if (error < 0)
+                    {
+                        Suc = -2;
+                        break;
+                    }
+
+                    error = SendApply(partSize, partTotal, partNo, shotTime, fileCode, SentTotal);
+                    if (error < 0)
+                    {
+                        Suc = -3;
+                        break;
+                    }
+
+                    error = SendTransfer(SentTotal, partSize);
+                    if (error < 0)
+                    {
+                        Suc = -4;
+                        break;
+                    }
+
+                    error = SendCheck(SentTotal, partSize);
+                    if (error < 0)
+                    {
+                        error = SendCheck(SentTotal, partSize);
+                        if (error < 0)
+                        {
+                            Suc = -5;
+                            break;
+                        }                            
+                    }
+
+                } while (false);
+
+                if (Suc < 0)
+                {
+                    if(++reTry < 600)
+                    {                      
+                        System.Threading.Thread.Sleep(200);
+
+                        tbxStatus.Text += "\n文件分片传输" + (partNo + 1).ToString("D3") + "；重新传输；";
+                        continue;
+                    }
+                    else
+                    {
+                        break;
+                    }
                 }
 
-                error = SendTransfer();
-                if (error < 0)
-                {
-                    Suc = -4;
-                    break;
-                }
+                reTry = 0;
 
-                error = SendCheck();
-                if (error < 0)
-                {
-                    Suc = -5;
-                    break;
-                }
+                SentTotal += partSize;
+                partNo++;
+            }
 
-                Suc = 1;
-
-            } while (false);
+            tbxStatus.Text += "\n总计耗时：" + MyCustomFxn.CalcTimeDiff(fileStartTransferTime).ToString("0.00") + "秒；\n";
 
             Serial_Close();
-            MoveToEnd();
+            MoveToEnd();            
         }
 
         private void btnClearStatus_Click(object sender, RoutedEventArgs e)
@@ -1473,6 +1587,25 @@ namespace TransferFile
             tbxStatus.Focus();                                  // 获取焦点
             tbxStatus.Select(tbxStatus.Text.Length, 0);         // 光标定位到文本最后
             tbxStatus.ScrollToEnd();                            // 滚动到光标处
+        }
+
+        private void UpdatePartMaxLen()
+        {
+            UInt16 aPartMaxLenInKB = 124;                       // 单位：KB
+
+            if (tbxPartMaxLen.Text != null && tbxPartMaxLen.Text != string.Empty)
+            {
+                try
+                {
+                    aPartMaxLenInKB = Convert.ToUInt16(tbxPartMaxLen.Text);
+                }
+                catch (Exception)
+                {
+                    aPartMaxLenInKB = 124;
+                }
+            }
+
+            PartMaxLen = (UInt32)(aPartMaxLenInKB * 1024);      // 文件分片的标准
         }
     }
 }

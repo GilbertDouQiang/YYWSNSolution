@@ -722,6 +722,18 @@ namespace YyWsnDeviceLibrary
             return startTime;
         }
 
+        // 计算时间差，单位：秒
+        static public double CalcTimeDiff(DateTime startTime)
+        {
+            DateTime endTime = DateTime.Now;
+
+            TimeSpan ts1 = new TimeSpan(startTime.Ticks);
+            TimeSpan ts2 = new TimeSpan(endTime.Ticks);
+
+            TimeSpan ts = ts1.Subtract(ts2).Duration();
+
+            return ts.TotalSeconds;            
+        }
 
 
     }
