@@ -136,14 +136,14 @@ namespace TransferFile
 
         public int RxBuf_Ping(byte[] RxBuf)
         {
-            tbxStatus.Text = "Ping OK";
+            tbxStatus.Text += "Ping OK";
 
             return 0;
         }
 
         public int RxBuf_SyncStatus(byte[] RxBuf)
         {
-            tbxStatus.Text = "";
+            tbxStatus.Text += "";
 
             if (RxBuf.Length < 7)
             {
@@ -248,7 +248,7 @@ namespace TransferFile
 
         public int RxBuf_ClaimTask(byte[] RxBuf)
         {
-            tbxStatus.Text = "";
+            tbxStatus.Text += "";
 
             if (RxBuf.Length < 7)
             {
@@ -391,7 +391,7 @@ namespace TransferFile
 
         public int RxBuf_Apply(byte[] RxBuf)
         {
-            tbxStatus.Text = "";
+            tbxStatus.Text += "";
 
             if (RxBuf.Length < 7)
             {
@@ -468,7 +468,7 @@ namespace TransferFile
 
         public int RxBuf_Transfer(byte[] RxBuf)
         {
-            tbxStatus.Text = "";
+            tbxStatus.Text += "";
 
             if (RxBuf.Length < 8)
             {
@@ -503,14 +503,14 @@ namespace TransferFile
             ios += 1;
 
             TransSuc = true;
-            tbxStatus.Text += "传输成功；";
+            tbxStatus.Text += TransSerial.ToString("D3") + "帧成功；";
 
             return 0;
         }
 
         public int RxBuf_Check(byte[] RxBuf)
         {
-            tbxStatus.Text = "";
+            tbxStatus.Text += "";
 
             if (RxBuf.Length < 7)
             {
@@ -543,7 +543,7 @@ namespace TransferFile
 
         public int RxBuf_Cancel(byte[] RxBuf)
         {
-            tbxStatus.Text = "";
+            tbxStatus.Text += "";
 
             if (RxBuf.Length < 7)
             {
@@ -578,7 +578,7 @@ namespace TransferFile
         {
             if (RxBuf.Length == 1 && RxBuf[0] == 0x5A)
             {
-                tbxStatus.Text = "唤醒成功";
+                tbxStatus.Text += "唤醒成功；";
                 return 1;
             }
 
@@ -683,11 +683,11 @@ namespace TransferFile
 
             if (RxBuf[0] == 0x5A)
             {
-                tbxStatus.Text = "唤醒成功";
+                tbxStatus.Text += "唤醒成功；";
             }
             else if (RxBuf[0] == 0x00)
             {
-                tbxStatus.Text = "已唤醒";
+                tbxStatus.Text += "已唤醒；";
             }
             else
             {
@@ -704,6 +704,7 @@ namespace TransferFile
             SendWake();
 
             Serial_Close();
+            MoveToEnd();
         }
 
         public int SendPing()
@@ -738,6 +739,7 @@ namespace TransferFile
             SendPing();
 
             Serial_Close();
+            MoveToEnd();
         }
 
         public int SyncStatus()
@@ -840,6 +842,7 @@ namespace TransferFile
             SyncStatus();
 
             Serial_Close();
+            MoveToEnd();
         }
 
         public int ClaimTask()
@@ -894,6 +897,7 @@ namespace TransferFile
             ClaimTask();
 
             Serial_Close();
+            MoveToEnd();
         }
 
         public int SendApply()
@@ -914,7 +918,7 @@ namespace TransferFile
                 return -3;
             }
 
-            byte[] TxBuf = new byte[160];
+            byte[] TxBuf = new byte[132];
             UInt16 TxLen = 0;
 
             // 长度
@@ -929,6 +933,22 @@ namespace TransferFile
 
             // 命令
             TxBuf[TxLen++] = 0x0A;
+
+            // 协议版本
+            TxBuf[TxLen++] = 0x01;
+
+            // 文件大小
+            UInt32 u32 = (UInt32)bFile.FileSize;
+            TxBuf[TxLen++] = (byte)((u32 & 0xFF000000) >> 24);
+            TxBuf[TxLen++] = (byte)((u32 & 0x00FF0000) >> 16);
+            TxBuf[TxLen++] = (byte)((u32 & 0x0000FF00) >> 8);
+            TxBuf[TxLen++] = (byte)((u32 & 0x000000FF) >> 0);
+
+            // 分片总数
+            TxBuf[TxLen++] = 0x01;
+
+            // 分片编号
+            TxBuf[TxLen++] = 0x00;
 
             // 协议版本
             TxBuf[TxLen++] = 0x01;
@@ -967,21 +987,18 @@ namespace TransferFile
             TxBuf[TxLen++] = (byte)'T';
 
             // 拍摄时间
-            DateTime ThisCalendar = Convert.ToDateTime(System.DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-            byte[] ByteBufTmp = MyCustomFxn.DataTimeToByteArray(ThisCalendar);
-            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[0]);
-            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[1]);
-            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[2]);
-            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[3]);
-            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[4]);
-            TxBuf[TxLen++] = MyCustomFxn.DecimalToBcd(ByteBufTmp[5]);
+            u32 = MyCustomFxn.DateTime_to_UTC(System.DateTime.Now);
+            TxBuf[TxLen++] = (byte)((u32 & 0xFF000000) >> 24);
+            TxBuf[TxLen++] = (byte)((u32 & 0x00FF0000) >> 16);
+            TxBuf[TxLen++] = (byte)((u32 & 0x0000FF00) >> 8);
+            TxBuf[TxLen++] = (byte)((u32 & 0x000000FF) >> 0);
 
             // 温度
             TxBuf[TxLen++] = 0x0A;
             TxBuf[TxLen++] = 0x13;
 
             // 经度 
-            UInt32 u32 = 120482747;
+            u32 = 120482747;
             TxBuf[TxLen++] = (byte)((u32 & 0xFF000000) >> 24);
             TxBuf[TxLen++] = (byte)((u32 & 0x00FF0000) >> 16);
             TxBuf[TxLen++] = (byte)((u32 & 0x0000FF00) >> 8);
@@ -1011,9 +1028,6 @@ namespace TransferFile
             TxBuf[TxLen++] = (byte)((u32 & 0x0000FF00) >> 8);
             TxBuf[TxLen++] = (byte)((u32 & 0x000000FF) >> 0);
 
-            // 文件类型
-            TxBuf[TxLen++] = 0x01;
-
             // 文件总大小
             u32 = (UInt32)bFile.FileSize;
             TxBuf[TxLen++] = (byte)((u32 & 0xFF000000) >> 24);
@@ -1028,19 +1042,19 @@ namespace TransferFile
             TxBuf[TxLen++] = (byte)((u32 & 0x0000FF00) >> 8);
             TxBuf[TxLen++] = (byte)((u32 & 0x000000FF) >> 0);
 
-            // 文件大小
-            u32 = (UInt32)bFile.FileSize;
-            TxBuf[TxLen++] = (byte)((u32 & 0xFF000000) >> 24);
-            TxBuf[TxLen++] = (byte)((u32 & 0x00FF0000) >> 16);
-            TxBuf[TxLen++] = (byte)((u32 & 0x0000FF00) >> 8);
-            TxBuf[TxLen++] = (byte)((u32 & 0x000000FF) >> 0);
-
             // 文件名称
-            TxBuf[TxLen++] = (byte)NameBuf.Length;
+            byte NameMaxLen = 64;
 
-            for (int iX = 0; iX < NameBuf.Length; iX++)
+            for (int iX = 0; iX < NameMaxLen; iX++)
             {
-                TxBuf[TxLen++] = NameBuf[iX];
+                if (iX < NameBuf.Length)
+                {
+                    TxBuf[TxLen++] = NameBuf[iX];
+                }
+                else
+                {
+                    TxBuf[TxLen++] = 0x00;
+                }
             }
 
             // 计算校验和
@@ -1070,7 +1084,7 @@ namespace TransferFile
         {
             if (bFile == null)
             {
-                tbxStatus.Text = "未选择文件";
+                tbxStatus.Text += "未选择文件";
                 return;
             }
 
@@ -1079,6 +1093,7 @@ namespace TransferFile
             SendApply();
 
             Serial_Close();
+            MoveToEnd();
         }
 
         public int SendFrameOfFile(byte[] Buf, int IndexOfStart, UInt16 Len)
@@ -1166,9 +1181,7 @@ namespace TransferFile
             int totalLength = Buf.Length - startOfIndex;            // 文件的总大小
             int offset = 0;                                         // 已发送成功的大小
 
-            int frames = 0;                                         // 帧
-
-            Serial_Init();
+            int frames = 0;                                         // 帧           
 
             TransFailTotal = 0;
             TransSerial = 0;
@@ -1214,17 +1227,34 @@ namespace TransferFile
 
                 offset += TxLen;
                 frames++;
-            }
-
-            Serial_Close();
+            }          
 
             if (offset < totalLength)
             {
-                tbxStatus.Text = "文件传输：失败；" + iX.ToString() + "；" + TransFailTotal.ToString() + "；";
+                tbxStatus.Text += "文件传输：失败；" + iX.ToString() + "；" + TransFailTotal.ToString() + "；";
                 return -2;
             }
 
             return frames;
+        }
+
+        public int SendTransfer()
+        {
+            tbxStatus.Text += "文件传输：开始；";
+
+            DateTime startDatetime = DateTime.Now;
+            DateTime endDatetime;
+
+            int error = TransferFile(bFile.Content, 0);
+
+            endDatetime = DateTime.Now;
+            TimeSpan ts1 = new TimeSpan(startDatetime.Ticks);
+            TimeSpan ts2 = new TimeSpan(endDatetime.Ticks);
+            TimeSpan ts = ts1.Subtract(ts2).Duration();
+            double msec = ts.TotalSeconds;
+            tbxStatus.Text += "文件传输：结束；耗时：" + msec.ToString("0.00") + "；";
+
+            return error;
         }
 
         private void btnTransfer_Click(object sender, RoutedEventArgs e)
@@ -1233,23 +1263,16 @@ namespace TransferFile
             {              
                 if (bFile == null)
                 {
-                    tbxStatus.Text = "未选择文件";
+                    tbxStatus.Text += "未选择文件";
                     return;
                 }
 
-                tbxStatus.Text = "文件传输：开始；";
+                Serial_Init();
 
-                DateTime startDatetime = DateTime.Now;
-                DateTime endDatetime;
+                SendTransfer();
 
-                TransferFile(bFile.Content, 0);
-
-                endDatetime = DateTime.Now;
-                TimeSpan ts1 = new TimeSpan(startDatetime.Ticks);
-                TimeSpan ts2 = new TimeSpan(endDatetime.Ticks);
-                TimeSpan ts = ts1.Subtract(ts2).Duration();
-                double msec = ts.TotalSeconds;
-                tbxStatus.Text += "文件传输：结束；耗时：" + msec.ToString("0.00") + "；";
+                Serial_Close();
+                MoveToEnd();
             }
             catch (Exception ex)
             {
@@ -1316,7 +1339,7 @@ namespace TransferFile
         {
             if (bFile == null)
             {
-                tbxStatus.Text = "未选择文件";
+                tbxStatus.Text += "未选择文件";
                 return;
             }
 
@@ -1325,11 +1348,7 @@ namespace TransferFile
             SendCheck();
 
             Serial_Close();
-        }
-
-        private void btnApplyTransferCheck_Click(object sender, RoutedEventArgs e)
-        {
-
+            MoveToEnd();
         }
 
         public int SendCancel()
@@ -1383,6 +1402,77 @@ namespace TransferFile
             SendCancel();
 
             Serial_Close();
+            MoveToEnd();
+        }
+
+        private void btnApplyTransferCheck_Click(object sender, RoutedEventArgs e)
+        {
+            if (bFile == null)
+            {
+                tbxStatus.Text += "未选择文件";
+                return;
+            }
+
+            int error = 0;
+            int Suc = 0;
+
+            Serial_Init();
+
+            do
+            {
+                error = SendWake();
+                if (error < 0)
+                {
+                    Suc = -1;
+                    break;
+                }
+
+                error = SendCancel();
+                if (error < 0)
+                {
+                    Suc = -2;
+                    break;
+                }
+
+                error = SendApply();
+                if (error < 0)
+                {
+                    Suc = -3;
+                    break;
+                }
+
+                error = SendTransfer();
+                if (error < 0)
+                {
+                    Suc = -4;
+                    break;
+                }
+
+                error = SendCheck();
+                if (error < 0)
+                {
+                    Suc = -5;
+                    break;
+                }
+
+                Suc = 1;
+
+            } while (false);
+
+            Serial_Close();
+            MoveToEnd();
+        }
+
+        private void btnClearStatus_Click(object sender, RoutedEventArgs e)
+        {
+            tbxStatus.Text = "";
+        }
+
+        private void MoveToEnd()
+        {   // 将光标移动到末尾
+            tbxStatus.Focus();                                  // 获取焦点
+            tbxStatus.Select(tbxStatus.Text.Length, 0);         // 光标定位到文本最后
+            tbxStatus.ScrollToEnd();                            // 滚动到光标处
         }
     }
 }

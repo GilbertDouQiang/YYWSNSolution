@@ -5,14 +5,14 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TransferFile"
         mc:Ignorable="d"
-        Title="Transfer File" Height="640" Width="1000" WindowStartupLocation="CenterScreen" Loaded="Window_Loaded" Icon="transferFile.ico">
+        Title="Transfer File" Height="680" Width="1000" WindowStartupLocation="CenterScreen" Loaded="Window_Loaded" Icon="transferFile.ico">
     <Grid>
 
         <Grid.RowDefinitions>
-            <RowDefinition Height="1*"/>
-            <RowDefinition Height="4*"/>
-            <RowDefinition Height="10*"/>
-            <RowDefinition Height="1*"/>
+            <RowDefinition Height="2*"/>
+            <RowDefinition Height="9*"/>
+            <RowDefinition Height="20*"/>
+            <RowDefinition Height="3*"/>
         </Grid.RowDefinitions>
 
         <Border Grid.Row="0" VerticalAlignment="Center" Background="#FFECDADA">
@@ -53,20 +53,25 @@
                     <TextBlock Text="文件：" Grid.Column="1" Margin="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" />
                     <TextBox x:Name="tbxFilePath"   Grid.Column="2" Margin="0,0,0,0" />
                     <Button  x:Name="btnSelectFile" Grid.Column="4" Margin="0,0,0,0" Content="选择文件" Click="btnSelectFile_Click" VerticalAlignment="Center"/>
-                    <!-- 
                     <Button x:Name="btnApplyTransferCheck" Grid.Column="6" Margin="0,0,0,0" Content="一键传输" Click="btnApplyTransferCheck_Click" VerticalAlignment="Center"/>
-                    -->
                 </Grid>
 
                 <Grid Margin="0 10 0 0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="0.4*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="2.4*"/>
+                        <ColumnDefinition Width="1.0*"/>
+                        
+                        <ColumnDefinition Width="1.2*"/>
                         <ColumnDefinition Width="0.2*"/>
+                        
+                        <ColumnDefinition Width="1.2*"/>
+                        <ColumnDefinition Width="1.0*"/>
+                        <ColumnDefinition Width="0.2*"/>
+                        
                         <ColumnDefinition Width="1.4*"/>
-                        <ColumnDefinition Width="2.0*"/>
+                        <ColumnDefinition Width="0.8*"/>
                         <ColumnDefinition Width="0.2*"/>
+                        
                         <ColumnDefinition Width="1.5*"/>
                         <ColumnDefinition Width="0.2*"/>
                         <ColumnDefinition Width="1.5*"/>
@@ -74,11 +79,16 @@
                     </Grid.ColumnDefinitions>
 
                     <TextBlock Text="波特率：" Grid.Column="1" Margin="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" />
-                    <TextBox x:Name="tbxBaudRate" Grid.Column="2" Margin="0,0,0,0" Text="460800" />
+                    <TextBox x:Name="tbxBaudRate" Grid.Column="2" Margin="0,0,0,0" Text="921600" />
+                    
                     <TextBlock Text="数据包最大长度：" Grid.Column="4" Margin="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" />
                     <TextBox x:Name="tbxPktMaxLen" Grid.Column="5" Margin="0,0,0,0" Text="2048" />
-                    <Button x:Name="btnWake" Grid.Column="7" Margin="0,0,0,0" Content="唤醒" Click="btnWake_Click" VerticalAlignment="Center"/>
-                    <Button x:Name="btnPing" Grid.Column="9" Margin="0,0,0,0" Content="Ping" Click="btnPing_Click" VerticalAlignment="Center"/>
+
+                    <TextBlock Text="文件分片标准(KB)：" Grid.Column="7" Margin="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                    <TextBox x:Name="tbxPartMaxLen" Grid.Column="8" Margin="0,0,0,0" Text="124" />
+
+                    <Button x:Name="btnWake" Grid.Column="10" Margin="0,0,0,0" Content="唤醒" Click="btnWake_Click" VerticalAlignment="Center"/>
+                    <Button x:Name="btnPing" Grid.Column="12" Margin="0,0,0,0" Content="Ping" Click="btnPing_Click" VerticalAlignment="Center"/>
 
                 </Grid>
 
@@ -113,6 +123,8 @@
                         <ColumnDefinition Width="0.4*"/>
                     </Grid.ColumnDefinitions>
 
+                    <TextBlock Text="传输信息："    Grid.Column="1" Margin="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                    <TextBox x:Name="tbxTransInfo" Grid.Column="2" Margin="0,0,0,0" />
                     <Button x:Name="btnCancel" Grid.Column="4" Margin="0,0,0,0" Content="取消传输" Click="btnCannel_Click" VerticalAlignment="Center"/>
                     <Button x:Name="btnCheck"  Grid.Column="6" Margin="0,0,0,0" Content="校验文件" Click="btnCheck_Click" VerticalAlignment="Center"/>
 
@@ -122,7 +134,9 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="0.4*"/>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="6*"/>
+                        <ColumnDefinition Width="4.3*"/>
+                        <ColumnDefinition Width="0.2*"/>
+                        <ColumnDefinition Width="1.5*"/>
                         <ColumnDefinition Width="0.2*"/>
                         <ColumnDefinition Width="1.5*"/>
                         <ColumnDefinition Width="0.2*"/>
@@ -130,10 +144,9 @@
                         <ColumnDefinition Width="0.4*"/>
                     </Grid.ColumnDefinitions>
 
-                    <TextBlock Text="传输信息："    Grid.Column="1" Margin="0,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Right" />
-                    <TextBox x:Name="tbxTransInfo" Grid.Column="2" Margin="0,0,0,0" />
-                    <Button x:Name="btnSyncStatus" Grid.Column="4" Margin="0,0,0,0" Content="同步状态" Click="btnSyncStatus_Click" VerticalAlignment="Center"/>
-                    <Button x:Name="btnClaimTask" Grid.Column="6" Margin="0,0,0,0" Content="领取任务" Click="btnClaimTask_Click" VerticalAlignment="Center"/>
+                    <Button x:Name="btnClearStatus" Grid.Column="4" Margin="0,0,0,0" Content="清空状态显示" Click="btnClearStatus_Click" VerticalAlignment="Center"/>
+                    <Button x:Name="btnSyncStatus" Grid.Column="6" Margin="0,0,0,0" Content="同步状态" Click="btnSyncStatus_Click" VerticalAlignment="Center"/>
+                    <Button x:Name="btnClaimTask" Grid.Column="8" Margin="0,0,0,0" Content="领取任务" Click="btnClaimTask_Click" VerticalAlignment="Center"/>
 
                 </Grid>
 
@@ -153,8 +166,8 @@
         </Border>
 
         <Border Grid.Row="3">
-            
-                <TextBox x:Name="tbxStatus" Margin="0,0,0,0" />
+
+            <TextBox x:Name="tbxStatus" Margin="0,0,0,0" AcceptsReturn="True" AcceptsTab="True" TextWrapping="Wrap" MaxLines="10" VerticalScrollBarVisibility="Visible" />
 
         </Border>
 
