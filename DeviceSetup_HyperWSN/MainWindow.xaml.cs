@@ -121,6 +121,7 @@ namespace DeviceSetup_HyperWSN
                 SerialPort.InitCOM(portname);
                 if (SerialPort.OpenPort())
                 {
+                    SerialPort.IsLogger = true;
                     btnStartMonitor.IsEnabled = true;
                     btnOpenComport.Content = "Close";
                 }else
@@ -6045,7 +6046,7 @@ namespace DeviceSetup_HyperWSN
             {
                 tbxStatusOfLive.Text += "\n";
 
-                string cmd = "[ASK: Relay=0,1000,0,1]HyperWSN::Demand=" + tbxDemandOpOfLive.Text + "," + tbxDemandStartAddrOfLive.Text + "," + tbxDemandEndAddrOfLive.Text + "," + tbxDemandFileOfLive.Text;
+                string cmd = "[ASK: Relay=0,1100,0,1]HyperWSN::Demand=" + tbxDemandOpOfLive.Text + "," + tbxDemandFileTypeOfLive.Text + "," + tbxDemandStartAddrOfLive.Text + "," + tbxDemandEndAddrOfLive.Text + "," + tbxDemandFileOfLive.Text;
 
                 SerialPort.SendString(cmd);
             }
@@ -6061,7 +6062,7 @@ namespace DeviceSetup_HyperWSN
             {
                 tbxStatusOfLive.Text += "\n";
 
-                string cmd = "[ASK: Relay=0,1000,0,1]HyperWSN::Demand";
+                string cmd = "[ASK: Relay=0,1200,0,1]HyperWSN::Demand";
                 
                 SerialPort.SendString(cmd);
             }
