@@ -17,6 +17,17 @@ using YyWsnCommunicatonLibrary;
 
 namespace HyperWSN_Tool_TM
 {
+    public struct Calendar
+    {
+        public byte year;      /* years since 2000           - [0,99]  */
+        public byte month;     /* months since January       - [1,12]  */
+        public byte mday;      /* day of the month           - [1,31]  */
+        public byte hour;      /* hours after the midnight   - [0,23]  */
+        public byte minute;    /* minutes after the hour     - [0,59]  */
+        public byte second;    /* seconds after the minute   - [0,59]  */
+    }
+
+
     /// <summary>
     /// MainWindow.xaml 的交互逻辑
     /// </summary>
@@ -241,6 +252,265 @@ namespace HyperWSN_Tool_TM
                 }
             }));
         }
+
+        bool leapyear(UInt32 y)
+        {
+            if(((y) % 4 == 0 && ((y) % 100 != 0 || (y) % 400 == 0)))
+            {   // 闰年
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        UInt32 Calendar_To_UTC_2(Calendar ct)
+        {
+            UInt16[] mon_day = new UInt16[]{ 0, 31, 59, 90, 120, 151, 181, 212, 243, 273,
+                304, 334, 365 };
+
+            const UInt32 days_in_year = 365;      // 一个平年有多少天
+            const UInt32 secs_in_day = 86400;     // 一天有多少秒
+
+            const UInt32 epoch_base_secs = 946656000; // 1970/01/01 00:00:00 ~ 2000/01/01 00:00:00
+
+            UInt32 result;
+            UInt32 mdays = 0;                     // 天的数量
+            UInt32 secs = 0;
+            byte iX;
+
+            if (ct.second >= 60 || ct.minute >= 60 || ct.hour >= 24)
+            {
+                return 0xFFFFFFFF;
+            }
+
+            if (ct.mday == 0 || ct.mday > 31 || ct.month == 0 || ct.month > 12
+                    || ct.year > 99)
+            {
+                return 0xFFFFFFFF;
+            }
+
+            // 计算从2000年到年初，总共有多少天
+            for (iX = 0; iX < ct.year; iX++)
+            {
+                if (leapyear((UInt32)(iX + 2000)))
+                {   // 闰年
+                    mdays += days_in_year + 1;
+                }
+                else
+                {   // 平年
+                    mdays += days_in_year;
+                }
+            }   // for
+
+            // 计算从年初到这个月初，总共有多少天
+            mdays += mon_day[ct.month - 1];
+            if (ct.month > 2 && leapyear((UInt32)(ct.year + 2000)))
+            {   // 闰月
+                mdays += 1;
+            }
+
+            // 计算从年初到今天凌晨，总共有多少天
+            mdays += (UInt32)(ct.mday - 1);
+
+            // 计算从今天凌晨到现在，总共有多少秒
+
+            if(ct.hour != 0)
+            {
+                secs += (UInt32)(3600 * ct.hour);
+            }
+
+            if (ct.minute != 0)
+            {
+                secs += (UInt32)(60 * ct.minute);
+            }
+
+            secs += ct.second;
+
+            // 计算最终的UTC时间
+            result = epoch_base_secs + mdays * secs_in_day + secs;
+
+            return result;
+        }
+
+        Calendar UTC_To_Calendar_2(UInt32 utc)
+        {
+             UInt16[] mon_day = new UInt16[]{ 0, 31, 59, 90, 120, 151, 181, 212, 243, 273,
+                304, 334, 365 };
+
+            const UInt32 days_in_year = 365;      // 一个平年有多少天
+            const UInt32 secs_in_day = 86400;     // 一天有多少秒
+            const UInt32 secs_in_hour = 3600;     // 一小时有多少秒
+            const UInt32 secs_in_minute = 60;     // 一分钟有多少秒
+
+            const UInt32 epoch_base_secs = 946656000; // 1970/01/01 00:00:00 ~ 2000/01/01 00:00:00
+            const UInt32 epoch_end_secs = 4102415999; // 2099/12/31 23:59:59
+
+            UInt32 mdays = 0;
+            UInt32 secs = 0;
+            byte iX;
+
+            Calendar ct = new Calendar();
+
+            ct.year = 0;
+            ct.month = 1;
+            ct.mday = 1;
+            ct.hour = 0;
+            ct.minute = 0;
+            ct.second = 0;
+
+            if (utc <= epoch_base_secs)
+            {
+                return ct;
+            }
+
+            if (utc > epoch_end_secs)
+            {
+                utc = epoch_end_secs;
+            }
+
+            // 计算21世纪的偏移量
+            utc -= epoch_base_secs;
+
+            // 计算时分秒
+            secs = utc % secs_in_day;
+            utc -= secs;
+
+            ct.hour = (byte)(secs / secs_in_hour);
+            secs = secs % secs_in_hour;
+
+            ct.minute = (byte)(secs / secs_in_minute);
+            secs = secs % secs_in_minute;
+
+            ct.second = (byte)secs;
+
+            // 计算总天数
+            mdays = utc / secs_in_day;
+
+            // 计算年份
+            UInt32 pdays = 0;
+            UInt32 tdays = 0;
+            for (iX = 0; ; iX++)
+            {
+                pdays = tdays;
+
+                if (leapyear((UInt32)(iX + 2000)))
+                {   // 闰年
+                    tdays += days_in_year + 1;
+                }
+                else
+                {   // 平年
+                    tdays += days_in_year;
+                }
+
+                if (tdays < mdays)
+                {
+                    continue;
+                }
+                else if (tdays == mdays)
+                {
+                    ct.year = (byte)(iX + 1);
+                    mdays -= tdays;
+                    break;
+                }
+                else
+                {
+                    ct.year = iX;
+                    mdays -= pdays;
+                    break;
+                }
+
+            }   // for
+
+            // 计算月份
+            pdays = 0;
+            tdays = 0;                  // 从年初到月初，总共有多少天
+            for (iX = 1; ; iX++)
+            {
+                pdays = tdays;
+
+                tdays = mon_day[iX - 1];
+                if (iX > 2 && leapyear((UInt32)(ct.year + 2000)))
+                {   // 闰月
+                    tdays += 1;
+                }
+
+                if (tdays < mdays)
+                {
+                    continue;
+                }
+                else if (tdays == mdays)
+                {
+                    ct.month = iX;
+                    mdays -= tdays;
+                    break;
+                }
+                else
+                {
+                    ct.month = (byte)(iX - 1);
+                    mdays -= pdays;
+                    break;
+                }
+
+            }   // for
+
+            // 计算日数
+            ct.mday = (byte)(mdays + 1);
+
+            return ct;
+        }
+
+        bool breakpoint = false;
+
+        /// <summary>
+        /// 算法验证
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btnStart_Click(object sender, RoutedEventArgs e)
+        {
+            UInt32 ut;
+            Calendar ct = new Calendar();
+            UInt32 ut_res;
+
+            DateTime dt;
+
+            string myRes = string.Empty;
+            string expRes = string.Empty;
+
+            while (true)
+            {
+                for (ut = 946656000; ut < 0xFFFFFFFF;)
+                {
+                    breakpoint = false;
+
+                    ct = UTC_To_Calendar_2(ut);
+
+                    ut_res = Calendar_To_UTC_2(ct);
+
+                    dt = MyCustomFxn.UTC_to_DateTime(ut);
+
+                    myRes = "20" + ct.year.ToString("D2") + "/" + ct.month.ToString("D2") + "/" + ct.mday.ToString("D2") + " " + ct.hour.ToString("D2") + ":" + ct.minute.ToString("D2") + ":" + ct.second.ToString("D2");
+                    expRes = dt.Year.ToString("D4") + "/" + dt.Month.ToString("D2") + "/" + dt.Day.ToString("D2") + " " + dt.Hour.ToString("D2") + ":" + dt.Minute.ToString("D2") + ":" + dt.Second.ToString("D2");
+
+                    if (ut != ut_res || myRes != expRes)
+                    {
+                        breakpoint = true;
+                    }
+                    else
+                    {
+                        ut++;
+                    }
+
+                }
+
+
+                breakpoint = true;
+            }
+
+        }   //
+
 
 
     }

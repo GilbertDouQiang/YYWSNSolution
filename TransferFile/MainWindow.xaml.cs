@@ -564,7 +564,7 @@ namespace TransferFile
 
             // 文件地址
             u32 = CommArithmetic.ByteBuf_to_UInt32(RxBuf, ios);
-            tbxStatus.Text += "文件存入地址=" + u32.ToString() + "；";
+            tbxStatus.Text += "文件存入地址=" + u32.ToString() + "=" + u32.ToString("X8") + "；";
             ios += 4;
 
             return 0;
@@ -712,6 +712,33 @@ namespace TransferFile
             return 0;
         }
 
+        public int RxBuf_Other(byte[] RxBuf)
+        {
+            tbxStatus.Text += "";
+
+            if (RxBuf.Length < 7)
+            {
+                tbxStatus.Text += "反馈数据包不完整；";
+                return -1;
+            }
+
+            byte cmd = RxBuf[4];
+            byte protocol = RxBuf[5];
+            Int16 result = CommArithmetic.ByteBuf_to_Int8(RxBuf, 6);
+
+            tbxStatus.Text += "未知命令：" + cmd.ToString("X2") + "，版本：" + protocol.ToString("X2") + "，结果：" + result.ToString("G") + "，内容：";
+
+            for(int ios = 7; ios < RxBuf.Length; ios++)
+            {
+                tbxStatus.Text += RxBuf[ios].ToString("X2") + " ";
+            }
+
+            tbxStatus.Text = tbxStatus.Text.TrimEnd();
+            tbxStatus.Text += "；";
+
+            return 0;
+        }
+
         public int RxBuf_IsRight(byte[] RxBuf, byte[] TxBuf)
         {
             if (RxBuf.Length == 1 && RxBuf[0] == 0x5A)
@@ -794,7 +821,7 @@ namespace TransferFile
                     }
                 default:
                     {
-                        error = -6;
+                        error = RxBuf_Other(RxBuf);
                         break;
                     }
             }
@@ -1487,6 +1514,13 @@ namespace TransferFile
 
             // CRC16
             u16 = MyCustomFxn.CRC16(MyCustomFxn.GetItuPolynomialOfCrc16(), 0, bFile.Content, partAddrInFile, (UInt32)partSize);
+
+            // 模拟校验错误
+            if(cbxSimulateCrcError.IsChecked == true)
+            {
+                u16 = (UInt16)(~u16);
+            }
+
             TxBuf[TxLen++] = (byte)((u16 & 0xFF00) >> 8);
             TxBuf[TxLen++] = (byte)((u16 & 0x00FF) >> 0);
 
@@ -1693,6 +1727,11 @@ namespace TransferFile
 
                 if (Suc < 0)
                 {
+                    if (Suc == -5 && cbxSimulateCrcError.IsChecked == true)
+                    {
+                        break;
+                    }
+
                     if(++reTry < 600)
                     {                      
                         System.Threading.Thread.Sleep(200);
@@ -1765,7 +1804,7 @@ namespace TransferFile
                 {
                     if (tbxPeriodSec.Text != string.Empty)
                     {
-                        periodMs = Convert.ToUInt32(tbxPeriodSec.Text) * 1000;
+                        periodMs = (UInt32)(Convert.ToDouble(tbxPeriodSec.Text) * 1000.0f);
                     }
                 }
                 catch
@@ -1855,5 +1894,91 @@ namespace TransferFile
             Serial_Close();
             MoveToEnd();
         }
+
+        public int SendExeCmd()
+        {
+            byte[] byteBuf = null;
+            byte[] TxBuf = new byte[32];
+            UInt16 TxLen = 0;
+           
+
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0x00;
+            TxBuf[TxLen++] = 0xFD;
+            TxBuf[TxLen++] = 0x00;       
+
+            byteBuf = MyCustomFxn.HexStringToByteArray(tbxCmd.Text);
+            if(byteBuf == null || byteBuf.Length < 1)
+            {
+                return -1;
+            }
+
+            TxBuf[TxLen++] = byteBuf[0];
+
+            byteBuf = MyCustomFxn.HexStringToByteArray(tbxProtocol.Text);
+            if (byteBuf == null || byteBuf.Length < 1)
+            {
+                return -2;
+            }
+
+            TxBuf[TxLen++] = byteBuf[0];
+
+            byteBuf = MyCustomFxn.HexStringToByteArray(tbxAddr.Text);
+            if (byteBuf != null && byteBuf.Length >= 4)
+            {
+                TxBuf[TxLen++] = byteBuf[0];
+                TxBuf[TxLen++] = byteBuf[1];
+                TxBuf[TxLen++] = byteBuf[2];
+                TxBuf[TxLen++] = byteBuf[3];
+            }
+
+            byteBuf = MyCustomFxn.HexStringToByteArray(tbxLen.Text);
+            if (byteBuf != null && byteBuf.Length >= 4)
+            {
+                TxBuf[TxLen++] = byteBuf[0];
+                TxBuf[TxLen++] = byteBuf[1];
+                TxBuf[TxLen++] = byteBuf[2];
+                TxBuf[TxLen++] = byteBuf[3];
+            }
+
+            // 计算校验和
+            TxBuf[3] = MyCustomFxn.CheckSum8(0, TxBuf, 4, (UInt16)(TxLen - 5 + 1));
+
+            // 重写长度位
+            UInt16 u16 = (UInt16)(TxLen - 5);
+            TxBuf[0] = (byte)((u16 & 0xFF00) >> 8);
+            TxBuf[1] = (byte)((u16 & 0x00FF) >> 0);
+
+            byte[] RxBuf = SerialPort.SendReceive(TxBuf, 0, TxLen, 1500);
+
+            if (RxBuf == null || RxBuf.Length == 0)
+            {
+                return -3;
+            }
+
+            int error = RxBuf_IsRight(RxBuf, TxBuf);
+            if (error < 0)
+            {
+                return -4;
+            }
+
+            return 0;
+        }
+
+        private void btnExecute_Click(object sender, RoutedEventArgs e)
+        {
+            if (tbxCmd.Text == string.Empty)
+            {
+                return;
+            }
+
+            Serial_Init();
+
+            SendExeCmd();
+
+            Serial_Close();
+            MoveToEnd();
+        }
+
     }   // class
 }   // namespace
